@@ -1,6 +1,6 @@
 /*
 *   This file is part of Luma3DS
-*   Copyright (C) 2016-2021 Aurora Wright, TuxSH
+*   Copyright (C) 2016-2020 Aurora Wright, TuxSH
 *
 *   This program is free software: you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -97,3 +97,4 @@ u32     DispErrMessage(const char *title, const char *message, const Result erro
 void    DisplayPluginMenu(u32   *cmdbuf);
 
 void menuToggleLeds(void);
+void menuMakeLedDabadeedabada(void);
