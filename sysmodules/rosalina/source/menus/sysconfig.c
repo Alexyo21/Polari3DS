@@ -1,6 +1,6 @@
 /*
 *   This file is part of Luma3DS
-*   Copyright (C) 2016-2021 Aurora Wright, TuxSH
+*   Copyright (C) 2016-2020 Aurora Wright, TuxSH
 *
 *   This program is free software: you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -26,7 +26,6 @@
 
 #include <3ds.h>
 #include "menus/sysconfig.h"
-#include "menus/config_extra.h"
 #include "memory.h"
 #include "draw.h"
 #include "fmt.h"
@@ -39,14 +38,13 @@
 Menu sysconfigMenu = {
     "System configuration menu",
     {
-        { "Toggle Wireless", METHOD, .method = &SysConfigMenu_ToggleWireless },
         { "Control Wireless connection", METHOD, .method = &SysConfigMenu_ControlWifi },
         { "Toggle Power Button", METHOD, .method=&SysConfigMenu_TogglePowerButton },
-        { "Toggle LEDs", METHOD, .method = &SysConfigMenu_ToggleLEDs },
+        { "Toggle Power to card slot", METHOD, .method=&SysConfigMenu_ToggleCardIfPower},
         { "Toggle rehid folder: ", METHOD, .method = &SysConfigMenu_ToggleRehidFolder },
         { "Permanent Brightness Recalibration", METHOD, .method = &Luminance_RecalibrateBrightnessDefaults },
-        { "Extra Config...", MENU, .menu = &configExtraMenu },
         { "Software Volume Control", METHOD, .method = &Volume_ControlVolume },
+        { "Tips", METHOD, .method = &SysConfigMenu_Tip },
         {},
     }
 };
@@ -55,87 +53,9 @@ bool isConnectionForced = false;
 static char rehidPath[16] = "/rehid";
 static char rehidOffPath[16] = "/rehid_off";
 
-void SysConfigMenu_ToggleLEDs(void)
-{
-    Draw_Lock();
-    Draw_ClearFramebuffer();
-    Draw_FlushFramebuffer();
-    Draw_Unlock();
-
-    do
-    {
-        Draw_Lock();
-        Draw_DrawString(10, 10, COLOR_TITLE, "System configuration menu");
-        Draw_DrawString(10, 30, COLOR_WHITE, "Press A to toggle, press B to go back.");
-        Draw_DrawString(10, 50, COLOR_RED, "WARNING:");
-        Draw_DrawString(10, 60, COLOR_WHITE, "  * Entering sleep mode will reset the LED state!");
-        Draw_DrawString(10, 70, COLOR_WHITE, "  * LEDs cannot be toggled when the battery is low!");
-
-        Draw_FlushFramebuffer();
-        Draw_Unlock();
-
-        u32 pressed = waitInputWithTimeout(1000);
-
-        if(pressed & KEY_A)
-        {
-            menuToggleLeds();
-        }
-        else if(pressed & KEY_B)
-            return;
-    }
-    while(!menuShouldExit);
-}
-
-void SysConfigMenu_ToggleWireless(void)
-{
-    Draw_Lock();
-    Draw_ClearFramebuffer();
-    Draw_FlushFramebuffer();
-    Draw_Unlock();
-
-    bool nwmRunning = isServiceUsable("nwm::EXT");
-
-    do
-    {
-        Draw_Lock();
-        Draw_DrawString(10, 10, COLOR_TITLE, "System configuration menu");
-        Draw_DrawString(10, 30, COLOR_WHITE, "Press A to toggle, press B to go back.");
-
-        u8 wireless = (*(vu8 *)((0x10140000 | (1u << 31)) + 0x180));
-
-        if(nwmRunning)
-        {
-            Draw_DrawString(10, 50, COLOR_WHITE, "Current status:");
-            Draw_DrawString(100, 50, (wireless ? COLOR_GREEN : COLOR_RED), (wireless ? " ON " : " OFF"));
-        }
-        else
-        {
-            Draw_DrawString(10, 50, COLOR_RED, "NWM isn't running.");
-            Draw_DrawString(10, 60, COLOR_RED, "If you're currently on Test Menu,");
-            Draw_DrawString(10, 70, COLOR_RED, "exit then press R+RIGHT to toggle the WiFi.");
-            Draw_DrawString(10, 80, COLOR_RED, "Otherwise, simply exit and wait a few seconds.");
-        }
-
-        Draw_FlushFramebuffer();
-        Draw_Unlock();
-
-        u32 pressed = waitInputWithTimeout(1000);
-
-        if(pressed & KEY_A && nwmRunning)
-        {
-            nwmExtInit();
-            NWMEXT_ControlWirelessEnabled(!wireless);
-            nwmExtExit();
-        }
-        else if(pressed & KEY_B)
-            return;
-    }
-    while(!menuShouldExit);
-}
-
 void SysConfigMenu_UpdateStatus(bool control)
 {
-    MenuItem *item = &sysconfigMenu.items[1];
+    MenuItem *item = &sysconfigMenu.items[0];
 
     if(control)
     {
@@ -340,13 +260,56 @@ void SysConfigMenu_DisableForcedWifiConnection(void)
     while(!menuShouldExit);
 }
 
+void SysConfigMenu_ToggleCardIfPower(void)
+{
+    Draw_Lock();
+    Draw_ClearFramebuffer();
+    Draw_FlushFramebuffer();
+    Draw_Unlock();
+
+    bool cardIfStatus = false;
+    bool updatedCardIfStatus = false;
+
+    do
+    {
+        Result res = FSUSER_CardSlotGetCardIFPowerStatus(&cardIfStatus);
+        if (R_FAILED(res)) cardIfStatus = false;
+
+        Draw_Lock();
+        Draw_DrawString(10, 10, COLOR_TITLE, "System configuration menu");
+        u32 posY = Draw_DrawString(10, 30, COLOR_WHITE, "Press A to toggle, press B to go back.\n\n");
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, "Inserting or removing a card will reset the status,\nand you'll need to reinsert the cart if you want to\nplay it.\n\n");
+        Draw_DrawString(10, posY, COLOR_WHITE, "Current status:");
+        Draw_DrawString(100, posY, !cardIfStatus ? COLOR_RED : COLOR_GREEN, !cardIfStatus ? " DISABLED" : " ENABLED ");
+
+        Draw_FlushFramebuffer();
+        Draw_Unlock();
+
+        u32 pressed = waitInputWithTimeout(1000);
+
+        if(pressed & KEY_A)
+        {
+            if (!cardIfStatus)
+                res = FSUSER_CardSlotPowerOn(&updatedCardIfStatus);
+            else
+                res = FSUSER_CardSlotPowerOff(&updatedCardIfStatus);
+
+            if (R_SUCCEEDED(res))
+                cardIfStatus = !updatedCardIfStatus;
+        }
+        else if(pressed & KEY_B)
+            return;
+    }
+    while(!menuShouldExit);
+}
+
 void SysConfigMenu_ToggleRehidFolder(void)
 {
     FS_Archive sdmcArchive = 0;
 
     if(R_SUCCEEDED(FSUSER_OpenArchive(&sdmcArchive, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""))))
     {
-        MenuItem *item = &sysconfigMenu.items[4];
+        MenuItem *item = &sysconfigMenu.items[3];
 
         if(R_SUCCEEDED(FSUSER_RenameDirectory(sdmcArchive, fsMakePath(PATH_ASCII, rehidPath), sdmcArchive, fsMakePath(PATH_ASCII, rehidOffPath))))
             {
@@ -368,7 +331,7 @@ void SysConfigMenu_UpdateRehidFolderStatus(void)
 
     if(R_SUCCEEDED(FSUSER_OpenArchive(&sdmcArchive, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""))))
     {
-        MenuItem *item = &sysconfigMenu.items[4];
+        MenuItem *item = &sysconfigMenu.items[3];
 
         if(R_SUCCEEDED(FSUSER_OpenDirectory(&dir, sdmcArchive, fsMakePath(PATH_ASCII, rehidPath))))
             {
@@ -382,4 +345,37 @@ void SysConfigMenu_UpdateRehidFolderStatus(void)
 
         FSUSER_CloseArchive(sdmcArchive);
     }
+}
+
+void SysConfigMenu_Tip(void)
+{
+    Draw_Lock();
+    Draw_ClearFramebuffer();
+    Draw_FlushFramebuffer();
+    Draw_Unlock();
+
+    do
+    {
+        Draw_Lock();
+        Draw_DrawString(10, 10, COLOR_TITLE, "Tips");
+        Draw_DrawString(10, 30, COLOR_WHITE, "On Rosalina menu:");
+        Draw_DrawString(10, 50, COLOR_WHITE, "  * Press start to toggle Wifi");
+        Draw_DrawString(10, 60, COLOR_WHITE, "  * Press select to toggle LEDs (cannot be toggled");
+        Draw_DrawString(10, 70, COLOR_WHITE, "  if battery is low or if the system is put on");
+        Draw_DrawString(10, 80, COLOR_WHITE, "  sleep mode)");
+        Draw_DrawString(10, 90, COLOR_WHITE, "  * Press Y to force blue led (allows bypassing");
+        Draw_DrawString(10, 100, COLOR_WHITE, "  toggle led restriction on low battery)");
+        Draw_DrawString(10, 120, COLOR_WHITE, "While system is running:");
+        Draw_DrawString(10, 140, COLOR_WHITE, "  * Press A + B + X + Y + Start to instant reboot");
+        Draw_DrawString(10, 150, COLOR_WHITE, "  * Press Start + Select to toggle bottom screen");
+
+        Draw_FlushFramebuffer();
+        Draw_Unlock();
+
+        u32 pressed = waitInputWithTimeout(1000);
+
+        if(pressed & KEY_B)
+            return;
+    }
+    while(!menuShouldExit);
 }

@@ -1,6 +1,6 @@
 /*
 *   This file is part of Luma3DS
-*   Copyright (C) 2016-2021 Aurora Wright, TuxSH
+*   Copyright (C) 2016-2020 Aurora Wright, TuxSH
 *
 *   This program is free software: you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -39,7 +39,6 @@
 #include "menus/screen_filters.h"
 #include "menus/cheats.h"
 #include "menus/sysconfig.h"
-#include "menus/config_extra.h"
 #include "redshift/redshift.h"
 #include "input_redirection.h"
 #include "minisoc.h"
@@ -51,8 +50,6 @@
 bool isN3DS;
 bool wifiOnBeforeSleep;
 bool hasTopScreen;
-
-extern config_extra configExtra;
 
 Result __sync_init(void);
 Result __sync_fini(void);
@@ -177,9 +174,6 @@ static void handleShellNotification(u32 notificationId)
     if (notificationId == 0x213) {
         // Shell opened
         // Note that this notification is fired on system init    
-        if(configExtra.suppressLeds){
-            Redshift_SuppressLeds();
-        }
 
         if(nightLightSettingsRead && !ScreenFiltersMenu_RestoreCct())
         { 
@@ -188,31 +182,31 @@ static void handleShellNotification(u32 notificationId)
         
         menuShouldExit = false;
 
-        if(wifiOnBeforeSleep && configExtra.cutSleepWifi && isServiceUsable("nwm::EXT")){
-            nwmExtInit();
-            NWMEXT_ControlWirelessEnabled(true);
-            nwmExtExit();
-        }
+//        if(wifiOnBeforeSleep && CONFIG(CUTWIFISLEEP) && isServiceUsable("nwm::EXT")){
+//            nwmExtInit();
+//            NWMEXT_ControlWirelessEnabled(true);
+//            nwmExtExit();
+//        }
     } 
     else {
         // Shell closed
         menuShouldExit = true;
 
-        if(configExtra.cutSleepWifi)
-        {      
-            u8 wireless = (*(vu8 *)((0x10140000 | (1u << 31)) + 0x180));
-
-            if (isServiceUsable("nwm::EXT") && wireless)
-            {
-                wifiOnBeforeSleep = true;
-                nwmExtInit();
-                NWMEXT_ControlWirelessEnabled(false);
-                nwmExtExit();
-            }
-            else {
-                wifiOnBeforeSleep = false;
-            }
-        }
+//        if(CONFIG(CUTWIFISLEEP))
+//        {      
+//            u8 wireless = (*(vu8 *)((0x10140000 | (1u << 31)) + 0x180));
+//
+//            if (isServiceUsable("nwm::EXT") && wireless)
+//            {
+//                wifiOnBeforeSleep = true;
+//                nwmExtInit();
+//                NWMEXT_ControlWirelessEnabled(false);
+//                nwmExtExit();
+//            }
+//            else {
+//                wifiOnBeforeSleep = false;
+//            }
+//        }
     }
 }
 
@@ -261,15 +255,6 @@ static void handleRestartHbAppNotification(u32 notificationId)
     TaskRunner_RunTask(HBLDR_RestartHbApplication, NULL, 0);
 }
 
-static void handleHomeButtonNotification(u32 notificationId)
-{
-    (void)notificationId;
-    if(configExtra.homeToRosalina && isHidInitialized && !rosalinaOpen && !menuShouldExit && !preTerminationRequested && !g_blockMenuOpen)
-    {
-        openRosalina();
-    }
-}
-
 static const ServiceManagerServiceEntry services[] = {
     { "hb:ldr", 2, HBLDR_HandleCommands, true },
     { "plg:ldr", 1, PluginLoader__HandleCommands, true },
@@ -287,23 +272,12 @@ static const ServiceManagerNotificationEntry notifications[] = {
     { PTMNOTIFID_HALF_AWAKE,        handleSleepNotification                 },
     { 0x213,                        handleShellNotification                 },
     { 0x214,                        handleShellNotification                 },
-    { 0x205,                        handleHomeButtonNotification            },
     { 0x1000,                       handleNextApplicationDebuggedByForce    },
     { 0x2000,                       handlePreTermNotification               },
     { 0x3000,                       handleRestartHbAppNotification          },
     { 0x1001,                       PluginLoader__HandleKernelEvent         },
     { 0x000, NULL },
 };
-
-static void cutPowerToCardSlotWhenTWLCard(void)
-{
-    FS_CardType card;
-    bool status;
-
-    if(R_SUCCEEDED(FSUSER_GetCardType(&card)) && card == 1){
-        FSUSER_CardSlotPowerOff(&status);
-    }
-}
 
 // Some changes to commit
 int main(void)
@@ -312,11 +286,6 @@ int main(void)
 
     Sleep__Init();
     PluginLoader__Init();
-    ConfigExtra_ReadConfigExtra();
-    if (configExtra.cutSlotPower)
-    {
-        cutPowerToCardSlotWhenTWLCard();
-    }
 
     u8 sysModel;
     cfguInit();

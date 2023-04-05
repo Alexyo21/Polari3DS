@@ -131,8 +131,7 @@ void    DisplayPluginMenu(u32   *cmdbuf)
             }
 
             // Draw hint
-            if (hints[cursor])
-                Draw_DrawString(10, 200, COLOR_TITLE, hints[cursor]);
+            Draw_DrawString(10, 200, COLOR_TITLE, hints[cursor]);
         }
 
         // Wait for input

@@ -1,6 +1,6 @@
 /*
 *   This file is part of Luma3DS
-*   Copyright (C) 2016-2021 Aurora Wright, TuxSH
+*   Copyright (C) 2016-2020 Aurora Wright, TuxSH
 *
 *   This program is free software: you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -238,7 +238,7 @@ Result  SaveSettings(void)
     configData.rosalinaFlags = PluginLoader__IsEnabled();
 
     FS_ArchiveID archiveId = isSdMode ? ARCHIVE_SDMC : ARCHIVE_NAND_RW;
-    res = IFile_Open(&file, archiveId, fsMakePath(PATH_EMPTY, ""), fsMakePath(PATH_ASCII, "/luma/config.bin"), FS_OPEN_CREATE | FS_OPEN_WRITE);
+    res = IFile_Open(&file, archiveId, fsMakePath(PATH_EMPTY, ""), fsMakePath(PATH_ASCII, "/luma/cooolconfig.bin"), FS_OPEN_CREATE | FS_OPEN_WRITE);
 
     if(R_SUCCEEDED(res))
         res = IFile_SetSize(&file, sizeof(configData));
@@ -397,7 +397,7 @@ void MiscellaneousMenu_UpdateTimeDateNtp(void)
 
     bool isSocURegistered;
 
-    u64 msSince1900, samplingTick;
+    time_t t;
 
     res = srvIsServiceRegistered(&isSocURegistered, "soc:U");
     cantStart = R_FAILED(res) || !isSocURegistered;
@@ -436,11 +436,12 @@ void MiscellaneousMenu_UpdateTimeDateNtp(void)
     res = 0;
     if(!cantStart)
     {
-        res = ntpGetTimeStamp(&msSince1900, &samplingTick);
+        res = ntpGetTimeStamp(&t);
         if(R_SUCCEEDED(res))
         {
-            msSince1900 += 1000 * (3600 * utcOffset + 60 * utcOffsetMinute);
-            res = ntpSetTimeDate(msSince1900, samplingTick);
+            t += 3600 * utcOffset;
+            t += 60 * utcOffsetMinute;
+            res = ntpSetTimeDate(t);
         }
     }
 

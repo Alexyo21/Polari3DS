@@ -1,6 +1,6 @@
 /*
 *   This file is part of Luma3DS
-*   Copyright (C) 2016-2022 Aurora Wright, TuxSH
+*   Copyright (C) 2016-2020 Aurora Wright, TuxSH
 *
 *   This program is free software: you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -35,7 +35,6 @@
 #include "menus/n3ds.h"
 #include "menus/cheats.h"
 #include "menus/quick_switchers.h"
-#include "menus/config_extra.h"
 #include "menus/sysconfig.h"
 #include "minisoc.h"
 #include "plugin.h"
@@ -55,6 +54,16 @@ void menuToggleLeds(void)
     MCUHWC_ReadRegister(0x28, &result, 1);
     result = ~result;
     MCUHWC_WriteRegister(0x28, &result, 1);
+    mcuHwcExit();
+}
+
+void menuMakeLedDabadeedabada(void)
+{
+    // Do shit with LEDs
+    mcuHwcInit();
+    u8 result;
+    result = 1;
+    MCUHWC_WriteRegister(0x29, &result, 1);
     mcuHwcExit();
 }
 
@@ -262,7 +271,6 @@ void menuThreadMain(void)
 
     QuickSwitchers_UpdateStatuses();
     SysConfigMenu_UpdateRehidFolderStatus();
-    ConfigExtra_UpdateAllMenuItems();
 
     while (!isServiceUsable("ac:u") || !isServiceUsable("hid:USER"))
         svcSleepThread(500 * 1000 * 1000LL);
@@ -281,6 +289,35 @@ void menuThreadMain(void)
         if(((scanHeldKeys() & menuCombo) == menuCombo) && !rosalinaOpen && !g_blockMenuOpen)
         {
             openRosalina();
+        }
+
+        // force reboot combo key
+        if(((scanHeldKeys() & (KEY_A | KEY_B | KEY_X | KEY_Y | KEY_START)) == (KEY_A | KEY_B | KEY_X | KEY_Y | KEY_START)))
+        {
+            svcKernelSetState(7);
+            __builtin_unreachable();
+        }
+
+        // toggle bottom screen combo
+        if(((scanHeldKeys() & (KEY_SELECT | KEY_START)) == (KEY_SELECT | KEY_START)))
+        {
+            u8 result, botStatus;
+            mcuHwcInit();
+            MCUHWC_ReadRegister(0x0F, &result, 1); // https://www.3dbrew.org/wiki/I2C_Registers#Device_3
+            mcuHwcExit();  
+            botStatus = (result >> 5) & 1; // right shift result to bit 5 ("Bottom screen backlight on") and perform bitwise AND with 1
+
+            gspLcdInit();
+            if(botStatus)
+            {
+                GSPLCD_PowerOffBacklight(BIT(GSP_SCREEN_BOTTOM));
+            }
+            else
+            {
+                GSPLCD_PowerOnBacklight(BIT(GSP_SCREEN_BOTTOM));
+            }
+            gspLcdExit();
+            while (scanHeldKeys() & (KEY_SELECT | KEY_START));
         }
 
         // Check for home button on O3DS Mode3 with plugin loaded
@@ -501,7 +538,7 @@ void menuShow(Menu *root)
         else if(pressed & KEY_B)
         {
             while (nbPreviousMenus == 0 && (scanHeldKeys() & KEY_B)); // wait a bit before exiting rosalina
-
+            
             Draw_Lock();
             Draw_ClearFramebuffer();
             Draw_FlushFramebuffer();
@@ -531,6 +568,10 @@ void menuShow(Menu *root)
         {
             menuToggleLeds();
         }
+        else if(pressed & KEY_Y)
+        {
+            menuMakeLedDabadeedabada();
+        }
         else if(pressed & KEY_START)
         {
             if (isServiceUsable("nwm::EXT"))
@@ -545,28 +586,6 @@ void menuShow(Menu *root)
         {
             nightLightOverride = !nightLightOverride;
             Redshift_UpdateNightLightStatuses();
-        }
-        else if ((pressed & KEY_Y) && configExtra.toggleBottomLcd && hasTopScreen)
-        {
-            u8 result, botStatus;
-            mcuHwcInit();
-            MCUHWC_ReadRegister(0x0F, &result, 1); // https://www.3dbrew.org/wiki/I2C_Registers#Device_3
-            mcuHwcExit();  
-            botStatus = (result >> 5) & 1; // right shift result to bit 5 ("Bottom screen backlight on") and perform bitwise AND with 1
-
-            svcKernelSetState(0x10000, 2); // unblock gsp
-            gspLcdInit();
-            if(botStatus)
-            {
-                GSPLCD_PowerOffBacklight(BIT(GSP_SCREEN_BOTTOM));
-            }
-            else
-            {
-                GSPLCD_PowerOnBacklight(BIT(GSP_SCREEN_BOTTOM));
-            }
-            gspLcdExit();
-            svcKernelSetState(0x10000, 2); // block gsp again
-            break;
         }
         
         Draw_Lock();

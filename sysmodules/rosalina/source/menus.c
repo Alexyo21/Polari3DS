@@ -47,17 +47,16 @@ Menu rosalinaMenu = {
     "Rosalina menu",
     {
         { "Screen filters", MENU, .menu = &screenFiltersMenu },
-        { "Take screenshot", METHOD, .method = &RosalinaMenu_TakeScreenshot },
-        { "Cheats...", METHOD, .method = &RosalinaMenu_Cheats },
+        { "Screenshot NFTs", METHOD, .method = &RosalinaMenu_TakeScreenshot },
+        { "Cheater", METHOD, .method = &RosalinaMenu_Cheats },
         { "", METHOD, .method = PluginLoader__MenuCallback},
         { "New 3DS settings:", MENU, .menu = &N3DSMenu, .visibility = &menuCheckN3ds },
         { "Quick-Switchers...", MENU, .menu = &quickSwitchersMenu },
-        { "Change screen brightness", METHOD, .method = &RosalinaMenu_ChangeScreenBrightness },
-        { "Process list", METHOD, .method = &RosalinaMenu_ProcessList },
+        { "Brightness...", METHOD, .method = &RosalinaMenu_ChangeScreenBrightness },
+        { "Process hacker", METHOD, .method = &RosalinaMenu_ProcessList },
         { "Debugger options...", MENU, .menu = &debuggerMenu },
-        { "Miscellaneous options...", MENU, .menu = &miscellaneousMenu },
-        { "Power off", METHOD, .method = &RosalinaMenu_PowerOff },
-        { "Reboot", METHOD, .method = &RosalinaMenu_Reboot },
+        { "Other...", MENU, .menu = &miscellaneousMenu },
+        { "Power options", METHOD, .method = &RosalinaMenu_PowerOff },
         { "Credits", METHOD, .method = &RosalinaMenu_ShowCredits },
         { "Debug info", METHOD, .method = &RosalinaMenu_ShowDebugInfo, .visibility = &rosalinaMenuShouldShowDebugInfo },
         { "System configuration...", MENU, .menu = &sysconfigMenu },
@@ -145,11 +144,12 @@ void RosalinaMenu_ShowCredits(void)
         Draw_Lock();
         Draw_DrawString(10, 10, COLOR_TITLE, "Rosalina -- Luma3DS credits");
 
-        u32 posY = Draw_DrawString(10, 30, COLOR_WHITE, "Luma3DS (c) 2016-2022 AuroraWright, TuxSH") + SPACING_Y;
+        u32 posY = Draw_DrawString(10, 30, COLOR_WHITE, "Luma3DS (c) 2016-2020 AuroraWright, TuxSH") + SPACING_Y;
 
         posY = Draw_DrawString(10, posY + SPACING_Y, COLOR_WHITE, "3DSX loading code by fincs");
         posY = Draw_DrawString(10, posY + SPACING_Y, COLOR_WHITE, "Networking code & basic GDB functionality by Stary");
         posY = Draw_DrawString(10, posY + SPACING_Y, COLOR_WHITE, "InputRedirection by Stary (PoC by ShinyQuagsire)");
+        posY = Draw_DrawString(10, posY + SPACING_Y, COLOR_WHITE, "Edited by cooolgamer using Luma Redshift as base");
 
         posY += 2 * SPACING_Y;
 
@@ -158,41 +158,14 @@ void RosalinaMenu_ShowCredits(void)
                 "Special thanks to:\n"
                 "  fincs, WinterMute, mtheall, piepie62,\n"
                 "  Luma3DS contributors, libctru contributors,\n"
-                "  other people"
+                "  other people,\n"
+                "  Devkitpro for fucking everything so I had to\n  fix every errors, coool huh?"
             ));
 
         Draw_FlushFramebuffer();
         Draw_Unlock();
     }
     while(!(waitInput() & KEY_B) && !menuShouldExit);
-}
-
-void RosalinaMenu_Reboot(void)
-{
-    Draw_Lock();
-    Draw_ClearFramebuffer();
-    Draw_FlushFramebuffer();
-    Draw_Unlock();
-
-    do
-    {
-        Draw_Lock();
-        Draw_DrawString(10, 10, COLOR_TITLE, "Reboot");
-        Draw_DrawString(10, 30, COLOR_WHITE, "Press A to reboot, press B to go back.");
-        Draw_FlushFramebuffer();
-        Draw_Unlock();
-
-        u32 pressed = waitInputWithTimeout(1000);
-
-        if(pressed & KEY_A)
-        {
-            menuLeave();
-            APT_HardwareResetAsync();
-            return;
-        } else if(pressed & KEY_B)
-            return;
-    }
-    while(!menuShouldExit);
 }
 
 void RosalinaMenu_ChangeScreenBrightness(void)
@@ -396,7 +369,7 @@ void RosalinaMenu_ChangeScreenBrightness(void)
     Draw_Unlock();
 }
 
-void RosalinaMenu_PowerOff(void) // Soft shutdown.
+void RosalinaMenu_PowerOff(void) // power options
 {
     Draw_Lock();
     Draw_ClearFramebuffer();
@@ -406,8 +379,11 @@ void RosalinaMenu_PowerOff(void) // Soft shutdown.
     do
     {
         Draw_Lock();
-        Draw_DrawString(10, 10, COLOR_TITLE, "Power off");
-        Draw_DrawString(10, 30, COLOR_WHITE, "Press A to power off, press B to go back.");
+        Draw_DrawString(10, 10, COLOR_TITLE, "Power options");
+        Draw_DrawString(10, 30, COLOR_YELLOW, "Press X to shutdown");
+        Draw_DrawString(10, 40, COLOR_YELLOW, "Press A to reboot");
+        Draw_DrawString(10, 50, COLOR_RED, "Press Y to force reboot");
+        Draw_DrawString(10, 60, COLOR_WHITE, "Press B to go back.");
         Draw_FlushFramebuffer();
         Draw_Unlock();
 
@@ -416,7 +392,19 @@ void RosalinaMenu_PowerOff(void) // Soft shutdown.
         if(pressed & KEY_A)
         {
             menuLeave();
+            APT_HardwareResetAsync();
+            return;
+        }
+        else if(pressed & KEY_X)
+        {
+            menuLeave();
             srvPublishToSubscriber(0x203, 0);
+            return;
+        }
+        else if(pressed & KEY_Y)
+        {
+            svcKernelSetState(7);
+            __builtin_unreachable();
             return;
         }
         else if(pressed & KEY_B)

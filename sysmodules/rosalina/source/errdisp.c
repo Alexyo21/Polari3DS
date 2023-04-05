@@ -66,7 +66,7 @@ static int ERRF_FormatError(char *out, ERRF_FatalErrInfo *info)
 {
     char *outStart = out;
     static const char *types[] = {
-        "generic", "corrupted", "card removed", "exception", "result failure", "logged", "invalid"
+        "generic (wow, so useful!)", "corrupted", "card removed (why)", "exception", "result failure", "logged (don't log out haha)", "invalid"
     };
 
     static const char *exceptionTypes[] = {
@@ -160,10 +160,10 @@ static int ERRF_FormatError(char *out, ERRF_FatalErrInfo *info)
     switch(info->type)
     {
         case ERRF_ERRTYPE_CARD_REMOVED:
-            desc = "The card was removed.";
+            desc = "The card was removed or the app is corrupted.";
             break;
         case ERRF_ERRTYPE_MEM_CORRUPT:
-            desc = "The System Memory has been damaged.";
+            desc = "The System Memory has been damaged (how).";
             break;
         case ERRF_ERRTYPE_FAILURE:
             info->data.failure_mesg[0x5F] = 0; // make sure the last byte in the IPC buffer is NULL
@@ -185,56 +185,17 @@ static void ERRF_DisplayError(ERRF_FatalErrInfo *info)
 {
     Draw_Lock();
 
-    u32 posY = Draw_DrawString(10, 10, COLOR_RED, userString[0] == 0 ? "An error occurred (ErrDisp)" : userString);
+    u32 posY = Draw_DrawString(10, 10, COLOR_RED, userString[0] == 0 ? "An error occurred (bruh)" : userString);
     char buf[0x400];
 
     ERRF_FormatError(buf, info);
     posY = posY < 30 ? 30 : posY;
 
     posY = Draw_DrawString(10, posY, COLOR_WHITE, buf);
-    posY = Draw_DrawString(10, posY + SPACING_Y, COLOR_WHITE, "Press any button to reboot.");
+    posY = Draw_DrawString(10, posY + SPACING_Y, COLOR_BLUE, "Press any button to continue.\nThere is a high chance that it crashed\nand that you can't power off normally.\nTo reboot, press A + B + X + Y + Start.");
 
     Draw_FlushFramebuffer();
     Draw_Unlock();
-}
-
-static Result ERRF_SaveErrorToFile(ERRF_FatalErrInfo *info)
-{
-    char buf[0x400];
-
-    FS_ArchiveID archiveId;
-    s64 out;
-    u64 size, total;
-    bool isSdMode;
-    int n = 0;
-    Result res = 0;
-    IFile file;
-
-    n = ERRF_FormatError(buf, info);
-    n += sprintf(buf + n, "-------------------------------------\n\n");
-
-    if(R_FAILED(svcGetSystemInfo(&out, 0x10000, 0x203))) svcBreak(USERBREAK_ASSERT);
-    isSdMode = (bool)out;
-
-    archiveId = isSdMode ? ARCHIVE_SDMC : ARCHIVE_NAND_RW;
-    res = IFile_Open(&file, archiveId, fsMakePath(PATH_EMPTY, ""), fsMakePath(PATH_ASCII, "/luma/errdisp.txt"), FS_OPEN_WRITE | FS_OPEN_CREATE);
-
-    if(R_FAILED(res))
-        return res;
-
-    res = IFile_GetSize(&file, &size);
-    if(R_FAILED(res))
-    {
-        IFile_Close(&file);
-        return res;
-    }
-
-    file.pos = size;
-
-    res = IFile_Write(&file, &total, buf, (u32)n, 0);
-    IFile_Close(&file);
-
-    return res;
 }
 
 void ERRF_HandleCommands(void)
@@ -247,7 +208,6 @@ void ERRF_HandleCommands(void)
         case 1: // Throw
         {
             ERRF_GetErrInfo(&info, (cmdbuf + 1), sizeof(ERRF_FatalErrInfo));
-            ERRF_SaveErrorToFile(&info);
             if(!menuShouldExit && (info.type != ERRF_ERRTYPE_LOGGED || info.procId == 0))
             {
                 menuEnter();
@@ -259,15 +219,13 @@ void ERRF_HandleCommands(void)
                 ERRF_DisplayError(&info);
 
                 /*
-                If we ever wanted to return:
-                Draw_Unlock();
-                menuLeave();
-
-                but we don't
-                */
-                waitInput();
+                If we ever don't wanted to return:
                 svcKernelSetState(7);
                 __builtin_unreachable();
+                */
+                waitInput();
+                Draw_Unlock();
+                menuLeave();
             }
 
             cmdbuf[0] = IPC_MakeHeader(1, 1, 0);

@@ -225,7 +225,11 @@ void Redshift_EditableFilter(u8 filterNo)
 		{
             menuToggleLeds();
 		}
-        
+
+        if (kDown & (KEY_Y))
+		{
+            menuMakeLedDabadeedabada();
+		}
         if(kDown & KEY_DOWN)
         {
             if(++sel > 4) sel = 4;

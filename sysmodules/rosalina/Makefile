@@ -29,7 +29,7 @@ ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 DEFINES :=	-D__3DS__
 
 FALSEPOSITIVES := -Wno-array-bounds -Wno-stringop-overflow -Wno-stringop-overread
-CFLAGS	:=	-g -std=gnu11 -Wall -Wextra -Werror -Wno-unused-value -Os -mword-relocations \
+CFLAGS	:=	-g -std=gnu11 -Wall -Wextra -Wno-unused-value -Os -mword-relocations \
 			-fomit-frame-pointer -ffunction-sections -fdata-sections -fno-math-errno \
 			$(FALSEPOSITIVES) $(ARCH) $(DEFINES)
 
