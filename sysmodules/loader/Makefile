@@ -28,7 +28,7 @@ INCLUDES	:=	include
 ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 DEFINES :=	-D__3DS__
 
-COMMON_FLAGS = -g -Wall -Wextra -Werror -O2 -mword-relocations \
+COMMON_FLAGS = -g -Wall -Wextra -O2 -mword-relocations \
 			-fomit-frame-pointer -ffunction-sections -fdata-sections \
 			$(ARCH) $(DEFINES) $(INCLUDE)
 
