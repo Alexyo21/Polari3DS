@@ -68,7 +68,7 @@ static bool checkExceptionHandlerValidity(KProcess *process, vu32 *threadLocalSt
 
 bool isExceptionFatal(u32 spsr, u32 *regs, u32 index)
 {
-    if(CONFIG(DISABLEARM11EXCHANDLERS)) return false;
+//    if(CONFIG(DISABLEARM11EXCHANDLERS)) return false; // Shouldn't be a thing
 
     if((spsr & 0x1F) != 0x10) return true;
 
