@@ -6,7 +6,7 @@
 - Changed some text and colors cuz why not,
 - Instant reboot: most useful feature, Press A + B +X + Y + Start to instantly reboot the console,
 - Toggle bottom screen anywhere: inspired by thirdtube, press Start + Select to toggle bottom screen (may glitch but hey it works),
-- Power options menu containing power off and reboot options here,
+- Power off and reboot are now in a Power options menu (don't know why that wasn't already the case),
 - Workaround for toggle led in low battery, press Y in rosalina menu to make it blue so it can be turned off,
 - Errdisp doesn't reboot the console, so you can experiment playing games and remove cart/sd card for fun,
 - Oh yeah brightness is broken, don't go way down while changing brightness in rosalina menu or it'll set it very high (won't break the screen don't worry)
