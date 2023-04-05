@@ -85,10 +85,10 @@ void detectAndProcessExceptionDumps(void)
 
     initScreens();
 
-    drawString(true, 10, 10, COLOR_RED, "An exception occurred");
+    drawString(true, 10, 10, COLOR_BLUE, "Your 3DS ran into a problem and needs to restart");
     u32 posY;
     if(dumpHeader->processor == 11) posY = drawFormattedString(true, 10, 30, COLOR_WHITE, "Processor:       Arm11 (core %u)", dumpHeader->core);
-    else posY = drawString(true, 10, 30, COLOR_WHITE, "Processor:       Arm9");
+    else posY = drawString(true, 10, 30, COLOR_WHITE, "Processor:       Arm9 (gg)");
 
     if(dumpHeader->type == 2)
     {
@@ -159,7 +159,7 @@ void detectAndProcessExceptionDumps(void)
     if(dumpHeader->type == 3 && (mode == 7 || mode == 11))
         posY = drawString(true, 10, posY + SPACING_Y, COLOR_YELLOW, "Incorrect dump: failed to dump code and/or stack") + SPACING_Y;
 
-    u32 posYBottom = drawString(false, 10, 10, COLOR_WHITE, "Stack dump:") + SPACING_Y;
+    u32 posYBottom = drawString(false, 10, 10, COLOR_WHITE, "not enough mess? here is more:") + SPACING_Y;
 
     for(u32 line = 0; line < 19 && stackDump < additionalData; line++)
     {
@@ -169,9 +169,9 @@ void detectAndProcessExceptionDumps(void)
             drawFormattedString(false, 10 + 10 * SPACING_X + 3 * i * SPACING_X, posYBottom, COLOR_WHITE, "%02X", *stackDump);
     }
 
-    static const char *choiceMessage[] = {"Press A to save the crash dump", "Press any other button to shutdown"};
+    static const char *choiceMessage[] = {"Press A to catch the pokecrashdump", "Press any other button to shutdown"};
 
-    drawString(true, 10, posY + SPACING_Y, COLOR_WHITE, choiceMessage[0]);
+    drawString(true, 10, posY + SPACING_Y, COLOR_YELLOW, choiceMessage[0]);
     drawString(true, 10, posY + SPACING_Y + SPACING_Y , COLOR_WHITE, choiceMessage[1]);
 
     if(waitInput(false) != BUTTON_A) goto exit;
@@ -189,7 +189,7 @@ void detectAndProcessExceptionDumps(void)
 
     if(fileWrite((void *)dumpHeader, path, dumpHeader->totalSize))
     {
-        posY = drawString(true, 10, posY + SPACING_Y, COLOR_WHITE, "You can find the dump in the following file:");
+        posY = drawString(true, 10, posY + SPACING_Y, COLOR_YELLOW, "Congrats! You catched your pokecrashdump here:");
         posY = drawFormattedString(true, 10, posY + SPACING_Y, COLOR_WHITE, "%s:/luma/%s", isSdMode ? "SD" : "CTRNAND", path) + SPACING_Y;
     }
     else posY = drawString(true, 10, posY + SPACING_Y, COLOR_RED, "Error writing the dump file");

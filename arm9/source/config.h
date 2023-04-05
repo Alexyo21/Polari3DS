@@ -32,7 +32,7 @@
 #define MULTICONFIG(a)   ((configData.multiConfig >> (2 * (a))) & 3)
 #define BOOTCONFIG(a, b) ((configData.bootConfig >> (a)) & (b))
 
-#define CONFIG_FILE         "config.bin"
+#define CONFIG_FILE         "cooolconfig.bin"
 #define CONFIG_VERSIONMAJOR 2
 #define CONFIG_VERSIONMINOR 4
 
@@ -60,7 +60,7 @@ enum singleOptions
     PATCHVERSTRING,
     SHOWGBABOOT,
     PATCHUNITINFO,
-    DISABLEARM11EXCHANDLERS,
+    CUTSLEEPWIFI,
     ENABLESAFEFIRMROSALINA,
 };
 

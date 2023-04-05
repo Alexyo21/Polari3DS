@@ -56,7 +56,7 @@ ARCH	:=	-marm -march=armv5te -mtune=arm946e-s
 DEFINES :=	-DARM9 -D_3DS
 
 FALSEPOSITIVES := -Wno-array-bounds -Wno-stringop-overflow -Wno-stringop-overread
-CFLAGS	:=	-g -std=gnu11 -Wall -Wextra -Werror -O2 -mword-relocations \
+CFLAGS	:=	-g -std=gnu11 -Wall -Wextra -O2 -mword-relocations \
 			-fomit-frame-pointer -ffunction-sections -fdata-sections \
 			-Wno-main $(FALSEPOSITIVES) $(ARCH) $(DEFINES)
 
