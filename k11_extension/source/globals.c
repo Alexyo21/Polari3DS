@@ -131,6 +131,8 @@ vu32 rosalinaState;
 bool hasStartedRosalinaNetworkFuncsOnce;
 KEvent* signalPluginEvent = NULL;
 
+u32 pidOffsetKProcess, hwInfoOffsetKProcess, codeSetOffsetKProcess, handleTableOffsetKProcess, debugOffsetKProcess;
+
 KLinkedList*    KLinkedList__Initialize(KLinkedList *list)
 {
     list->size = 0;
