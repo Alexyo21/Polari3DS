@@ -45,7 +45,7 @@ typedef union {
 static u16 g_c[0x600];
 static Pixel g_px[0x400];
 
-int screenFiltersCurrentTemperature = -1;
+int screenFiltersCurrentTemperature = 6500;
 
 // from redshift.c
 extern bool redshiftFilterSelected;
@@ -95,7 +95,7 @@ static void ScreenFiltersMenu_ApplyColorSettings(color_setting_t* cs)
     ScreenFiltersMenu_WriteLut(g_px);
 }
 
-static void ScreenFiltersMenu_SetCct(int cct)
+bool ScreenFiltersMenu_SetCct(int cct)
 {
     redshiftFilterSelected = false;
 
@@ -109,6 +109,7 @@ static void ScreenFiltersMenu_SetCct(int cct)
     cs.brightness = 1.0F;*/
 
     ScreenFiltersMenu_ApplyColorSettings(&cs);
+    screenFiltersCurrentTemperature = cct;
 }
 
 Menu screenFiltersMenu = {
@@ -135,7 +136,6 @@ Menu screenFiltersMenu = {
 #define DEF_CCT_SETTER(temp, name)\
 void ScreenFiltersMenu_Set##name(void)\
 {\
-    screenFiltersCurrentTemperature = temp;\
     ScreenFiltersMenu_SetCct(temp);\
     Redshift_UpdateNightLightStatuses();\
     return;\
@@ -143,7 +143,7 @@ void ScreenFiltersMenu_Set##name(void)\
 
 bool ScreenFiltersMenu_RestoreCct(void)
 {
-    if (screenFiltersCurrentTemperature != -1 || redshiftFilterSelected)
+    if (screenFiltersCurrentTemperature != 6500 || redshiftFilterSelected)
     {
     // Wait for GSP to restore the CCT table
     while (GPU_FB_TOP_COL_LUT_ELEM != g_px[0].raw)
