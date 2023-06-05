@@ -93,6 +93,9 @@ void initSystem(void)
 
     svcGetSystemInfo(&out, 0x10000, 0x101);
     menuCombo = out == 0 ? DEFAULT_MENU_COMBO : (u32)out;
+    
+    svcGetSystemInfo(&out, 0x10000, 0x103);
+    lastNtpTzOffset = (s16)out;
 
     miscellaneousMenu.items[0].title = Luma_SharedConfig->hbldr_3dsx_tid == HBLDR_DEFAULT_3DSX_TID ?
         "Switch the hb. title to the current app." :
