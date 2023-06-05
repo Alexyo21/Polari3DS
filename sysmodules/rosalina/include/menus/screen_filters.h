@@ -34,6 +34,7 @@ extern Menu screenFiltersMenu;
 extern int screenFiltersCurrentTemperature;
 extern bool customFilterSelected;
 
+bool ScreenFiltersMenu_SetCct(int cct);
 bool ScreenFiltersMenu_RestoreCct(void);
 void ScreenFiltersMenu_RedshiftFilter(void);
 void ScreenFiltersMenu_LightshiftFilter(void);
