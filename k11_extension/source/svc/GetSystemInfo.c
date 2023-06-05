@@ -58,6 +58,9 @@ Result GetSystemInfoHook(s64 *out, s32 type, s32 param)
                     *out = cfwInfo.bootConfig;
                     break;
                 case 6:
+                    *out = cfwInfo.splashDurationMsec;
+                    break;
+                case 6:
                     *out = fcramDescriptor->appRegion.regionSizeInBytes;
                     break;
                 case 0x100:
@@ -65,6 +68,12 @@ Result GetSystemInfoHook(s64 *out, s32 type, s32 param)
                     break;
                 case 0x101:
                     *out = cfwInfo.rosalinaMenuCombo;
+                    break;
+                case 0x102:
+                    *out = cfwInfo.screenFiltersCct;
+                    break;
+                case 0x103:
+                    *out = (s64)cfwInfo.ntpTzOffetMinutes;
                     break;
                 case 0x102:
                     *out = cfwInfo.rosalinaFlags;
