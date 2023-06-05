@@ -38,4 +38,3 @@ void buildAlteredSvcTable(void);
 
 void postprocessSvc(void);
 void svcDefaultHandler(u8 svcId);
-void *svcHook(u8 *pageEnd);
