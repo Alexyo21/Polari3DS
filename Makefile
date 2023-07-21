@@ -40,7 +40,7 @@ boot.firm:	$(SUBFOLDERS)
 	@echo built... $(notdir $@)
 
 boot.3dsx:
-	@curl -sSfLO "https://github.com/fincs/new-hbmenu/releases/latest/download/$@"
+	@curl -sSfLO "https://github.com/Alexyo21/the-pirate-launcher/releases/latest/download/$@"
 	@echo downloaded... $(notdir $@)
 
 $(SUBFOLDERS):
