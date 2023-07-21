@@ -1,6 +1,6 @@
 /*
 *   This file is part of Luma3DS
-*   Copyright (C) 2016-2020 Aurora Wright, TuxSH
+*   Copyright (C) 2016-2023 Aurora Wright, TuxSH
 *
 *   This program is free software: you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -24,10 +24,9 @@
 *         reasonable ways as different from the original version.
 */
 
-#pragma once
-
 #include "utils.h"
 #include "kernel.h"
 #include "svc.h"
 
-Result UnmapProcessMemoryEx(Handle processHandle, void *dst, u32 size);
+Result CreateThreadHookWrapper(Handle *outThreadHandle, u32 ep, u32 arg, u32 stackTop, s32 priority, s32 processorId);
+Result CreateThreadHook(Handle *outThreadHandle, u32 ep, u32 arg, u32 stackTop, s32 priority, s32 processorId);

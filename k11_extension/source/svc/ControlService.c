@@ -73,7 +73,6 @@ Result ControlService(ServiceOp op, u32 varg1, u32 varg2)
         {
             char name[12] = { 0 };
             SessionInfo *info = NULL;
-            // fix the "if" always True
             s32 nb = usrToKernelStrncpy(name, (const char *)varg2, 12);
             if(nb < 0)
                 return 0xD9001814;

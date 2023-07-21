@@ -62,6 +62,7 @@ void (*KLinkedList_KBlockInfo__Clear)(KLinkedList *list);
 Result (*ControlMemory)(u32 *addrOut, u32 addr0, u32 addr1, u32 size, MemOp op, MemPerm perm, bool isLoader);
 Result (*doControlMemory)(KProcessHwInfo *this, u32 addr, u32 requestedNbPages, u32 pa, u32 state, u32 perm, u32 a7, u32 region);
 
+Result (*CreateThread)(Handle *outThreadHandle, u32 ep, u32 arg, u32 stackTop, s32 priority, s32 processorId);
 void (*SleepThread)(s64 ns);
 Result (*CreateEvent)(Handle *out, ResetType resetType);
 Result (*CloseHandle)(Handle handle);
@@ -126,12 +127,12 @@ void* (*kAlloc)(FcramDescriptor *fcramDesc, u32 nbPages, u32 alignment, u32 regi
 CfwInfo cfwInfo;
 u32 kextBasePa;
 u32 stolenSystemMemRegionSize;
+bool disableThreadRedirection = false;
 
 vu32 rosalinaState;
 bool hasStartedRosalinaNetworkFuncsOnce;
 KEvent* signalPluginEvent = NULL;
-
-u32 pidOffsetKProcess, hwInfoOffsetKProcess, codeSetOffsetKProcess, handleTableOffsetKProcess, debugOffsetKProcess;
+u32 pidOffsetKProcess, hwInfoOffsetKProcess, codeSetOffsetKProcess, handleTableOffsetKProcess, debugOffsetKProcess, flagsKProcess;
 
 KLinkedList*    KLinkedList__Initialize(KLinkedList *list)
 {
@@ -181,3 +182,4 @@ u32      PLG_GetStatus(void)
 {
     return (*(vu32 *)PA_FROM_VA_PTR((u32 *)0x1FF800F0)) & 0xFFFF;
 }
+

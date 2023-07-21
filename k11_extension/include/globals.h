@@ -63,6 +63,7 @@ extern void (*KLinkedList_KBlockInfo__Clear)(KLinkedList *list);
 
 extern Result (*ControlMemory)(u32 *addrOut, u32 addr0, u32 addr1, u32 size, MemOp op, MemPerm perm, bool isLoader);
 extern Result (*doControlMemory)(KProcessHwInfo *this, u32 addr, u32 requestedNbPages, u32 pa, u32 state, u32 perm, u32 a7, u32 region);
+extern Result (*CreateThread)(Handle *outThreadHandle, u32 ep, u32 arg, u32 stackTop, s32 priority, s32 processorId);
 extern void (*SleepThread)(s64 ns);
 extern Result (*CreateEvent)(Handle *out, ResetType resetType);
 extern Result (*CloseHandle)(Handle handle);
@@ -127,6 +128,14 @@ extern void  (*mcuReboot)(void);
 extern void  (*coreBarrier)(void);
 extern void* (*kAlloc)(FcramDescriptor *fcramDesc, u32 nbPages, u32 alignment, u32 region);
 
+typedef struct ScreenFiltersCfgData {
+    u16 cct;
+    bool invert;
+    s64 gammaEnc;
+    s64 contrastEnc;
+    s64 brightnessEnc;
+} ScreenFiltersCfgData;
+
 typedef struct CfwInfo
 {
     char magic[4];
@@ -143,14 +152,22 @@ typedef struct CfwInfo
     u32 splashDurationMsec;
     u64 hbldr3dsxTitleId;
     u32 rosalinaMenuCombo;
-    u16 screenFiltersCct;
+    u32 pluginLoaderFlags;
     s16 ntpTzOffetMinutes;
-    u32 rosalinaFlags;
+
+    ScreenFiltersCfgData topScreenFilter;
+    ScreenFiltersCfgData bottomScreenFilter;
+
+    u64 autobootTwlTitleId;
+    u8 autobootCtrAppmemtype;
+
+    u16 launchedPath[80+1];
 } CfwInfo;
 
 extern CfwInfo cfwInfo;
 extern u32 kextBasePa;
 extern u32 stolenSystemMemRegionSize;
+extern bool disableThreadRedirection;
 
 extern vu32 rosalinaState;
 extern bool hasStartedRosalinaNetworkFuncsOnce;
@@ -160,9 +177,10 @@ typedef enum
 {
     PLG_CFG_NONE = 0,
     PLG_CFG_RUNNING = 1,
-    PLG_CFG_SWAPPED = 2,
+    PLG_CFG_INHOME = 2,
+    PLG_CFG_EXITING = 3,
 
-    PLG_CFG_SWAP_EVENT = 1 << 16,
+    PLG_CFG_HOME_EVENT = 1 << 16,
     PLG_CFG_EXIT_EVENT = 2 << 16
 }   PLG_CFG_STATUS;
 

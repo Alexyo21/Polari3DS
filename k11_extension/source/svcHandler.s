@@ -24,7 +24,7 @@
 
 .text
 .arm
-.balign 4
+.align 5
 
 .global svcHandler
 .type   svcHandler, %function
@@ -45,14 +45,6 @@ svcHandler:
 
     ldr r8, =alteredSvcTable
     ldr r8, [r8, r9,lsl#2]
-    /*@ sp = page end - 0x110
-    add r0, sp, #0x110       @ page end
-    bl svcHook
-    cpsid i
-    mov r8, r0
-    ldmfd sp, {r0-r7, r12, lr}
-    */
-    
     cmp r8, #0
     beq _fallback            @ invalid svc, or svc 0xff (stop point)
 
@@ -85,7 +77,7 @@ svcHandler:
     add sp, #4
 
     ldr r10, =svcSignalingEnabled @ should work, I guess
-    ldr r10, [r10]
+    ldrb r10, [r10]
     cmp r10, #0
     bne _signal_svc_end @ returns to _no_signal_return
 
@@ -119,7 +111,7 @@ svcHandler:
         popne {r0-r7, r12}
         add sp, #4
         b _svc_finished
-        
+
 _call_svc_debugged:
     push {r0-r3, r12, lr}
     mov r0, r9

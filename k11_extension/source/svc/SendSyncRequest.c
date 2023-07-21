@@ -126,6 +126,12 @@ Result SendSyncRequestHook(Handle handle)
                             outClientSession->syncObject.autoObject.vtable->DecrementReferenceCount(&outClientSession->syncObject.autoObject);
                         }
                     }
+                    else
+                    {
+                        // Prior to 11.0 kernel didn't zero-initialize output handles, and thus
+                        // you could accidentaly close things like the KAddressArbiter handle by mistake...
+                        cmdbuf[3] = 0;
+                    }
                 }
 
                 break;
@@ -173,9 +179,6 @@ Result SendSyncRequestHook(Handle handle)
 
             case 0x00D0080: // APT:ReceiveParameter
             {
-                if (isN3DS) ///< N3DS do not need the swap system
-                    break;
-
                 SessionInfo *info = SessionInfo_Lookup(clientSession->parentSession);
 
                 if (info != NULL && strncmp(info->name, "APT:", 4) == 0 && cmdbuf[1] == 0x300)
@@ -189,8 +192,8 @@ Result SendSyncRequestHook(Handle handle)
                         u32 command = cmdbuf[3];
 
                         if ((plgStatus == PLG_CFG_RUNNING && command == 3) // COMMAND_RESPONSE
-                        || (plgStatus == PLG_CFG_SWAPPED && (command >= 10 || command <= 12)))  // COMMAND_WAKEUP_BY_EXIT || COMMAND_WAKEUP_BY_PAUSE
-                            PLG_SignalEvent(PLG_CFG_SWAP_EVENT);
+                        || (plgStatus == PLG_CFG_INHOME && (command >= 10 || command <= 12)))  // COMMAND_WAKEUP_BY_EXIT || COMMAND_WAKEUP_BY_PAUSE
+                            PLG_SignalEvent(PLG_CFG_HOME_EVENT);
                     }
                 }
                 break;
@@ -248,40 +251,6 @@ Result SendSyncRequestHook(Handle handle)
                     skip = doLangEmu(&res, cmdbuf);
 
                 break;
-            }
-
-            case 0x08030204:
-            {
-               SessionInfo* info = SessionInfo_Lookup(clientSession->parentSession); // OpenFileDirectly
-               if (!(info != NULL && strcmp(info->name, "fs:USER") == 0))
-                  break;
-
-               if (strcmp((char*)(cmdbuf[12] + 12), "logo") != 0)
-                  break;
-
-               static const char* sdPath = "/luma/logo.bin";
-
-               u32 origBuf[12];
-               memcpy(origBuf, cmdbuf, 12 * sizeof(u32));
-               char origPath[0x14];
-               memcpy(origPath, (char*)cmdbuf[12], 0x14);
-
-               cmdbuf[2] = 9; // ArchiveId to SDMC
-               cmdbuf[3] = 1; // ArchivePathType to EMPTY
-               cmdbuf[5] = 3; // FilePathType to ASCII
-               strcpy((char*)cmdbuf[12], sdPath); // Replace FilePathData
-
-               res = SendSyncRequest(handle);
-               if (cmdbuf[1] != 0) { // File doesn't exist, restore original parameters
-                  memcpy(cmdbuf, origBuf, 12 * sizeof(u32));
-                  memcpy((char*)cmdbuf[12], origPath, 0x14);
-                  skip = false;
-               }
-               else {
-                  skip = true;
-               }
-
-               break;
             }
         }
     }
