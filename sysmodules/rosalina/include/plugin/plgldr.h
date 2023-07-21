@@ -10,7 +10,7 @@
 typedef struct
 {
     bool    noFlash;
-    bool    noIRPatch;
+    u8      pluginMemoryStrategy;
     u32     lowTitleId;
     char    path[256];
     u32     config[32];
@@ -33,7 +33,16 @@ typedef enum
     PLG_SLEEP_EXIT = 2,
     PLG_ABOUT_TO_SWAP = 3,
     PLG_ABOUT_TO_EXIT = 4,
+    PLG_HOME_ENTER = 5,
+    PLG_HOME_EXIT = 6,
 }   PLG_Event;
+
+typedef enum
+{
+    PLG_STRATEGY_NONE = 2,
+    PLG_STRATEGY_SWAP = 0,
+    PLG_STRATEGY_MODE3 = 1
+} PluginMemoryStrategy;
 
 typedef struct
 {
@@ -45,7 +54,9 @@ typedef struct
     u32             isDefaultPlugin;
     s32*            plgldrEvent; ///< Used for synchronization
     s32*            plgldrReply; ///< Used for synchronization
-    u32             reserved[24];
+    u8              notifyHomeEvent;
+    u8              padding[3];
+    u32             reserved[23];
     u32             config[32];
 }   PluginHeader;
 
@@ -60,8 +71,8 @@ Result  PLGLDR__DisplayMenu(PluginMenu *menu);
 Result  PLGLDR__DisplayMessage(const char *title, const char *body);
 Result  PLGLDR__DisplayErrMessage(const char *title, const char *body, u32 error);
 Result  PLGLDR__SetRosalinaMenuBlock(bool shouldBlock);
-Result  PLGLDR__SetSwapSettings(char* swapPath, void* encFunc, void* decFunc, void* args);
-Result  PLGLDR__SetExeDecSettings(void* decFunc, void* args);
+Result  PLGLDR__SetSwapSettings(char* swapPath, void* saveFunc, void* loadFunc, void* args);
+Result  PLGLDR__SetExeLoadSettings(void* loadFunc, void* args);
 Result  PLGLDR__GetVersion(u32 *version);
 void    PLGLDR__SetEventCallback(OnPlgLdrEventCb_t cb);
 void    PLGLDR__Status(void);

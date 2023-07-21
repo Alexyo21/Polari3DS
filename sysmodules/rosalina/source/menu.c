@@ -1,6 +1,6 @@
 /*
 *   This file is part of Luma3DS
-*   Copyright (C) 2016-2020 Aurora Wright, TuxSH
+*   Copyright (C) 2016-2022 Aurora Wright, TuxSH
 *
 *   This program is free software: you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -32,40 +32,29 @@
 #include "ifile.h"
 #include "menus.h"
 #include "utils.h"
+#include "luma_config.h"
 #include "menus/n3ds.h"
 #include "menus/cheats.h"
-#include "menus/quick_switchers.h"
-#include "menus/sysconfig.h"
 #include "minisoc.h"
-#include "menus/screen_filters.h"
 #include "plugin.h"
+#include "menus/screen_filters.h"
+#include "shell.h"
+#include "menus/quick_switchers.h"
 #include "volume.h"
-#include "redshift/redshift.h"
 
 u32 menuCombo = 0;
 bool isHidInitialized = false;
-bool rosalinaOpen = false;
 u32 mcuFwVersion = 0;
 
 void menuToggleLeds(void)
 {          
-    // toggle LEDs
-    mcuHwcInit();
-    u8 result;
-    MCUHWC_ReadRegister(0x28, &result, 1);
-    result = ~result;
-    MCUHWC_WriteRegister(0x28, &result, 1);
-    mcuHwcExit();
-}
-
-void menuMakeLedDabadeedabada(void)
-{
-    // Do shit with LEDs
-    mcuHwcInit();
-    u8 result;
-    result = 1;
-    MCUHWC_WriteRegister(0x29, &result, 1);
-    mcuHwcExit();
+        // toggle LEDs
+        mcuHwcInit();
+        u8 result;
+        MCUHWC_ReadRegister(0x28, &result, 1);
+        result = ~result;
+        MCUHWC_WriteRegister(0x28, &result, 1);
+        mcuHwcExit();
 }
 
 // libctru redefinition:
@@ -101,6 +90,33 @@ u32 waitInputWithTimeout(s32 msec)
 
         hidScanInput();
         keys = convertHidKeys(hidKeysDown()) | (convertHidKeys(hidKeysDownRepeat()) & DIRECTIONAL_KEYS);
+        Draw_Unlock();
+    } while (keys == 0 && !menuShouldExit && isHidInitialized && (msec < 0 || n < msec));
+
+
+    return keys;
+}
+
+u32 waitInputWithTimeoutEx(u32 *outHeldKeys, s32 msec)
+{
+    s32 n = 0;
+    u32 keys;
+
+    do
+    {
+        svcSleepThread(1 * 1000 * 1000LL);
+        Draw_Lock();
+        if (!isHidInitialized || menuShouldExit)
+        {
+            keys = 0;
+            Draw_Unlock();
+            break;
+        }
+        n++;
+
+        hidScanInput();
+        keys = convertHidKeys(hidKeysDown()) | (convertHidKeys(hidKeysDownRepeat()) & DIRECTIONAL_KEYS);
+        *outHeldKeys = convertHidKeys(hidKeysHeld());
         Draw_Unlock();
     } while (keys == 0 && !menuShouldExit && isHidInitialized && (msec < 0 || n < msec));
 
@@ -173,8 +189,6 @@ u32 waitCombo(void)
 static MyThread menuThread;
 static u8 ALIGN(8) menuThreadStack[0x3000];
 
-static u32 homeBtnPressed = 0;
-
 static float batteryPercentage;
 static float batteryVoltage;
 static u8 batteryTemperature;
@@ -190,8 +204,14 @@ static Result menuUpdateMcuInfo(void)
     if (!isServiceUsable("mcu::HWC"))
         return -1;
 
-    res = mcuHwcInit();
+    Handle *mcuHwcHandlePtr = mcuHwcGetSessionHandle();
+    *mcuHwcHandlePtr = 0;
+
+    res = srvGetServiceHandle(mcuHwcHandlePtr, "mcu::HWC");
+    // Try to steal the handle if some other process is using the service (custom SVC)
     if (R_FAILED(res))
+        res = svcControlService(SERVICEOP_STEAL_CLIENT_SESSION, mcuHwcHandlePtr, "mcu::HWC");
+    if (res != 0)
         return res;
 
     // Read single-byte mcu regs 0x0A to 0x0D directly
@@ -207,7 +227,7 @@ static Result menuUpdateMcuInfo(void)
         batteryPercentage = (u32)((batteryPercentage + 0.05f) * 10.0f) / 10.0f;
 
         // Round battery voltage to 0.01V
-        batteryVoltage = (5u * data[3]) / 256.0f;
+        batteryVoltage = 0.02f * data[3];
         batteryVoltage = (u32)((batteryVoltage + 0.005f) * 100.0f) / 100.0f;
     }
 
@@ -221,13 +241,13 @@ static Result menuUpdateMcuInfo(void)
         // If it has failed, mcuFwVersion will be set to 0 again
         mcuFwVersion = SYSTEM_VERSION(major - 0x10, minor, 0);
     }
-
+    
     // https://www.3dbrew.org/wiki/I2C_Registers#Device_3
     MCUHWC_ReadRegister(0x58, dspVolumeSlider, 2); // Register-mapped ADC register
     MCUHWC_ReadRegister(0x27, volumeSlider + 0, 1); // Raw volume slider state
     MCUHWC_ReadRegister(0x09, volumeSlider + 1, 1); // Volume slider state
 
-    mcuHwcExit();
+    svcCloseHandle(*mcuHwcHandlePtr);
     return res;
 }
 
@@ -263,28 +283,17 @@ MyThread *menuCreateThread(void)
 u32 menuCombo;
 u32 g_blockMenuOpen = 0;
 
-u32     DispWarningOnHome(void);
-
 void menuThreadMain(void)
 {
     if(isN3DS)
         N3DSMenu_UpdateStatus();
-
-    QuickSwitchers_UpdateStatuses();
-    SysConfigMenu_UpdateRehidFolderStatus();
-
-    while (!isServiceUsable("ac:u") || !isServiceUsable("hid:USER"))
-        svcSleepThread(500 * 1000 * 1000LL);
     
-    s64 out;
-    svcGetSystemInfo(&out, 0x10000, 0x102);
-    screenFiltersCurrentTemperature = (int)(u32)out;
-    if (screenFiltersCurrentTemperature < 1000 || screenFiltersCurrentTemperature > 25100)
-        screenFiltersCurrentTemperature = 6500;
+    QuickSwitchers_UpdateStatuses();
 
-    // Careful about race conditions here
-    if (screenFiltersCurrentTemperature != 6500)
-        ScreenFiltersMenu_SetCct(screenFiltersCurrentTemperature);
+    while (!isServiceUsable("ac:u") || !isServiceUsable("hid:USER") || !isServiceUsable("gsp::Gpu") || !isServiceUsable("cdc:CHK"))
+        svcSleepThread(250 * 1000 * 1000LL);
+
+    handleShellOpened();
 
     hidInit(); // assume this doesn't fail
     isHidInitialized = true;
@@ -297,66 +306,20 @@ void menuThreadMain(void)
 
         Cheat_ApplyCheats();
 
-        if(((scanHeldKeys() & menuCombo) == menuCombo) && !rosalinaOpen && !g_blockMenuOpen)
+        if(((scanHeldKeys() & menuCombo) == menuCombo) && !g_blockMenuOpen)
         {
-            openRosalina();
+            menuEnter();
+            if(isN3DS) N3DSMenu_UpdateStatus();
+            PluginLoader__UpdateMenu();
+            menuShow(&rosalinaMenu);
+            menuLeave();
         }
 
-        // force reboot combo key
-        if(((scanHeldKeys() & (KEY_A | KEY_B | KEY_X | KEY_Y | KEY_START)) == (KEY_A | KEY_B | KEY_X | KEY_Y | KEY_START)))
-        {
-            svcKernelSetState(7);
-            __builtin_unreachable();
-        }
-
-        // toggle bottom screen combo
-        if(((scanHeldKeys() & (KEY_SELECT | KEY_START)) == (KEY_SELECT | KEY_START)))
-        {
-            u8 result, botStatus;
-            mcuHwcInit();
-            MCUHWC_ReadRegister(0x0F, &result, 1); // https://www.3dbrew.org/wiki/I2C_Registers#Device_3
-            mcuHwcExit();  
-            botStatus = (result >> 5) & 1; // right shift result to bit 5 ("Bottom screen backlight on") and perform bitwise AND with 1
-
-            gspLcdInit();
-            if(botStatus)
-            {
-                GSPLCD_PowerOffBacklight(BIT(GSP_SCREEN_BOTTOM));
-            }
-            else
-            {
-                GSPLCD_PowerOnBacklight(BIT(GSP_SCREEN_BOTTOM));
-            }
-            gspLcdExit();
-            while (scanHeldKeys() & (KEY_SELECT | KEY_START));
-        }
-
-        // Check for home button on O3DS Mode3 with plugin loaded
-        if (homeBtnPressed != 0)
-        {
-            if (DispWarningOnHome())
-                svcKernelSetState(7); ///< reboot is fine since exiting a mode3 game reboot anyway
-
-            homeBtnPressed = 0;
+        if (saveSettingsRequest) {
+            LumaConfig_SaveSettings();
+            saveSettingsRequest = false;
         }
     }
-}
-
-void openRosalina(void)
-{
-    rosalinaOpen = true;
-    menuEnter();
-    if(isN3DS) {
-        N3DSMenu_UpdateStatus();
-        N3DSMenu_CheckForConfigFile();
-    }
-
-    nightLightSettingsRead = Redshift_ReadNightLightSettings();
-    Redshift_UpdateNightLightStatuses();
-    PluginLoader__UpdateMenu();
-    menuShow(&rosalinaMenu);
-    menuLeave();
-    rosalinaOpen = false;
 }
 
 static s32 menuRefCount = 0;
@@ -419,7 +382,6 @@ static void menuDraw(Menu *menu, u32 selected)
         sprintf(versionString, "v%lu.%lu.%lu", GET_VERSION_MAJOR(version), GET_VERSION_MINOR(version), GET_VERSION_REVISION(version));
 
     Draw_DrawString(10, 10, COLOR_TITLE, menu->title);
-    
     u32 numItems = menuCountItems(menu);
     u32 dispY = 0;
 
@@ -444,7 +406,7 @@ static void menuDraw(Menu *menu, u32 selected)
     else
         Draw_DrawFormattedString(SCREEN_BOT_WIDTH - 10 - SPACING_X * 15, 10, COLOR_WHITE, "%15s", "");
 
-    if(R_SUCCEEDED(mcuInfoRes))
+    if(mcuInfoRes == 0)
     {
         u32 voltageInt = (u32)batteryVoltage;
         u32 voltageFrac = (u32)(batteryVoltage * 100.0f) % 100u;
@@ -458,19 +420,12 @@ static void menuDraw(Menu *menu, u32 selected)
             percentageInt, percentageFrac
         );
         Draw_DrawString(SCREEN_BOT_WIDTH - 10 - SPACING_X * n, SCREEN_BOT_HEIGHT - 20, COLOR_WHITE, buf);
-      
+        
         float coe = Volume_ExtractVolume(dspVolumeSlider[0], dspVolumeSlider[1], volumeSlider[0]);
         u32 out = (u32)((coe * 100.0F) + (1 / 256.0F));
         char volBuf[32];
         int n2 = sprintf(volBuf, "Volume: %lu%%", out);
-        if(miniSocEnabled)
-        {
-            Draw_DrawString(SCREEN_BOT_WIDTH - 10 - SPACING_X * n2, SCREEN_BOT_HEIGHT - 30, COLOR_WHITE, volBuf);
-        }
-        else 
-        {
-            Draw_DrawString(SCREEN_BOT_WIDTH - 10 - SPACING_X * n2, 10, COLOR_WHITE, volBuf);
-        }
+        Draw_DrawString(SCREEN_BOT_WIDTH - 10 - SPACING_X * n2, 10, COLOR_WHITE, volBuf);
     }
     else
         Draw_DrawFormattedString(SCREEN_BOT_WIDTH - 10 - SPACING_X * 19, SCREEN_BOT_HEIGHT - 20, COLOR_WHITE, "%19s", "");
@@ -549,7 +504,7 @@ void menuShow(Menu *root)
         else if(pressed & KEY_B)
         {
             while (nbPreviousMenus == 0 && (scanHeldKeys() & KEY_B)); // wait a bit before exiting rosalina
-            
+
             Draw_Lock();
             Draw_ClearFramebuffer();
             Draw_FlushFramebuffer();
@@ -579,26 +534,7 @@ void menuShow(Menu *root)
         {
             menuToggleLeds();
         }
-        else if(pressed & KEY_Y)
-        {
-            menuMakeLedDabadeedabada();
-        }
-        else if(pressed & KEY_START)
-        {
-            if (isServiceUsable("nwm::EXT"))
-            {
-                u8 wireless = (*(vu8 *)((0x10140000 | (1u << 31)) + 0x180));
-                nwmExtInit();
-                NWMEXT_ControlWirelessEnabled(!wireless);
-                nwmExtExit();
-            }
-        }
-        else if(pressed & KEY_X)
-        {
-            nightLightOverride = !nightLightOverride;
-            Redshift_UpdateNightLightStatuses();
-        }
-        
+
         Draw_Lock();
         menuDraw(currentMenu, selectedItem);
         Draw_Unlock();

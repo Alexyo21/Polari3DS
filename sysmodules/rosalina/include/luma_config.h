@@ -1,6 +1,6 @@
 /*
 *   This file is part of Luma3DS
-*   Copyright (C) 2016-2020 Aurora Wright, TuxSH
+*   Copyright (C) 2023 Aurora Wright, TuxSH
 *
 *   This program is free software: you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -24,9 +24,38 @@
 *         reasonable ways as different from the original version.
 */
 
-#pragma once
-#include "memory.h"
-#include <stdarg.h>
+#include <3ds/types.h>
 
-int vsprintf(char *buf, const char *fmt, va_list args);
-int sprintf(char *buf, const char *fmt, ...);
+#define CONFIG(a)        (((cfg->config >> (a)) & 1) != 0)
+#define MULTICONFIG(a)   ((cfg->multiConfig >> (2 * (a))) & 3)
+#define BOOTCONFIG(a, b) ((cfg->bootConfig >> (a)) & (b))
+
+enum singleOptions
+{
+    AUTOBOOTEMU = 0,
+    LOADEXTFIRMSANDMODULES,
+    PATCHGAMES,
+    REDIRECTAPPTHREADS,
+    PATCHVERSTRING,
+    SHOWGBABOOT,
+    ENABLEDSIEXTFILTER,
+    ALLOWUPDOWNLEFTRIGHTDSI,
+    PATCHUNITINFO,
+    DISABLEARM11EXCHANDLERS,
+    ENABLESAFEFIRMROSALINA,
+};
+
+enum multiOptions
+{
+    DEFAULTEMU = 0,
+    BRIGHTNESS,
+    SPLASH,
+    PIN,
+    NEWCPU,
+    AUTOBOOTMODE,
+    FORCEAUDIOOUTPUT,
+};
+
+void LumaConfig_ConvertComboToString(char *out, u32 combo);
+Result LumaConfig_SaveSettings(void);
+void LumaConfig_RequestSaveSettings(void);

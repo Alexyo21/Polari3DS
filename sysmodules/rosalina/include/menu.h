@@ -1,6 +1,6 @@
 /*
 *   This file is part of Luma3DS
-*   Copyright (C) 2016-2020 Aurora Wright, TuxSH
+*   Copyright (C) 2016-2021 Aurora Wright, TuxSH
 *
 *   This program is free software: you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -33,12 +33,13 @@
 
 #define HID_PAD           (REG32(0x10146000) ^ 0xFFF)
 
-
 #define DEFAULT_MENU_COMBO      (KEY_L | KEY_DDOWN | KEY_SELECT)
 #define DIRECTIONAL_KEYS        (KEY_DOWN | KEY_UP | KEY_LEFT | KEY_RIGHT)
 
 #define CORE_APPLICATION  0
 #define CORE_SYSTEM       1
+
+#define FLOAT_CONV_MULT 1e8 // for screen filters
 
 typedef enum MenuItemAction {
     MENU_END = 0,
@@ -61,23 +62,21 @@ typedef struct MenuItem {
 typedef struct Menu {
     const char *title;
 
-    MenuItem items[16];
+    MenuItem items[17];
 } Menu;
 
 extern u32 menuCombo;
-extern u32 g_blockMenuOpen;
 extern bool isHidInitialized;
-extern bool rosalinaOpen;
 extern u32 mcuFwVersion;
 
 // From main.c
 extern bool isN3DS;
 extern bool menuShouldExit;
-extern bool hasTopScreen;
 extern bool preTerminationRequested;
 extern Handle preTerminationEvent;
 
 u32 waitInputWithTimeout(s32 msec);
+u32 waitInputWithTimeoutEx(u32 *outHeldKeys, s32 msec);
 u32 waitInput(void);
 
 u32 waitComboWithTimeout(s32 msec);
@@ -87,7 +86,6 @@ bool menuCheckN3ds(void);
 u32 menuCountItems(const Menu *menu);
 
 MyThread *menuCreateThread(void);
-void    openRosalina(void);
 void    menuEnter(void);
 void    menuLeave(void);
 void    menuThreadMain(void);
@@ -97,4 +95,3 @@ u32     DispErrMessage(const char *title, const char *message, const Result erro
 void    DisplayPluginMenu(u32   *cmdbuf);
 
 void menuToggleLeds(void);
-void menuMakeLedDabadeedabada(void);

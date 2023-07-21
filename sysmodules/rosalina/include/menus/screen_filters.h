@@ -31,14 +31,19 @@
 
 extern Menu screenFiltersMenu;
 
-extern int screenFiltersCurrentTemperature;
-extern bool customFilterSelected;
+typedef struct ScreenFilter {
+    u16 cct;
+    bool invert;
+    float gamma;
+    float contrast;
+    float brightness;
+} ScreenFilter;
 
-bool ScreenFiltersMenu_SetCct(int cct);
-bool ScreenFiltersMenu_RestoreCct(void);
-void ScreenFiltersMenu_RedshiftFilter(void);
-void ScreenFiltersMenu_LightshiftFilter(void);
-void ScreenFiltersMenu_NightshiftFilter(void);
+extern ScreenFilter topScreenFilter;
+extern ScreenFilter bottomScreenFilter;
+
+void ScreenFiltersMenu_RestoreSettings(void);
+void ScreenFiltersMenu_LoadConfig(void);
 
 void ScreenFiltersMenu_SetDefault(void);            // 6500K (default)
 
@@ -51,3 +56,7 @@ void ScreenFiltersMenu_SetIncandescent(void);       // 2700K
 void ScreenFiltersMenu_SetWarmIncandescent(void);   // 2300K
 void ScreenFiltersMenu_SetCandle(void);             // 1900K
 void ScreenFiltersMenu_SetEmber(void);              // 1200K
+
+void ScreenFiltersMenu_AdvancedConfiguration(void);
+
+void ScreenFilter_SuppressLeds(void);
