@@ -52,27 +52,71 @@ static bool switchToMainDir(bool isSd)
         case FR_OK:
             return true;
         case FR_NO_PATH:
-            return f_mkdir(mainDir) == FR_OK && switchToMainDir(isSd);
+        {
+            if (f_mkdir(mainDir) != FR_OK)
+            {
+                error("Failed to create luma directory.");
+                return false;
+            }
+            return switchToMainDir(isSd);
+        }
         default:
             return false;
     }
 }
 
-bool mountFs(bool isSd, bool switchToCtrNand)
+bool mountSdCardPartition(bool switchMainDir)
 {
-   static bool sdInitialized = false, nandInitialized = false;
-    if (isSd)
+    static bool sdInitialized = false;
+    if (!sdInitialized)
+        sdInitialized = f_mount(&sdFs, "sdmc:", 1) == FR_OK;
+
+    if (sdInitialized && switchMainDir)
+        return f_chdrive("sdmc:") == FR_OK && switchToMainDir(true);
+    return sdInitialized;
+}
+
+bool remountCtrNandPartition(bool switchMainDir)
+{
+    static bool nandInitialized = false;
+    int res = FR_OK;
+
+#if 0
+    Unfortunately the sdmmc driver is really flaky and returns TMIO_STAT_CMD_RESPEND as error.
+    (after timing out)
+    TODO: fix all this tech debt... one day, maybe?
+
+    if (nandInitialized)
     {
-        if (!sdInitialized)
-            sdInitialized = f_mount(&sdFs, "0:", 1) == FR_OK;
-        return sdInitialized && switchToMainDir(true);
+        res = f_unmount("nand:");
+        if (res != FR_OK)
+        {
+            error("f_unmount returned %d", res);
+            return false;
+        }
+        nandInitialized = false;
     }
-    else
+#endif
+
+    if (!nandInitialized)
     {
-        if (!nandInitialized)
-            nandInitialized = f_mount(&nandFs, "1:", 1) == FR_OK;
-        return nandInitialized && (!switchToCtrNand || (f_chdrive("1:") == FR_OK && switchToMainDir(false)));
+        res = f_mount(&nandFs, "nand:", 1);
+        nandInitialized = res == FR_OK;
+        if (res != FR_OK)
+        {
+            error("f_mount returned %d", res);
+        }
     }
+
+    if (nandInitialized && switchMainDir)
+        return f_chdrive("nand:") == FR_OK && switchToMainDir(false);
+    return nandInitialized;
+}
+
+void unmountPartitions(void)
+{
+    f_unmount("nand:");
+    f_unmount("sdmc:");
 }
 
 u32 fileRead(void *dest, const char *path, u32 maxSize)
@@ -133,6 +177,7 @@ bool fileDelete(const char *path)
 {
     return f_unlink(path) == FR_OK;
 }
+
 bool fileCopy(const char *pathSrc, const char *pathDst, bool replace, void *tmpBuffer, size_t bufferSize)
 {
     FIL fileSrc, fileDst;
@@ -160,7 +205,7 @@ bool fileCopy(const char *pathSrc, const char *pathDst, bool replace, void *tmpB
         {
             char path[FF_MAX_LFN + 1];
             strncpy(path, pathDst, c - pathDst);
-            path[FF_MAX_LFN] = '\0';
+            path[c - pathDst] = '\0';
             res = f_mkdir(path);
         }
 
@@ -342,10 +387,10 @@ u32 firmRead(void *dest, u32 firmType)
                                            {"00000003", "20000003"},
                                            {"00000001", "20000001"}};
 
-    char folderPath[35],
-         path[48];
+    char folderPath[64],
+         path[128];
 
-    sprintf(folderPath, "1:/title/00040138/%s/content", firmFolders[firmType][ISN3DS ? 1 : 0]);
+    sprintf(folderPath, "nand:/title/00040138/%s/content", firmFolders[firmType][ISN3DS ? 1 : 0]);
 
     DIR dir;
     u32 firmVersion = 0xFFFFFFFF;
@@ -397,20 +442,29 @@ void findDumpFile(const char *folderPath, char *fileName)
 
 static u8 fileCopyBuffer[0x10000];
 
+static const u8 boot9Sha256[32] = {
+    0x2F, 0x88, 0x74, 0x4F, 0xEE, 0xD7, 0x17, 0x85, 0x63, 0x86, 0x40, 0x0A, 0x44, 0xBB, 0xA4, 0xB9,
+    0xCA, 0x62, 0xE7, 0x6A, 0x32, 0xC7, 0x15, 0xD4, 0xF3, 0x09, 0xC3, 0x99, 0xBF, 0x28, 0x16, 0x6F
+};
+
+static const u8 boot11Sha256[32] = {
+    0x74, 0xDA, 0xAC, 0xE1, 0xF8, 0x06, 0x7B, 0x66, 0xCC, 0x81, 0xFC, 0x30, 0x7A, 0x3F, 0xDB, 0x50,
+    0x9C, 0xBE, 0xDC, 0x32, 0xF9, 0x03, 0xAE, 0xBE, 0x90, 0x61, 0x44, 0xDE, 0xA7, 0xA0, 0x75, 0x12
+};
+
 static bool backupEssentialFiles(void)
 {
     size_t sz = sizeof(fileCopyBuffer);
 
-    bool ok = !(isSdMode && !mountFs(false, false));
+    bool ok = true;
+    ok = ok && fileCopy("nand:/ro/sys/HWCAL0.dat", "backups/HWCAL0.dat", false, fileCopyBuffer, sz);
+    ok = ok && fileCopy("nand:/ro/sys/HWCAL1.dat", "backups/HWCAL1.dat", false, fileCopyBuffer, sz);
 
-    ok = ok && fileCopy("1:/ro/sys/HWCAL0.dat", "backups/HWCAL0.dat", false, fileCopyBuffer, sz);
-    ok = ok && fileCopy("1:/ro/sys/HWCAL1.dat", "backups/HWCAL1.dat", false, fileCopyBuffer, sz);
+    ok = ok && fileCopy("nand:/rw/sys/LocalFriendCodeSeed_A", "backups/LocalFriendCodeSeed_A", false, fileCopyBuffer, sz); // often doesn't exist
+    ok = ok && fileCopy("nand:/rw/sys/LocalFriendCodeSeed_B", "backups/LocalFriendCodeSeed_B", false, fileCopyBuffer, sz);
 
-    ok = ok && fileCopy("1:/rw/sys/LocalFriendCodeSeed_A", "backups/LocalFriendCodeSeed_A", false, fileCopyBuffer, sz); // often doesn't exist
-    ok = ok && fileCopy("1:/rw/sys/LocalFriendCodeSeed_B", "backups/LocalFriendCodeSeed_B", false, fileCopyBuffer, sz);
-
-    ok = ok && fileCopy("1:/rw/sys/SecureInfo_A", "backups/SecureInfo_A", false, fileCopyBuffer, sz);
-    ok = ok && fileCopy("1:/rw/sys/SecureInfo_B", "backups/SecureInfo_B", false, fileCopyBuffer, sz); // often doesn't exist
+    ok = ok && fileCopy("nand:/rw/sys/SecureInfo_A", "backups/SecureInfo_A", false, fileCopyBuffer, sz);
+    ok = ok && fileCopy("nand:/rw/sys/SecureInfo_B", "backups/SecureInfo_B", false, fileCopyBuffer, sz); // often doesn't exist
 
     if (!ok) return false;
 
@@ -428,27 +482,68 @@ static bool backupEssentialFiles(void)
         if (getFileSize("backups/HWCAL_01_EEPROM.dat") != 0x1000)
             ok = ok && fileWrite(fileCopyBuffer, "backups/HWCAL_01_EEPROM.dat", 0x1000);
     }
-  
+
+    // B9S bootrom backups
+    u32 hash[32/4];
+    sha(hash, (const void *)0x08080000, 0x10000, SHA_256_MODE);
+    if (memcmp(hash, boot9Sha256, 32) == 0 && getFileSize("backups/boot9.bin") != 0x10000)
+        ok = ok && fileWrite((const void *)0x08080000, "backups/boot9.bin", 0x10000);
+    sha(hash, (const void *)0x08090000, 0x10000, SHA_256_MODE);
+    if (memcmp(hash, boot11Sha256, 32) == 0 && getFileSize("backups/boot11.bin") != 0x10000)
+        ok = ok && fileWrite((const void *)0x08090000, "backups/boot11.bin", 0x10000);
+
     return ok;
 }
 
 bool doLumaUpgradeProcess(void)
 {
+    FirmwareSource oldCtrNandLocation = ctrNandLocation;
+    bool ok = true, ok2 = true, ok3 = true;
+
+#if 0
+    Unfortunately the sdmmc driver is really flaky and returns TMIO_STAT_CMD_RESPEND as error.
+    (after timing out)
+    TODO: fix all this tech debt... one day, maybe?
+
+    // Ensure SysNAND CTRNAND is mounted
+    if (isSdMode)
+    {
+        ctrNandLocation = FIRMWARE_SYSNAND;
+        if (!remountCtrNandPartition(false))
+        {
+            error("failed to mount");
+            ctrNandLocation = oldCtrNandLocation;
+            return false;
+        }
+    }
+#else
+    (void)oldCtrNandLocation;
     // Ensure CTRNAND is mounted
-    bool ok = mountFs(false, false), ok2 = true;
-    if (!ok)
-        return false;
+    remountCtrNandPartition(false);
+#endif
 
     // Try to boot.firm to CTRNAND, when applicable
-    if (isSdMode)
-        ok = fileCopy("0:/boot.firm", "1:/boot.firm", true, fileCopyBuffer, sizeof(fileCopyBuffer));
+    if (isSdMode && memcmp(launchedPathForFatfs, "sdmc:", 5) == 0)
+        ok = fileCopy(launchedPathForFatfs, "nand:/boot.firm", true, fileCopyBuffer, sizeof(fileCopyBuffer));
 
     // Try to backup essential files
     ok2 = backupEssentialFiles();
 
-  // Clean up some of the old files
-    fileDelete("0:/luma/config.bin");
-    fileDelete("1:/rw/luma/config.bin");
-  
-    return ok && ok2;
+    // Clean up some of the old files
+    fileDelete("sdmc:/luma/config.bin");
+    fileDelete("nand:/rw/luma/config.bin");
+
+#if 0
+    if (isSdMode)
+    {
+        ctrNandLocation = oldCtrNandLocation;
+        ok3 = remountCtrNandPartition(false);
+        if (!ok3)
+            error("failed to unmount");
+    }
+#else
+    (void)ok3;
+#endif
+
+    return ok && ok2 && ok3;
 }

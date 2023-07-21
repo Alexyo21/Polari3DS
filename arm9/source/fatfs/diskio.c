@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------*/
-/* Low level disk I/O module skeleton for FatFs     (C)ChaN, 2014        */
+/* Low level disk I/O module SKELETON for FatFs     (C)ChaN, 2019        */
 /*-----------------------------------------------------------------------*/
 /* If a working storage control module is available, it should be        */
 /* attached to the FatFs via a glue function rather than modifying it.   */
@@ -7,12 +7,13 @@
 /* storage control modules to the FatFs module with a defined API.       */
 /*-----------------------------------------------------------------------*/
 
-#include "diskio.h"		/* FatFs lower layer API */
+#include "ff.h"			/* Obtains integer types */
+#include "diskio.h"		/* Declarations of disk functions */
 #include "sdmmc/sdmmc.h"
 #include "../crypto.h"
 #include "../i2c.h"
 
-/* Definitions of physical drive number for each media */
+/* Definitions of physical drive number for each drive */
 #define SDCARD        0
 #define CTRNAND       1
 
@@ -21,10 +22,10 @@
 /*-----------------------------------------------------------------------*/
 
 DSTATUS disk_status (
-    __attribute__((unused))
     BYTE pdrv		/* Physical drive nmuber to identify the drive */
 )
 {
+    (void)pdrv;
     return RES_OK;
 }
 
@@ -38,12 +39,28 @@ DSTATUS disk_initialize (
     BYTE pdrv				/* Physical drive nmuber to identify the drive */
 )
 {
-        static u32 sdmmcInitResult = 4;
+    static u32 sdmmcInitResult = 4;
+    DSTATUS res = 0;
 
-        if(sdmmcInitResult == 4) sdmmcInitResult = sdmmc_sdcard_init();
+    if(sdmmcInitResult == 4)
+        sdmmcInitResult = sdmmc_sdcard_init();
 
-    return ((pdrv == SDCARD && !(sdmmcInitResult & 2)) ||
-            (pdrv == CTRNAND && !(sdmmcInitResult & 1) && !ctrNandInit())) ? 0 : STA_NOINIT;
+    // Check physical drive initialized status
+    switch (pdrv)
+    {
+        case SDCARD:
+            res = (sdmmcInitResult & 2) == 0 ? 0 : STA_NOINIT;
+            break;
+        case CTRNAND:
+            // Always update CTRNAND parameters when remounting
+            res = (sdmmcInitResult & 1) == 0 && ctrNandInit() == 0 ? 0 : STA_NOINIT;
+            break;
+        default:
+            res = STA_NODISK;
+            break;
+    }
+
+    return res;
 }
 
 
@@ -55,12 +72,26 @@ DSTATUS disk_initialize (
 DRESULT disk_read (
     BYTE pdrv,		/* Physical drive nmuber to identify the drive */
     BYTE *buff,		/* Data buffer to store read data */
-    DWORD sector,	/* Sector address in LBA */
+    LBA_t sector,	/* Start sector in LBA */
     UINT count		/* Number of sectors to read */
 )
 {
-    return ((pdrv == SDCARD && !sdmmc_sdcard_readsectors(sector, count, buff)) ||
-            (pdrv == CTRNAND && !ctrNandRead(sector, count, buff))) ? RES_OK : RES_PARERR;
+    DRESULT res = RES_OK;
+
+    switch (pdrv)
+    {
+        case SDCARD:
+            res = sdmmc_sdcard_readsectors(sector, count, buff) == 0 ? RES_OK : RES_PARERR;
+            break;
+        case CTRNAND:
+            res = ctrNandRead(sector, count, buff) == 0 ? RES_OK : RES_PARERR;
+            break;
+        default:
+            res = RES_NOTRDY;
+            break;
+    }
+
+    return res;
 }
 
 
@@ -69,37 +100,54 @@ DRESULT disk_read (
 /* Write Sector(s)                                                       */
 /*-----------------------------------------------------------------------*/
 
-#if _USE_WRITE
+#if FF_FS_READONLY == 0
+
 DRESULT disk_write (
     BYTE pdrv,			/* Physical drive nmuber to identify the drive */
-    const BYTE *buff,       	/* Data to be written */
-    DWORD sector,		/* Sector address in LBA */
+    const BYTE *buff,	/* Data to be written */
+    LBA_t sector,		/* Start sector in LBA */
     UINT count			/* Number of sectors to write */
 )
 {
-    return ((pdrv == SDCARD && (*(vu16 *)(SDMMC_BASE + REG_SDSTATUS0) & TMIO_STAT0_WRPROTECT) != 0 && !sdmmc_sdcard_writesectors(sector, count, buff)) ||
-            (pdrv == CTRNAND && !ctrNandWrite(sector, count, buff))) ? RES_OK : RES_PARERR;
+    DRESULT res = RES_OK;
+
+    switch (pdrv)
+    {
+        case SDCARD:
+        {
+            if ((*(vu16 *)(SDMMC_BASE + REG_SDSTATUS0) & TMIO_STAT0_WRPROTECT) == 0) // why == 0?
+                res = RES_WRPRT;
+            else
+                res = sdmmc_sdcard_writesectors(sector, count, buff) == 0 ? RES_OK : RES_PARERR;
+            break;
+        }
+        case CTRNAND:
+            res = ctrNandWrite(sector, count, buff) == 0 ? RES_OK : RES_PARERR;
+            break;
+        default:
+            res = RES_NOTRDY;
+            break;
+    }
+
+    return res;
 }
 #endif
-
 
 
 /*-----------------------------------------------------------------------*/
 /* Miscellaneous Functions                                               */
 /*-----------------------------------------------------------------------*/
 
-#if _USE_IOCTL
 DRESULT disk_ioctl (
-    __attribute__((unused))
     BYTE pdrv,		/* Physical drive nmuber (0..) */
     BYTE cmd,		/* Control code */
-    __attribute__((unused))
     void *buff		/* Buffer to send/receive control data */
 )
 {
+    (void)pdrv;
+    (void)buff;
     return cmd == CTRL_SYNC ? RES_OK : RES_PARERR;
 }
-#endif
 
 // From GodMode9
 #define BCDVALID(b) (((b)<=0x99)&&(((b)&0xF)<=0x9)&&((((b)>>4)&0xF)<=0x9))
@@ -133,6 +181,6 @@ DWORD get_fattime( void ) {
         ((DSTIMEGET(&dstime, bcd_D)&0x1F) << 16) |
         ((DSTIMEGET(&dstime, bcd_M)&0x0F) << 21) |
         (((DSTIMEGET(&dstime, bcd_Y)+(2000-1980))&0x7F) << 25);
-    
+
     return fattime;
 }

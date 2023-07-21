@@ -1,6 +1,6 @@
 /*
 *   This file is part of Luma3DS
-*   Copyright (C) 2016-2020 Aurora Wright, TuxSH
+*   Copyright (C) 2016-2023 Aurora Wright, TuxSH
 *
 *   This program is free software: you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -35,17 +35,19 @@
 #include "pin.h"
 #include "crypto.h"
 #include "memory.h"
+#include "deliver_arg.h"
 #include "screen.h"
 #include "i2c.h"
+#include "fmt.h"
 #include "fatfs/sdmmc/sdmmc.h"
 
 extern u8 __itcm_start__[], __itcm_lma__[], __itcm_bss_start__[], __itcm_end__[];
 
 extern CfgData configData;
 extern ConfigurationStatus needConfig;
-extern FirmwareSource firmSource;
 
 bool isSdMode;
+char launchedPathForFatfs[256];
 u16 launchedPath[80+1];
 BootType bootType;
 
@@ -54,14 +56,16 @@ u8 mcuConsoleInfo[9];
 
 void main(int argc, char **argv, u32 magicWord)
 {
-    bool isFirmProtEnabled,
+    bool isFirmProtEnabled = true,
          isSafeMode = false,
          needToInitSd = false,
          isNoForceFlagSet = false,
          isInvalidLoader = false,
-         isNtrBoot;
-    FirmwareType firmType;
-    FirmwareSource nandType;
+         isNtrBoot = false;
+    FirmwareType firmType = NATIVE_FIRM;
+    FirmwareSource nandType = FIRMWARE_SYSNAND;
+    u32 emunandIndex = 0;
+
     const vu8 *bootMediaStatus = (const vu8 *)0x1FFFE00C;
     const vu32 *bootPartitionsStatus = (const vu32 *)0x1FFFE010;
     u32 firmlaunchTidLow = 0;
@@ -72,6 +76,8 @@ void main(int argc, char **argv, u32 magicWord)
     if((magicWord & 0xFFFF) == 0xBEEF && argc >= 1) //Normal (B9S) boot
     {
         bootType = isNtrBoot ? B9SNTR : B9S;
+        strncpy(launchedPathForFatfs, argv[0], sizeof(launchedPathForFatfs) - 1);
+        launchedPathForFatfs[sizeof(launchedPathForFatfs) - 1] = 0;
 
         u32 i;
         for(i = 0; i < sizeof(launchedPath)/2 - 1 && argv[0][i] != 0; i++) //Copy and convert the path to UTF-16
@@ -85,7 +91,10 @@ void main(int argc, char **argv, u32 magicWord)
         u32 i;
         u16 *p = (u16 *)argv[0];
         for(i = 0; i < sizeof(launchedPath)/2 - 1 && p[i] != 0; i++)
+        {
             launchedPath[i] = p[i];
+            launchedPathForFatfs[i] = (u8)p[i]; // UCS-2 to ascii. Meh.
+        }
         launchedPath[i] = 0;
 
         for(i = 0; i < 8; i++)
@@ -110,6 +119,7 @@ void main(int argc, char **argv, u32 magicWord)
 
             for(u32 i = 0; i < 7; i++) //Copy and convert the path to UTF-16
                 launchedPath[i] = path[i];
+            strcpy(launchedPathForFatfs, path);
         }
 
         setupKeyslots();
@@ -120,9 +130,14 @@ void main(int argc, char **argv, u32 magicWord)
     memcpy(__itcm_start__, __itcm_lma__, __itcm_bss_start__ - __itcm_start__);
     memset(__itcm_bss_start__, 0, __itcm_end__ - __itcm_bss_start__);
     I2C_init();
-    
-    I2C_readRegBuf(I2C_DEV_MCU, 0x00, (u8 *)&mcuFwVersion, 2);
-    if ((mcuFwVersion & 0xFFF) < 0x0100) error("Unsupported MCU FW version.");
+
+    u8 mcuFwVerHi = I2C_readReg(I2C_DEV_MCU, 0) - 0x10;
+    u8 mcuFwVerLo = I2C_readReg(I2C_DEV_MCU, 1);
+    mcuFwVersion = ((u16)mcuFwVerHi << 16) | mcuFwVerLo;
+
+    // Check if fw is older than factory. See https://www.3dbrew.org/wiki/MCU_Services#MCU_firmware_versions for a table
+    if (mcuFwVerHi < 1) error("Unsupported MCU FW version %d.%d.", (int)mcuFwVerHi, (int)mcuFwVerLo);
+
     I2C_readRegBuf(I2C_DEV_MCU, 0x7F, mcuConsoleInfo, 9);
 
     if(isInvalidLoader) error("Launched using an unsupported loader.");
@@ -131,18 +146,18 @@ void main(int argc, char **argv, u32 magicWord)
 
     if(memcmp(launchedPath, u"sdmc", 8) == 0)
     {
-        if(!mountFs(true, false)) error("Failed to mount SD.");
+        if(!mountSdCardPartition(true)) error("Failed to mount SD.");
         isSdMode = true;
     }
     else if(memcmp(launchedPath, u"nand", 8) == 0)
     {
-        if(!mountFs(false, true)) error("Failed to mount CTRNAND.");
+        if(!remountCtrNandPartition(true)) error("Failed to mount CTRNAND.");
         isSdMode = false;
     }
     else if(bootType == NTR || memcmp(launchedPath, u"firm", 8) == 0)
     {
-        if(mountFs(true, false)) isSdMode = true;
-        else if(mountFs(false, true)) isSdMode = false;
+        if(mountSdCardPartition(true)) isSdMode = true;
+        else if(remountCtrNandPartition(true)) isSdMode = false;
         else error("Failed to mount SD and CTRNAND.");
 
         if(bootType == NTR)
@@ -188,7 +203,7 @@ void main(int argc, char **argv, u32 magicWord)
         }
 
         nandType = (FirmwareSource)BOOTCFG_NAND;
-        firmSource = (FirmwareSource)BOOTCFG_FIRM;
+        emunandIndex = BOOTCFG_EMUINDEX;
         isFirmProtEnabled = !BOOTCFG_NTRCARDBOOT;
 
         goto boot;
@@ -203,31 +218,36 @@ void main(int argc, char **argv, u32 magicWord)
     //If it's a MCU reboot, try to force boot options
     if(CFG_BOOTENV && needConfig != CREATE_CONFIGURATION)
     {
+        u32 bootenv = CFG_BOOTENV;
+        bool validTlnc = bootenv == 3 && hasValidTlncAutobootParams();
+
+        if (validTlnc)
+            needToInitSd = true;
+
         //Always force a SysNAND boot when quitting AGB_FIRM
-        if(CFG_BOOTENV == 7)
+        if(bootenv == 7)
         {
             nandType = FIRMWARE_SYSNAND;
-            firmSource = (BOOTCFG_NAND != 0) == (BOOTCFG_FIRM != 0) ? FIRMWARE_SYSNAND : (FirmwareSource)BOOTCFG_FIRM;
 
-            //Prevent multiple boot options-forcing
-            if(nandType != BOOTCFG_NAND || firmSource != BOOTCFG_FIRM) isNoForceFlagSet = true;
+            // Prevent multiple boot options-forcing
+            // This bit is a bit weird. Basically, as you return to Home Menu by pressing either
+            // the HOME or POWER button, nandType will be overridden to "SysNAND" (needed). But,
+            // if you reboot again (e.g. via Rosalina menu), it'll use your default settings.
+            if(nandType != BOOTCFG_NAND) isNoForceFlagSet = true;
 
             goto boot;
         }
 
-        //Account for DSiWare soft resets if exiting TWL_FIRM
-        if(CFG_BOOTENV == 3)
-        {
-            static const u8 TLNC[] = {0x54, 0x4C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x4E, 0x43};
-            if(memcmp((void *)0x20000C00, TLNC, 10) == 0) needToInitSd = true;
-        }
+        // Configure homebrew autoboot (if deliver arg ends up not containing anything)
+        if (bootenv == 1 && MULTICONFIG(AUTOBOOTMODE) != 0)
+            configureHomebrewAutoboot();
 
-        /* Force the last used boot options if autobooting a TWL title, or unless a button is pressed
+        /* Force the last used boot options if doing autolaunch from TWL, or unless a button is pressed
            or the no-forcing flag is set */
-        if(needToInitSd || memcmp((void *)0x20000300, "TLNC", 4) == 0 || (!pressed && !BOOTCFG_NOFORCEFLAG))
+        if(validTlnc || !(pressed || BOOTCFG_NOFORCEFLAG))
         {
             nandType = (FirmwareSource)BOOTCFG_NAND;
-            firmSource = (FirmwareSource)BOOTCFG_FIRM;
+            emunandIndex = BOOTCFG_EMUINDEX;
 
             goto boot;
         }
@@ -260,7 +280,6 @@ void main(int argc, char **argv, u32 magicWord)
     if(!CFG_BOOTENV && pressed == SAFE_MODE)
     {
         nandType = FIRMWARE_SYSNAND;
-        firmSource = FIRMWARE_SYSNAND;
 
         isSafeMode = true;
         needToInitSd = true;
@@ -288,7 +307,6 @@ void main(int argc, char **argv, u32 magicWord)
     if(!CFG_BOOTENV && pressed == SAFE_MODE)
     {
         nandType = FIRMWARE_SYSNAND;
-        firmSource = FIRMWARE_SYSNAND;
 
         isSafeMode = true;
         needToInitSd = true;
@@ -296,53 +314,35 @@ void main(int argc, char **argv, u32 magicWord)
         goto boot;
     }
 
+    // Set-up autoboot
+    if (MULTICONFIG(AUTOBOOTMODE) != 0)
+        configureHomebrewAutoboot();
+
     //If booting from CTRNAND, always use SysNAND
     if(!isSdMode) nandType = FIRMWARE_SYSNAND;
-
-    //If R is pressed, boot the non-updated NAND with the FIRM of the opposite one
-    else if(pressed & BUTTON_R1)
-    {
-        if(CONFIG(USEEMUFIRM))
-        {
-            nandType = FIRMWARE_SYSNAND;
-            firmSource = FIRMWARE_EMUNAND;
-        }
-        else
-        {
-            nandType = FIRMWARE_EMUNAND;
-            firmSource = FIRMWARE_SYSNAND;
-        }
-    }
-
-    /* Else, boot the NAND the user set to autoboot or the opposite one, depending on L,
-       with their own FIRM */
-    else firmSource = nandType = (autoBootEmu == ((pressed & BUTTON_L1) == BUTTON_L1)) ? FIRMWARE_SYSNAND : FIRMWARE_EMUNAND;
+    else nandType = (autoBootEmu == ((pressed & BUTTON_L1) == BUTTON_L1)) ? FIRMWARE_SYSNAND : FIRMWARE_EMUNAND;
 
     //If we're booting EmuNAND or using EmuNAND FIRM, determine which one from the directional pad buttons, or otherwise from the config
-    if(nandType == FIRMWARE_EMUNAND || firmSource == FIRMWARE_EMUNAND)
+    if(nandType == FIRMWARE_EMUNAND)
     {
-        FirmwareSource tempNand;
         switch(pressed & DPAD_BUTTONS)
         {
             case BUTTON_UP:
-                tempNand = FIRMWARE_EMUNAND;
+                emunandIndex = 0;
                 break;
             case BUTTON_RIGHT:
-                tempNand = FIRMWARE_EMUNAND2;
+                emunandIndex = 1;
                 break;
             case BUTTON_DOWN:
-                tempNand = FIRMWARE_EMUNAND3;
+                emunandIndex = 2;
                 break;
             case BUTTON_LEFT:
-                tempNand = FIRMWARE_EMUNAND4;
+                emunandIndex = 3;
                 break;
             default:
-                tempNand = (FirmwareSource)(1 + MULTICONFIG(DEFAULTEMU));
+                emunandIndex = MULTICONFIG(DEFAULTEMU);
                 break;
         }
-
-        if(nandType == FIRMWARE_EMUNAND) nandType = tempNand;
-        else firmSource = tempNand;
     }
 
 boot:
@@ -350,34 +350,33 @@ boot:
     //If we need to boot EmuNAND, make sure it exists
     if(nandType != FIRMWARE_SYSNAND)
     {
-        locateEmuNand(&nandType);
-        if(nandType == FIRMWARE_SYSNAND) firmSource = FIRMWARE_SYSNAND;
-        else if((*(vu16 *)(SDMMC_BASE + REG_SDSTATUS0) & TMIO_STAT0_WRPROTECT) == 0) //Make sure the SD card isn't write protected
+        locateEmuNand(&nandType, &emunandIndex, true);
+        if(nandType == FIRMWARE_EMUNAND && (*(vu16 *)(SDMMC_BASE + REG_SDSTATUS0) & TMIO_STAT0_WRPROTECT) == 0) //Make sure the SD card isn't write protected
             error("The SD card is locked, EmuNAND can not be used.\nPlease turn the write protection switch off.");
     }
 
-    //Same if we're using EmuNAND as the FIRM source
-    else if(firmSource != FIRMWARE_SYSNAND)
-        locateEmuNand(&firmSource);
+    ctrNandLocation = nandType; // for CTRNAND partition
 
     if(bootType != FIRMLAUNCH)
     {
-        configData.bootConfig = ((bootType == NTR ? 1 : 0) << 7) | ((u32)isNoForceFlagSet << 6) | ((u32)firmSource << 3) | (u32)nandType;
+        configData.bootConfig = ((bootType == NTR ? 1 : 0) << 4) | ((u32)isNoForceFlagSet << 3) | ((u32)emunandIndex << 1) | (u32)nandType;
         writeConfig(false);
     }
 
     bool loadFromStorage = CONFIG(LOADEXTFIRMSANDMODULES);
-    u32 firmVersion = loadNintendoFirm(&firmType, firmSource, loadFromStorage, isSafeMode);
+    u32 firmVersion = loadNintendoFirm(&firmType, nandType, loadFromStorage, isSafeMode);
 
     bool doUnitinfoPatch = CONFIG(PATCHUNITINFO);
     u32 res = 0;
     switch(firmType)
     {
         case NATIVE_FIRM:
+        {
             res = patchNativeFirm(firmVersion, nandType, loadFromStorage, isFirmProtEnabled, needToInitSd, doUnitinfoPatch);
             break;
+        }
         case TWL_FIRM:
-            res = patchTwlFirm(firmVersion, loadFromStorage, doUnitinfoPatch);
+            res = patchTwlFirm(firmVersion, nandType, loadFromStorage, doUnitinfoPatch);
             break;
         case AGB_FIRM:
             res = patchAgbFirm(loadFromStorage, doUnitinfoPatch);
@@ -391,6 +390,7 @@ boot:
 
     if(res != 0) error("Failed to apply %u FIRM patch(es).", res);
 
+    unmountPartitions();
     if(bootType != FIRMLAUNCH) deinitScreens();
     launchFirm(0, NULL);
 }

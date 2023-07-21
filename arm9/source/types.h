@@ -61,17 +61,30 @@ typedef volatile s64 vs64;
 #define ISN3DS       (CFG11_SOCINFO & 2)
 #define ISDEVUNIT    (CFG_UNITINFO != 0)
 
-typedef struct {
+typedef struct ScreenFiltersCfgData {
+    u16 cct;
+    bool invert;
+    s64 gammaEnc;
+    s64 contrastEnc;
+    s64 brightnessEnc;
+} ScreenFiltersCfgData;
+
+typedef struct CfgData {
     u16 formatVersionMajor, formatVersionMinor;
 
     u32 config, multiConfig, bootConfig;
     u32 splashDurationMsec;
-    
+
     u64 hbldr3dsxTitleId;
     u32 rosalinaMenuCombo;
-    u16 screenFiltersCct;
+    u32 pluginLoaderFlags;
     s16 ntpTzOffetMinutes;
-    u32 rosalinaFlags;
+
+    ScreenFiltersCfgData topScreenFilter;
+    ScreenFiltersCfgData bottomScreenFilter;
+
+    u64 autobootTwlTitleId;
+    u8 autobootCtrAppmemtype;
 } CfgData;
 
 typedef struct
@@ -110,9 +123,6 @@ typedef enum FirmwareSource
 {
     FIRMWARE_SYSNAND = 0,
     FIRMWARE_EMUNAND,
-    FIRMWARE_EMUNAND2,
-    FIRMWARE_EMUNAND3,
-    FIRMWARE_EMUNAND4
 } FirmwareSource;
 
 typedef enum FirmwareType
@@ -139,6 +149,7 @@ extern bool isSdMode;
 
 extern BootType bootType;
 
+extern char launchedPathForFatfs[256];
 extern u16 launchedFirmTidLow[8];
 extern u16 launchedPath[80+1];
 

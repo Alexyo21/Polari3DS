@@ -1,5 +1,5 @@
 .section .large_patch.emunand, "aw", %progbits
-.arm
+.thumb
 .align 4
 
 @ Code originally by Normmatt
@@ -14,40 +14,44 @@ emunandPatch:
     @ End
 
     @ If we're already trying to access the SD, return
-    ldr r2, [r0, #4]
-    ldr r1, emunandPatchSdmmcStructPtr
-    cmp r2, r1
+    ldr r2, [r4, #4]
+    ldr r0, emunandPatchSdmmcStructPtr
+    cmp r2, r0
     beq out
 
-    str r1, [r0, #4] @ Set object to be SD
-    ldr r2, [r0, #8] @ Get sector to read
-    cmp r2, #0 @ For GW compatibility, see if we're trying to read the ncsd header (sector 0)
+    ldr r2, [r4, #8] @ Get sector to read
+    str r0, [r4, #4] @ Set object to be SD
 
     ldr r3, emunandPatchNandOffset
     add r2, r3 @ Add the offset to the NAND in the SD
 
-    ldreq r3, emunandPatchNcsdHeaderOffset
-    addeq r2, r3 @ If we're reading the ncsd header, add the offset of that sector
+    cmp r2, r3 @ For GW compatibility, see if we're trying to read the ncsd header (sector 0)
+    bne skip_add
 
-    str r2, [r0, #8] @ Store sector to read
+    ldr r3, emunandPatchNcsdHeaderOffset
+    add r2, r3 @ If we're reading the ncsd header, add the offset of that sector
 
+    skip_add:
+        str r2, [r4, #8] @ Store sector to read
+        
     out:
-        @ Restore registers.
-        mov r1, r5
-        mov r2, r7
-        mov r3, r6
 
         @ Return 4 bytes behind where we got called,
         @ due to the offset of this function being stored there
-        mov r0, lr
-        add r0, #4
-        bx r0
+        mov r2, lr
+        add r2, #4
+
+        @ More original code that might have been skipped depending on alignment;
+        @ needs to be done at the end so CPSR is preserved
+        lsl r0, r1, #0x17
+        bx r2
 
 .pool
 
 .global emunandPatchSdmmcStructPtr
 .global emunandPatchNandOffset
 .global emunandPatchNcsdHeaderOffset
+.balign 4
 
 emunandPatchSdmmcStructPtr:     .word   0 @ Pointer to sdmmc struct
 emunandPatchNandOffset:         .word   0 @ For rednand this should be 1
@@ -289,3 +293,61 @@ _rebootPatchEnd:
 .global rebootPatchSize
 rebootPatchSize:
     .word _rebootPatchEnd - rebootPatch
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+.section .large_patch.readFileSHA256Vtab11, "aw", %progbits
+.arm
+.align 4
+
+.global readFileSHA256Vtab11Patch
+readFileSHA256Vtab11Patch: //Result Write(this, u32 off, u8 *data, u32 size)
+    push {r0-r4, lr}
+
+    @ Allocate memory for DataChainProcessor struct
+    sub sp, #0x14
+    push {sp}
+
+    @ DataChainProcessor::DataChainProcessor(&proc);
+    ldr r0, [sp]
+    ldr r4, readFileSHA256Vtab11PatchCtorPtr
+    blx r4
+
+    @ DataChainProcessor::Init(&proc, data, size);
+    ldr r0, [sp]
+    ldr r1, [sp, #0x20]
+    ldr r2, [sp, #0x24]
+    ldr r4, readFileSHA256Vtab11PatchInitPtr
+    blx r4
+
+    @ DataChainProcessor::Process(&proc, this, off, 0, size);
+    ldr r0, [sp]
+
+    ldr r1, [sp, #0x24]
+    str r1, [sp] @ size argument
+
+    ldr r1, [sp, #0x18]
+    ldr r2, [sp, #0x1c]
+    mov r3, #0
+    ldr r4, readFileSHA256Vtab11PatchProcessPtr
+    blx r4
+
+    add sp, #0x18
+    pop {r0-r4, pc}
+
+.global readFileSHA256Vtab11PatchCtorPtr 
+.global readFileSHA256Vtab11PatchInitPtr
+.global readFileSHA256Vtab11PatchProcessPtr
+
+readFileSHA256Vtab11PatchCtorPtr:       .word   0 @ Pointer to DataChainProcessor::DataChainProcessor
+readFileSHA256Vtab11PatchInitPtr:       .word   0 @ Pointer to DataChainProcessor::Init
+readFileSHA256Vtab11PatchProcessPtr:    .word   0 @ Pointer to DataChainProcessor::ProcessBytes
+
+.pool
+.balign 4
+
+_readFileSHA256Vtab11PatchEnd:
+
+.global readFileSHA256Vtab11PatchSize
+readFileSHA256Vtab11PatchSize:
+    .word _readFileSHA256Vtab11PatchEnd - readFileSHA256Vtab11Patch

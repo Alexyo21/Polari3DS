@@ -44,6 +44,8 @@
 
 #define K11EXT_VA         0x70000000
 
+extern u16 launchedPath[];
+
 u8 *getProcess9Info(u8 *pos, u32 size, u32 *process9Size, u32 *process9MemAddr)
 {
     u8 *temp = memsearch(pos, "NCCH", size, 4);
@@ -132,9 +134,16 @@ u32 installK11Extension(u8 *pos, u32 size, bool needToInitSd, u32 baseK11VA, u32
             u32 splashDurationMsec;
             u64 hbldr3dsxTitleId;
             u32 rosalinaMenuCombo;
-            u16 screenFiltersCct;
+            u32 pluginLoaderFlags;
             s16 ntpTzOffetMinutes;
-            u32 rosalinaFlags;
+
+            ScreenFiltersCfgData topScreenFilter;
+            ScreenFiltersCfgData bottomScreenFilter;
+
+            u64 autobootTwlTitleId;
+            u8 autobootCtrAppmemtype;
+
+            u16 launchedPath[80+1];
         } info;
     };
 
@@ -208,9 +217,12 @@ u32 installK11Extension(u8 *pos, u32 size, bool needToInitSd, u32 baseK11VA, u32
     info->splashDurationMsec = configData.splashDurationMsec;
     info->hbldr3dsxTitleId = configData.hbldr3dsxTitleId;
     info->rosalinaMenuCombo = configData.rosalinaMenuCombo;
-    info->screenFiltersCct = configData.screenFiltersCct;
+    info->pluginLoaderFlags = configData.pluginLoaderFlags;
     info->ntpTzOffetMinutes = configData.ntpTzOffetMinutes;
-    info->rosalinaFlags = configData.rosalinaFlags;
+    info->topScreenFilter = configData.topScreenFilter;
+    info->bottomScreenFilter = configData.bottomScreenFilter;
+    info->autobootTwlTitleId = configData.autobootTwlTitleId;
+    info->autobootCtrAppmemtype = configData.autobootCtrAppmemtype;
     info->versionMajor = VERSION_MAJOR;
     info->versionMinor = VERSION_MINOR;
     info->versionBuild = VERSION_BUILD;
@@ -220,6 +232,8 @@ u32 installK11Extension(u8 *pos, u32 size, bool needToInitSd, u32 baseK11VA, u32
     if(needToInitSd) info->flags |= 1 << 5;
     if(isSdMode) info->flags |= 1 << 6;
 
+    memcpy(info->launchedPath, launchedPath, sizeof(info->launchedPath));
+
     return 0;
 }
 
@@ -227,6 +241,7 @@ u32 patchKernel11(u8 *pos, u32 size, u32 baseK11VA, u32 *arm11SvcTable, u32 *arm
 {
     static const u8 patternKPanic[] = {0x02, 0x0B, 0x44, 0xE2};
     static const u8 patternKThreadDebugReschedule[] = {0x34, 0x20, 0xD4, 0xE5, 0x00, 0x00, 0x55, 0xE3, 0x80, 0x00, 0xA0, 0x13};
+    static const u8 patternSuspendThread[] = {0xB0, 0x01, 0xD5, 0xE1, 0x01, 0x00, 0x50, 0xE3};
 
     //Assumption: ControlMemory, DebugActiveProcess and KernelSetState are in the first 0x20000 bytes
     //Patch ControlMemory
@@ -272,6 +287,40 @@ u32 patchKernel11(u8 *pos, u32 size, u32 baseK11VA, u32 *arm11SvcTable, u32 *arm
 
     off[-5] = 0xE51FF004;
     off[-4] = K11EXT_VA + 0x2C;
+
+    if (ISN3DS)
+    {
+        // Patch SvcSetProcessIdealProcessor and SvcCreate thread to always allow
+        // for core2 and core3 to be used. Normally, processes with the 0x2000 kernel flag
+        // have access to core2, and BASE processes have access to both core2 and core3.
+        // We're patching the if (memory region == BASE) check to be always true.
+        off = (u32 *)pos;
+        for (u32 i = 0; i < 2 && (u8 *)off < pos + size; i++)
+        {
+            // cmp r2, #0x300; beq...
+            for (; (off[0] != 0xE3520C03 || off[1] != 0x0A000003) && (u8 *)off < pos + size; off++);
+            if ((u8 *)off > pos + size)
+                return 1;
+            off[1] = 0xEA000003;
+        }
+    }
+
+    // Patch core #1 usage limit.
+    // When game/homebrew apps use APT_SetAppCpuTimeLimit(), it will limit the time
+    // allowed to run system thread even if user threads use little CPU time.
+    // e.g. Let's say we called APT_SetAppCpuTimeLimit(60);
+    // Then, 60% of CPU time will constantly be allocated to user threads
+    // by suspending system threads even when user app uses little cpu time
+    // so that system thread can run only use 40% of CPU time.
+    // This will cause significant slow down for system modules such as fs, httpc, y2r, mvd etc...
+    // This patch disables "suspending system threads" behavior so that if user threads
+    // use little CPU time, then system threads can use rest of CPU time.
+    off = (u32 *)memsearch(pos, patternSuspendThread, size, sizeof(patternSuspendThread));
+    if(off)
+    {
+        //We are replacing if(core_id == 1) with if(core_id == 4) so that it will always be false.
+        off[1] = 0x040050E3;//cmp r0, #0x1 -> cmp r0, #0x4
+    }
 
     return 0;
 }
@@ -434,7 +483,7 @@ u32 patchCheckForDevCommonKey(u8 *pos, u32 size)
     return 0;
 }
 
-u32 patchK11ModuleLoading(u32 section0size, u32 modulesSize, u8 *pos, u32 size)
+u32 patchK11ModuleLoading(u32 oldKipSectionSize, u32 newKipSectionSize, u32 numKips, u8 *pos, u32 size)
 {
     static const u8 moduleLoadingPattern[]  = {0xE2, 0x05, 0x00, 0x57},
                     modulePidPattern[] = {0x06, 0xA0, 0xE1, 0xF2}; //GetSystemInfo
@@ -443,20 +492,44 @@ u32 patchK11ModuleLoading(u32 section0size, u32 modulesSize, u8 *pos, u32 size)
 
     if(off == NULL) return 1;
 
-    off[1]++;
+    off[1] = (u8)numKips;
 
     u32 *off32;
     for(off32 = (u32 *)(off - 3); *off32 != 0xE59F0000; off32++);
     off32 += 2;
-    off32[1] = off32[0] + modulesSize;
-    for(; *off32 != section0size; off32++);
-    *off32 = ((modulesSize + 0x1FF) >> 9) << 9;
+    off32[1] = off32[0] + newKipSectionSize;
+    for(; *off32 != oldKipSectionSize; off32++);
+    *off32 = ((newKipSectionSize + 0x1FF) >> 9) << 9;
 
     off = memsearch(pos, modulePidPattern, size, 4);
 
     if(off == NULL) return 1;
 
-    off[0xB] = 6;
+    off[0xB] = (u8)numKips;
+
+    return 0;
+}
+
+u32 patchK11ModuleLoadingLgy(u32 newKipSectionSize, u8 *pos, u32 size)
+{
+    // Patch the function where TwlBg/AgbBg is copied from 18000000 (VRAM) to 21000000 (FCRAM).
+    // This is where we can also automatically obtain the section size
+
+    u16 *off = (u16 *)pos;
+    for (; (u8 *)off < pos + size && (off[0] != 0x06C9 || off[1] != 0x0600); off++);
+    if ((u8 *)off >= pos + size)
+        return 3;
+
+    off += 7;
+    u32 oldKipSectionSize = *(u32 *)off;
+    *(u32 *)off = newKipSectionSize;
+    off += 2;
+
+    u32 *off2 = (u32 *)off;
+    for (; (u8 *)off2 < pos + size && *off2 != oldKipSectionSize; off2++);
+    if ((u8 *)off2 >= pos + size)
+        return 4;
+    *off2 = newKipSectionSize;
 
     return 0;
 }
@@ -494,9 +567,35 @@ u32 patchArm9ExceptionHandlersInstall(u8 *pos, u32 size)
     return 0;
 }
 
+u32 patchTwlArm9ExceptionHandlersInstall(u8 *pos, u32 size)
+{
+    //This is in thumb in TWL_FIRM
+
+    static const u8 pattern[] = {0xC1, 0x60, 0x40, 0x21};
+
+    u8 *temp = memsearch(pos, pattern, size, sizeof(pattern));
+
+    if(temp == NULL) return 1;
+
+    u16 *off;
+
+    for(off = (u16 *)temp; *off != 0x6001; off--); //Until str r1, [r0]
+
+    for(u32 r0 = 0x08000000; *off != 0x2140; off++) //Until mov r1, #0x40
+    {
+        //Discard everything that's not str rX, [r0, #imm](!)
+        if((*off & 0xFC00) != 0x6000) continue;
+
+        u32 addr = r0 + ((*off >> 4) & 0xFF);
+        if((addr & 7) != 0 && addr != 0x08000014 && addr != 0x08000004) *off = 0x4600; //nop
+    }
+
+    return 0;
+}
+
 u32 patchSvcBreak9(u8 *pos, u32 size, u32 kernel9Address)
 {
-    //Stub svcBreak with "bkpt 65535" so we can debug the panic
+    //Stub svcBreak with "bkpt 65535" or "bkpt 255" so we can debug the panic
 
     //Look for the svc handler
     static const u8 pattern[] = {0x00, 0xE0, 0x4F, 0xE1}; //mrs lr, spsr
@@ -507,14 +606,28 @@ u32 patchSvcBreak9(u8 *pos, u32 size, u32 kernel9Address)
 
     while(*arm9SvcTable != 0) arm9SvcTable++; //Look for SVC0 (NULL)
 
-    u32 *addr = (u32 *)(pos + arm9SvcTable[0x3C] - kernel9Address);
+    if (arm9SvcTable[0x3C] & 1) //Might be thumb
+    {
+        u16 *addr = (u16 *)(pos + arm9SvcTable[0x3C] - kernel9Address - 1);
 
-    /*
-        mov r8, sp
-        bkpt 0xffff
-    */
-    addr[0] = 0xE1A0800D;
-    addr[1] = 0xE12FFF7F;
+        /*
+            mov r8, sp
+            bkpt 0xff
+        */
+        addr[0] = 0x46E8;
+        addr[1] = 0xBEFF;
+    }
+    else
+    {
+        u32 *addr = (u32 *)(pos + arm9SvcTable[0x3C] - kernel9Address);
+
+        /*
+            mov r8, sp
+            bkpt 0xffff
+        */
+        addr[0] = 0xE1A0800D;
+        addr[1] = 0xE12FFF7F;
+    }
 
     arm9ExceptionHandlerSvcBreakAddress = arm9SvcTable[0x3C]; //BreakPtr
 
@@ -531,6 +644,20 @@ u32 patchKernel9Panic(u8 *pos, u32 size)
 
     u32 *off = (u32 *)(temp - 0x34);
     *off = 0xE12FFF7E;
+
+    return 0;
+}
+
+u32 patchTwlKernel9Panic(u8 *pos, u32 size)
+{
+    static const u8 pattern[] = {0xB5, 0x13, 0x00, 0x11};
+
+    u8 *temp = memsearch(pos, pattern, size, sizeof(pattern));
+
+    if(temp == NULL) return 1;
+
+    u16 *off = (u16 *)(temp - 3);
+    *off = 0xBEFE;
 
     return 0;
 }
@@ -583,7 +710,7 @@ u32 patchP9AMTicketWrapperZeroKeyIV(u8 *pos, u32 size, u32 firmVersion)
     //Beyond limit
     if(opjumpdistance < -0x1fffff || opjumpdistance > 0x1fffff) return 1;
 
-    //r0 and r1 for old call are already correct for this one 
+    //r0 and r1 for old call are already correct for this one
     //BLX __rt_memclr
     u32 op = (0xE800F000U | (((u32)opjumpdistance & 0x7FF) << 16) | (((u32)opjumpdistance >> 11) & 0x3FF) | (((u32)opjumpdistance >> 21) & 0x400)) & ~(1<<16);
 
@@ -659,7 +786,11 @@ u32 patchTwlFlashcartChecks(u8 *pos, u32 size, u32 firmVersion)
 
     if(temp == NULL)
     {
-        if(firmVersion == 0xFFFFFFFF) return patchOldTwlFlashcartChecks(pos, size);
+                if(firmVersion == 0xFFFFFFFF)
+        {
+            patchOldTwlFlashcartChecks(pos, size);
+            return 0;
+        }
 
         return 1;
     }
@@ -708,6 +839,122 @@ u32 patchAgbBootSplash(u8 *pos, u32 size)
     if(off == NULL) return 1;
 
     off[2] = 0x26;
+
+    return 0;
+}
+
+void patchTwlBg(u8 *pos, u32 size)
+{
+    // You can use the following Python code to convert something like below
+    // into twl_upscaling_filter.bin:
+    // import struct; open("twl_upscaling_filter.bin", "wb+").write(struct.pack("<30H", [array contents]))
+    static const u16 nintendoFilterTwl[] = {
+        0x0000, 0x004E, 0x011D, 0x01E3, 0x01C1,
+        0x0000, 0xFCA5, 0xF8D0, 0xF69D, 0xF873,
+        0x0000, 0x0D47, 0x1E35, 0x2F08, 0x3B6F,
+        0x4000, 0x3B6F, 0x2F08, 0x1E35, 0x0D47,
+        0x0000, 0xF873, 0xF69D, 0xF8D0, 0xFCA5,
+        0x0000, 0x01C1, 0x01E3, 0x011D, 0x004E,
+    };
+
+    // "error" func doesn't seem to work here
+    if (CONFIG(ENABLEDSIEXTFILTER))
+    {
+        u16 filter[5*6] = { 0 };
+        u32 rd = fileRead(filter, "twl_upscaling_filter.bin", sizeof(filter));
+        if (rd == sizeof(filter))
+        {
+            // else error("Failed to apply enable_dsi_external_filter:\n\ntwl_upscaling_filter.bin is missing or invalid.");
+            u8 *off = memsearch(pos, nintendoFilterTwl, size, sizeof(nintendoFilterTwl));
+            if (off != NULL)
+                memcpy(off, filter, sizeof(filter));
+            // else error("Failed to apply enable_dsi_external_filter.");
+        }
+    }
+
+    if (CONFIG(ALLOWUPDOWNLEFTRIGHTDSI))
+    {
+        u16 *off2;
+        for (off2 = (u16 *)pos; (u8 *)off2 < pos + size && (off2[0] != 0x2040 || off2[1] != 0x4020); off2++);
+
+        if ((u8 *)off2 < pos + size)
+        {
+            // else error("Failed to apply allow_updown_leftright_dsi.");
+            for (u32 i = 0; i < 8; i++)
+                off2[i] = 0x46C0;
+        }
+    }       
+}
+
+static bool getVtableAddress(u8 *pos, u32 size, const u8 *pattern, u32 patternSize, s32 patternOff, u32 memAddr, u32 *vtableAddr)
+{
+    u8 *tmp = memsearch(pos, pattern, size, patternSize);
+
+    if(tmp == NULL) return false;
+
+    u16 *instrPtr = (u16 *)(tmp + patternOff); //ldr rX, [PTR_TO_VTABLE]
+    if((*instrPtr & 0xf800) != 0x4800) return false; //Check the instruction opcode
+
+    *vtableAddr = *(u32 *)(((u32)instrPtr + 4 + 4*(*instrPtr & 0xff)) & ~0x3);
+
+    if(*vtableAddr < memAddr || *vtableAddr >= memAddr + size) return false;
+
+    return true;
+}
+
+u32 patchReadFileSHA256Vtab11(u8 *pos, u32 size, u32 process9MemAddr)
+{
+    static const u8 ncchVtableRefPattern[] = {0x77, 0x46, 0x06, 0x74, 0x47, 0x74};
+    static const u8 shaVtable1RefPattern[] = {0x00, 0x1f, 0x01, 0x60, 0x20, 0x30};
+    static const u8 shaVtable2RefPattern[] = {0x00, 0x1f, 0x01, 0x60, 0x01, 0x00, 0x20, 0x31};
+
+    u32 ncchVtableAddr;
+    if(!getVtableAddress(pos, size, ncchVtableRefPattern, sizeof(ncchVtableRefPattern), sizeof(ncchVtableRefPattern), process9MemAddr, &ncchVtableAddr)) return 1;
+
+    u32 shaVtable1Addr;
+    if(!getVtableAddress(pos, size, shaVtable1RefPattern, sizeof(shaVtable1RefPattern), -2, process9MemAddr, &shaVtable1Addr)) return 1;
+
+    u32 shaVtable2Addr;
+    if(!getVtableAddress(pos, size, shaVtable2RefPattern, sizeof(shaVtable2RefPattern), -2, process9MemAddr, &shaVtable2Addr)) return 1;
+
+    u32 *ncchVtable11Ptr = (u32 *)(pos + (ncchVtableAddr - process9MemAddr)) + 11,
+        *shaVtable1_11Ptr = (u32 *)(pos + (shaVtable1Addr - process9MemAddr)) + 11,
+        *shaVtable2_11Ptr = (u32 *)(pos + (shaVtable2Addr - process9MemAddr)) + 11;
+
+    if((*ncchVtable11Ptr & 0x1) == 0 || (*shaVtable1_11Ptr & 0x1) == 0 || (*shaVtable2_11Ptr & 0x1) == 0) return 1; //Must be Thumb
+
+    //Find needed function addresses by inspecting all bl branch targets
+    u16 *ncchWriteFnc = (u16 *)(pos + ((*ncchVtable11Ptr & ~0x1) - process9MemAddr));
+    if(*(u32 *)ncchWriteFnc != 0x0005b5f0) return 1; //Check if we got the right function
+
+    readFileSHA256Vtab11PatchCtorPtr = readFileSHA256Vtab11PatchInitPtr = readFileSHA256Vtab11PatchProcessPtr = 0;
+
+    for(; ((*ncchWriteFnc) & 0xff00) != 0xbd00; ncchWriteFnc++) { //Stop whe encountering a pop {..., pc}
+        if((ncchWriteFnc[0] & 0xf800) != 0xf000 || (ncchWriteFnc[1] & 0xf800) != 0xf800) continue; //Check the instruction opcode
+
+        s32 callOff = ((ncchWriteFnc[0] & 0x07ff) << 11) | (ncchWriteFnc[1] & 0x07ff);
+        callOff = (callOff & 0x1fffff) - (callOff & 0x200000);
+
+        u32 callTargetAddr = process9MemAddr + ((u8 *)ncchWriteFnc - pos) + 4 + 2*callOff;
+
+        if(callTargetAddr < process9MemAddr || callTargetAddr >= process9MemAddr + size) return false;
+
+        switch(*(u32 *)(pos + (callTargetAddr - process9MemAddr))) {
+            case 0x60422201: //DataChainProcessor::DataChainProcessor
+                readFileSHA256Vtab11PatchCtorPtr = callTargetAddr | 0x1;
+                break;
+            case 0x000db538: //DataChainProcessor::Init
+                readFileSHA256Vtab11PatchInitPtr = callTargetAddr | 0x1;
+                break;
+            case 0x0006b5f0: //DataChainProcessor::ProcessBytes
+                readFileSHA256Vtab11PatchProcessPtr = callTargetAddr | 0x1;
+                break;
+        }
+    }
+
+    if(readFileSHA256Vtab11PatchCtorPtr == 0 || readFileSHA256Vtab11PatchInitPtr == 0 || readFileSHA256Vtab11PatchProcessPtr == 0) return 1;
+
+    *shaVtable1_11Ptr = *shaVtable2_11Ptr = (u32) &readFileSHA256Vtab11Patch; //The patched vtable11 function is in ITCM, so we don't have to copy it somewhere else
 
     return 0;
 }

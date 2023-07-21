@@ -1,6 +1,6 @@
 /*
 *   This file is part of Luma3DS
-*   Copyright (C) 2016-2020 Aurora Wright, TuxSH
+*   Copyright (C) 2016-2021 Aurora Wright, TuxSH
 *
 *   This program is free software: you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -30,7 +30,10 @@
 
 #define PATTERN(a) a "_*.firm"
 
-bool mountFs(bool isSd, bool switchToCtrNand);
+bool mountSdCardPartition(bool switchMainDir);
+bool remountCtrNandPartition(bool switchMainDir);
+void unmountPartitions(void);
+
 u32 fileRead(void *dest, const char *path, u32 maxSize);
 u32 getFileSize(const char *path);
 bool fileWrite(const void *buffer, const char *path, u32 size);

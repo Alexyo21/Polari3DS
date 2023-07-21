@@ -1,6 +1,6 @@
 /*
 *   This file is part of Luma3DS
-*   Copyright (C) 2016-2020 Aurora Wright, TuxSH
+*   Copyright (C) 2022 Aurora Wright, TuxSH
 *
 *   This program is free software: you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -24,17 +24,14 @@
 *         reasonable ways as different from the original version.
 */
 
-/*
-*   Code originally by reworks
-*/
-
 #pragma once
 
 #include "types.h"
 
-#define PIN_FILE         "pin.bin"
-#define PIN_VERSIONMAJOR 1
-#define PIN_VERSIONMINOR 3
+u8 *loadDeliverArg(void);
+void commitDeliverArg(void);
 
-void newPin(bool allowSkipping, u32 pinMode);
-bool verifyPin(u32 pinMode);
+bool hasValidTlncAutobootParams(void);
+bool isTwlToCtrLaunch(void); // assumes TLNC block is valid
+
+bool configureHomebrewAutoboot(void);
