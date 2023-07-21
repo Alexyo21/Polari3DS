@@ -1,19 +1,43 @@
 #include <3ds.h>
 #include "memory.h"
 #include "patcher.h"
+#include "paslr.h"
 #include "ifile.h"
 #include "util.h"
 #include "hbldr.h"
-#include "luma_shared_config.h"
+
+#define SYSMODULE_CXI_COOKIE_MASK 0xEEEE000000000000ull
+
+// Used by the custom loader command 0x101 (ControlApplicationMemoryModeOverride)
+typedef struct ControlApplicationMemoryModeOverrideConfig {
+    u32 query : 1; //< Only query the current configuration, do not update it.
+    u32 enable_o3ds : 1; //< Enable o3ds memory mode override
+    u32 enable_n3ds : 1; //< Enable n3ds memory mode override
+    u32 o3ds_mode : 3; //< O3ds memory mode
+    u32 n3ds_mode : 3; //< N3ds memory mode
+} ControlApplicationMemoryModeOverrideConfig;
+
+static ControlApplicationMemoryModeOverrideConfig g_memoryOverrideConfig = { 0 };
 
 extern u32 config, multiConfig, bootConfig;
 extern bool isN3DS, isSdMode, nextGamePatchDisabled;
 
-static u8 g_ret_buf[sizeof(ExHeader_Info)];
-static u64 g_cached_programHandle;
+static u64 g_cached_programHandle; // for exheader info only
 static ExHeader_Info g_exheaderInfo;
 
-const char CODE_PATH[] = {0x01, 0x00, 0x00, 0x00, 0x2E, 0x63, 0x6F, 0x64, 0x65, 0x00, 0x00, 0x00};
+static IFile g_cached_sysmoduleCxiFile;
+static u64 g_cached_sysmoduleCxiCookie;
+static Ncch g_cached_sysmoduleCxiNcch;
+
+typedef struct ContentPath {
+    u32 contentType;
+    char fileName[8]; // for exefs
+} ContentPath;
+
+static const ContentPath codeContentPath = {
+    .contentType = 1, // ExeFS (with code)
+    .fileName = ".code", // last 3 bytes have to be 0, but this is guaranteed here.
+};
 
 typedef struct prog_addrs_t
 {
@@ -92,23 +116,40 @@ static int lzss_decompress(u8 *end)
     return ret;
 }
 
-static inline bool hbldrIs3dsxTitle(u64 tid)
+static inline bool IsSysmoduleId(u64 tid)
 {
-    return Luma_SharedConfig->use_hbldr && tid == Luma_SharedConfig->hbldr_3dsx_tid;
+    return (tid >> 32) == 0x00040130;
 }
 
-static Result allocateSharedMem(prog_addrs_t *shared, prog_addrs_t *vaddr, int flags)
+static inline bool IsApplicationId(u64 tid)
 {
-    u32 dummy;
-
-    memcpy(shared, vaddr, sizeof(prog_addrs_t));
-    shared->text_addr = 0x10000000;
-    shared->ro_addr = shared->text_addr + (shared->text_size << 12);
-    shared->data_addr = shared->ro_addr + (shared->ro_size << 12);
-    return svcControlMemory(&dummy, shared->text_addr, 0, shared->total_size << 12, (flags & 0xF00) | MEMOP_ALLOC, MEMPERM_READ | MEMPERM_WRITE);
+    return (tid >> 32) == 0x00040000;
 }
 
-static Result loadCode(u64 titleId, prog_addrs_t *shared, u64 programHandle, int isCompressed)
+static inline bool IsSysmoduleCxiCookie(u64 programHandle)
+{
+    return (programHandle >> 32) == (SYSMODULE_CXI_COOKIE_MASK >> 32);
+}
+
+static void InvalidateCachedCxiFile(void)
+{
+    if (g_cached_sysmoduleCxiFile.handle != 0)
+        IFile_Close(&g_cached_sysmoduleCxiFile);
+    memset(&g_cached_sysmoduleCxiFile, 0, sizeof(IFile));
+
+    g_cached_sysmoduleCxiCookie = 0;
+}
+
+static Result allocateProgramMemoryWrapper(prog_addrs_t *mapped, const ExHeader_Info *exhi, const prog_addrs_t *vaddr)
+{
+    memcpy(mapped, vaddr, sizeof(prog_addrs_t));
+    mapped->text_addr = 0x10000000;
+    mapped->ro_addr = mapped->text_addr + (mapped->text_size << 12);
+    mapped->data_addr = mapped->ro_addr + (mapped->ro_size << 12);
+    return allocateProgramMemory(exhi, mapped->text_addr, mapped->total_size << 12);
+}
+
+static Result loadCode(const ExHeader_Info *exhi, u64 programHandle, const prog_addrs_t *mapped)
 {
     IFile file;
     FS_Path archivePath;
@@ -116,40 +157,72 @@ static Result loadCode(u64 titleId, prog_addrs_t *shared, u64 programHandle, int
     u64 size;
     u64 total;
 
-    if(!CONFIG(PATCHGAMES) || !loadTitleCodeSection(titleId, (u8 *)shared->text_addr, (u64)shared->total_size << 12))
+    u64 titleId = exhi->aci.local_caps.title_id;
+    const ExHeader_CodeSetInfo *csi = &exhi->sci.codeset_info;
+    bool isCompressed = csi->flags.compress_exefs_code;
+
+    // Load from CXI, and skip patches, if we were opened from it
+    if (IsSysmoduleCxiCookie(programHandle))
+    {
+        u32 sz_ = 0;
+        bool ok = readSysmoduleCxiCode((u8 *)mapped->text_addr, &sz_, (u64)mapped->total_size << 12, &g_cached_sysmoduleCxiFile, &g_cached_sysmoduleCxiNcch);
+        size = sz_;
+
+        if (!ok)
+            return (Result)-2;
+
+        // Decompress
+        if (isCompressed)
+            lzss_decompress((u8 *)mapped->text_addr + size);
+
+        // No need to keep the file open at this point
+        InvalidateCachedCxiFile();
+        return 0;
+    }
+
+    bool codeLoadedExternally = false;
+    if (CONFIG(PATCHGAMES))
+    {
+        // Require both "load external FIRM & modules" and "patch games" for sysmodules
+        if (IsSysmoduleId(titleId))
+            codeLoadedExternally = CONFIG(LOADEXTFIRMSANDMODULES);
+        else
+            codeLoadedExternally = true;
+    }
+
+    if (codeLoadedExternally)
+        codeLoadedExternally = loadTitleCodeSection(titleId, (u8 *)mapped->text_addr, (u64)mapped->total_size << 12);
+
+    if(!codeLoadedExternally)
     {
         archivePath.type = PATH_BINARY;
         archivePath.data = &programHandle;
-        archivePath.size = 8;
+        archivePath.size = sizeof(programHandle);
 
         filePath.type = PATH_BINARY;
-        filePath.data = CODE_PATH;
-        filePath.size = sizeof(CODE_PATH);
-        if (R_FAILED(IFile_Open(&file, ARCHIVE_SAVEDATA_AND_CONTENT2, archivePath, filePath, FS_OPEN_READ)))
-            svcBreak(USERBREAK_ASSERT);
+        filePath.data = &codeContentPath;
+        filePath.size = sizeof(codeContentPath);
 
-        // get file size
+        assertSuccess(IFile_Open(&file, ARCHIVE_SAVEDATA_AND_CONTENT2, archivePath, filePath, FS_OPEN_READ));
         assertSuccess(IFile_GetSize(&file, &size));
 
         // check size
-        if (size > (u64)shared->total_size << 12)
+        if (size > (u64)mapped->total_size << 12)
         {
             IFile_Close(&file);
             return 0xC900464F;
         }
 
         // read code
-        assertSuccess(IFile_Read(&file, &total, (void *)shared->text_addr, size));
+        assertSuccess(IFile_Read(&file, &total, (void *)mapped->text_addr, size));
         IFile_Close(&file); // done reading
 
         // decompress
         if (isCompressed)
-            lzss_decompress((u8 *)shared->text_addr + size);
+            lzss_decompress((u8 *)mapped->text_addr + size);
     }
 
-    ExHeader_CodeSetInfo *csi = &g_exheaderInfo.sci.codeset_info;
-
-    patchCode(titleId, csi->flags.remaster_version, (u8 *)shared->text_addr, shared->total_size << 12, csi->text.size, csi->rodata.size, csi->data.size, csi->rodata.address, csi->data.address);
+    patchCode(titleId, csi->flags.remaster_version, (u8 *)mapped->text_addr, mapped->total_size << 12, csi->text.size, csi->rodata.size, csi->data.size, csi->rodata.address, csi->data.address);
 
     return 0;
 }
@@ -179,121 +252,161 @@ void plgldrExit(void)
         svcCloseHandle(plgldrHandle);
 }
 
+// Get plugin loader state
+Result  PLGLDR__IsPluginLoaderEnabled(bool *isEnabled)
+{
+    Result res = 0;
+
+    u32 *cmdbuf = getThreadCommandBuffer();
+
+    cmdbuf[0] = IPC_MakeHeader(2, 0, 0);
+    if (R_SUCCEEDED((res = svcSendSyncRequest(plgldrHandle))))
+    {
+        res = cmdbuf[1];
+        *isEnabled = cmdbuf[2];
+    }
+    return res;
+}
+
 // Try to load a plugin for the game
-static Result PLGLDR_LoadPlugin(Handle *process)
+static Result PLGLDR_LoadPlugin(u32 processID)
 {
     // Special case handling: games rebooting the 3DS on old models
     if (!isN3DS && g_exheaderInfo.aci.local_caps.core_info.o3ds_system_mode > 0)
     {
         // Check if the plugin loader is enabled, otherwise skip the loading part
-        s64 out;
+        bool enabled = false;
 
-        svcGetSystemInfo(&out, 0x10000, 0x102);
-        if ((out & 1) == 0)
+        PLGLDR__IsPluginLoaderEnabled(&enabled);
+        if (!enabled) {
             return 0;
+        }
     }
 
     u32* cmdbuf = getThreadCommandBuffer();
 
-    cmdbuf[0] = IPC_MakeHeader(1, 0, 2);
-    cmdbuf[1] = IPC_Desc_SharedHandles(1);
-    cmdbuf[2] = *process;
+    cmdbuf[0] = IPC_MakeHeader(1, 1, 0);
+    cmdbuf[1] = processID;
     return svcSendSyncRequest(plgldrHandle);
 }
 
-static Result GetProgramInfo(ExHeader_Info *exheaderInfo, u64 programHandle)
+static inline bool IsHioId(u64 id)
 {
-    Result res = 0;
+    // FS loads HIO titles at boot when it can. For HIO titles, title/programId and "program handle"
+    // are the same thing, although some of them can be aliased with their "real" titleId (i.e. in ExHeader).
 
-    if (programHandle >> 32 == 0xFFFF0000)
+    if (id >> 32 == 0xFFFF0000u)
+        return true;
+    else
+        return R_LEVEL(FSREG_CheckHostLoadId(id)) == RL_SUCCESS; // check if this is an alias to an HIO-loaded title
+}
+
+static Result GetProgramInfoImpl(ExHeader_Info *exheaderInfo, u64 programHandle)
+{
+    Result res;
+
+    // Load from CXI, and skip patches, if we were opened from it
+    if (IsSysmoduleCxiCookie(programHandle))
+    {
+        u64 titleId = 0x0004013000000000ull | (u32)programHandle;
+        if (g_cached_sysmoduleCxiCookie != programHandle)
+        {
+            InvalidateCachedCxiFile();
+            res = openSysmoduleCxi(&g_cached_sysmoduleCxiFile, titleId);
+            if (R_FAILED(res))
+                return res;
+            g_cached_sysmoduleCxiCookie = programHandle;
+        }
+
+        bool ok = readSysmoduleCxiNcchHeader(&g_cached_sysmoduleCxiNcch, &g_cached_sysmoduleCxiFile);
+        if (!ok)
+            return (Result)-2;
+        ok = readSysmoduleCxiExHeaderInfo(exheaderInfo, &g_cached_sysmoduleCxiNcch, &g_cached_sysmoduleCxiFile);
+        if (!ok)
+            return (Result)-2;
+        return 0;
+    }
+
+    if (IsHioId(programHandle))
         res = FSREG_GetProgramInfo(exheaderInfo, 1, programHandle);
     else
-    {
-        res = FSREG_CheckHostLoadId(programHandle);
-        //if ((res >= 0 && (unsigned)res >> 27) || (res < 0 && ((unsigned)res >> 27)-32))
-        //so use PXIPM if FSREG fails OR returns "info", is the second condition a bug?
-        if (R_FAILED(res) || (R_SUCCEEDED(res) && R_LEVEL(res) != RL_SUCCESS))
-        {
-            TRY(PXIPM_GetProgramInfo(exheaderInfo, programHandle));
-        }
-        else
-        {
-            TRY(FSREG_GetProgramInfo(exheaderInfo, 1, programHandle));
-        }
-    }
+        res = PXIPM_GetProgramInfo(exheaderInfo, programHandle);
+
+    if (R_FAILED(res))
+        return res;
+
+    u64 originalTitleId = exheaderInfo->aci.local_caps.title_id;
 
     // Tweak 3dsx placeholder title exheaderInfo
     if (hbldrIs3dsxTitle(exheaderInfo->aci.local_caps.title_id))
     {
-        assertSuccess(hbldrInit());
-        HBLDR_PatchExHeaderInfo(exheaderInfo);
-        hbldrExit();
+        hbldrPatchExHeaderInfo(exheaderInfo);
     }
     else
     {
-        u64 originaltitleId = exheaderInfo->aci.local_caps.title_id;
-        if(CONFIG(PATCHGAMES) && loadTitleExheaderInfo(exheaderInfo->aci.local_caps.title_id, exheaderInfo))
-            exheaderInfo->aci.local_caps.title_id = originaltitleId;
-    }
+        bool exhLoadedExternally = false;
+        if (CONFIG(PATCHGAMES))
+        {
+            // Require both "load external FIRM & modules" and "patch games" for sysmodules
+            if (IsSysmoduleId(originalTitleId))
+                exhLoadedExternally = CONFIG(LOADEXTFIRMSANDMODULES);
+            else
+                exhLoadedExternally = true;
+        }
 
-    if(isN3DS)
-    {
-        exheaderInfo->aci.local_caps.core_info.enable_l2c |= useN3dsSettings(exheaderInfo->aci.local_caps.title_id);
+        if (exhLoadedExternally)
+            exhLoadedExternally = loadTitleExheaderInfo(originalTitleId, exheaderInfo);
+
+        if(exhLoadedExternally)
+            exheaderInfo->aci.local_caps.title_id = originalTitleId;
+    }
+    
+    if (IsApplicationId(originalTitleId)) {
+        if (g_memoryOverrideConfig.enable_o3ds)
+            exheaderInfo->aci.local_caps.core_info.o3ds_system_mode = g_memoryOverrideConfig.o3ds_mode;
+        if (g_memoryOverrideConfig.enable_n3ds)
+            exheaderInfo->aci.local_caps.core_info.n3ds_system_mode = g_memoryOverrideConfig.n3ds_mode;
     }
 
     return res;
 }
 
-static Result LoadProcess(Handle *process, u64 programHandle)
+static Result GetProgramInfo(u64 programHandle)
 {
-    Result res;
-    int count;
-    u32 flags;
-    u32 desc;
+    Result res = 0;
+    u64 cachedTitleId = g_exheaderInfo.aci.local_caps.title_id;
+
+    if (programHandle != g_cached_programHandle || hbldrIs3dsxTitle(cachedTitleId))
+    {
+        res = GetProgramInfoImpl(&g_exheaderInfo, programHandle);
+        g_cached_programHandle = R_SUCCEEDED(res) ? programHandle : 0;
+    }
+
+    return res;
+}
+
+static Result LoadProcessImpl(Handle *outProcessHandle, const ExHeader_Info *exhi, u64 programHandle)
+{
+    const ExHeader_CodeSetInfo *csi = &exhi->sci.codeset_info;
+
+    Result res = 0;
     u32 dummy;
-    prog_addrs_t sharedAddr;
+    prog_addrs_t mapped;
     prog_addrs_t vaddr;
     Handle codeset;
-    CodeSetInfo codesetinfo;
+    CodeSetHeader csh;
     u32 dataMemSize;
-    u64 titleId;
 
-    // make sure the cached info corrosponds to the current programHandle
-    if (g_cached_programHandle != programHandle || hbldrIs3dsxTitle(g_exheaderInfo.aci.local_caps.title_id))
-    {
-        res = GetProgramInfo(&g_exheaderInfo, programHandle);
-        g_cached_programHandle = programHandle;
-        if (R_FAILED(res))
-        {
-            g_cached_programHandle = 0;
-            return res;
-        }
-    }
-
-    // get kernel flags
-    flags = 0;
+    u32 region = 0;
+    s32 count;
     for (count = 0; count < 28; count++)
     {
-        desc = g_exheaderInfo.aci.kernel_caps.descriptors[count];
+        u32 desc = exhi->aci.kernel_caps.descriptors[count];
         if (0x1FE == desc >> 23)
-            flags = desc & 0xF00;
+            region = desc & 0xF00;
     }
-    if (flags == 0)
-        return MAKERESULT(RL_PERMANENT, RS_INVALIDARG, 1, 2);
-
-    // check for 3dsx process
-    titleId = g_exheaderInfo.aci.local_caps.title_id;
-    ExHeader_CodeSetInfo *csi = &g_exheaderInfo.sci.codeset_info;
-
-    if (hbldrIs3dsxTitle(titleId))
-    {
-        assertSuccess(hbldrInit());
-        assertSuccess(HBLDR_LoadProcess(&codeset, csi->text.address, flags & 0xF00, titleId, csi->name));
-        res = svcCreateProcess(process, codeset, g_exheaderInfo.aci.kernel_caps.descriptors, count);
-        svcCloseHandle(codeset);
-        hbldrExit();
-        return res;
-    }
+    if (region == 0)
+            return MAKERESULT(RL_PERMANENT, RS_INVALIDARG, RM_KERNEL, 2);
 
     // allocate process memory
     vaddr.text_addr = csi->text.address;
@@ -304,44 +417,60 @@ static Result LoadProcess(Handle *process, u64 programHandle)
     vaddr.data_size = (csi->data.size + 4095) >> 12;
     dataMemSize = (csi->data.size + csi->bss_size + 4095) >> 12;
     vaddr.total_size = vaddr.text_size + vaddr.ro_size + vaddr.data_size;
-    TRY(allocateSharedMem(&sharedAddr, &vaddr, flags));
+    TRY(allocateProgramMemoryWrapper(&mapped, exhi, &vaddr));
 
     // load code
-    if (R_SUCCEEDED(res = loadCode(titleId, &sharedAddr, programHandle, csi->flags.compress_exefs_code)))
+    u64 titleId = exhi->aci.local_caps.title_id;
+    if (R_SUCCEEDED(res = loadCode(exhi, programHandle, &mapped)))
     {
-        u32     *code = (u32 *)sharedAddr.text_addr;
+        u32     *code = (u32 *)mapped.text_addr;
         bool    isHomebrew = code[0] == 0xEA000006 && code[8] == 0xE1A0400E;
 
-        memcpy(&codesetinfo.name, csi->name, 8);
-        codesetinfo.program_id = titleId;
-        codesetinfo.text_addr = vaddr.text_addr;
-        codesetinfo.text_size = vaddr.text_size;
-        codesetinfo.text_size_total = vaddr.text_size;
-        codesetinfo.ro_addr = vaddr.ro_addr;
-        codesetinfo.ro_size = vaddr.ro_size;
-        codesetinfo.ro_size_total = vaddr.ro_size;
-        codesetinfo.rw_addr = vaddr.data_addr;
-        codesetinfo.rw_size = vaddr.data_size;
-        codesetinfo.rw_size_total = dataMemSize;
-        res = svcCreateCodeSet(&codeset, &codesetinfo, (void *)sharedAddr.text_addr, (void *)sharedAddr.ro_addr, (void *)sharedAddr.data_addr);
+        memcpy(&csh.name, csi->name, 8);
+        csh.program_id = titleId;
+        csh.text_addr = vaddr.text_addr;
+        csh.text_size = vaddr.text_size;
+        csh.text_size_total = vaddr.text_size;
+        csh.ro_addr = vaddr.ro_addr;
+        csh.ro_size = vaddr.ro_size;
+        csh.ro_size_total = vaddr.ro_size;
+        csh.rw_addr = vaddr.data_addr;
+        csh.rw_size = vaddr.data_size;
+        csh.rw_size_total = dataMemSize;
+        res = svcCreateCodeSet(&codeset, &csh, mapped.text_addr, mapped.ro_addr, mapped.data_addr);
         if (R_SUCCEEDED(res))
         {
-            res = svcCreateProcess(process, codeset, g_exheaderInfo.aci.kernel_caps.descriptors, count);
+            // There are always 28 descriptors
+            res = svcCreateProcess(outProcessHandle, codeset, exhi->aci.kernel_caps.descriptors, count);
             svcCloseHandle(codeset);
             res = R_SUCCEEDED(res) ? 0 : res;
             
             // check for plugin
             if (!res && !isHomebrew && ((u32)((titleId >> 0x20) & 0xFFFFFFEDULL) == 0x00040000))
             {
+                u32 processID;
+                assertSuccess(svcGetProcessId(&processID, *outProcessHandle));
                 assertSuccess(plgldrInit());
-                assertSuccess(PLGLDR_LoadPlugin(process));
+                assertSuccess(PLGLDR_LoadPlugin(processID));
                 plgldrExit();
             }
         }
     }
 
-    svcControlMemory(&dummy, sharedAddr.text_addr, 0, sharedAddr.total_size << 12, MEMOP_FREE, 0);
+    svcControlMemory(&dummy, mapped.text_addr, 0, mapped.total_size << 12, MEMOP_FREE, 0);
     return res;
+}
+
+static Result LoadProcess(Handle *process, u64 programHandle)
+{
+    Result res = 0;
+    TRY(GetProgramInfo(programHandle));
+
+    if (hbldrIs3dsxTitle(g_exheaderInfo.aci.local_caps.title_id))
+        return assertSuccess(hbldrLoadProcess(process, &g_exheaderInfo));
+    else
+        // Break on failure, even here (if GetProgramInfo succeeds we shouldn't be here anyway)
+        return assertSuccess(LoadProcessImpl(process, &g_exheaderInfo, programHandle));
 }
 
 static Result RegisterProgram(u64 *programHandle, FS_ProgramInfo *title, FS_ProgramInfo *update)
@@ -350,56 +479,61 @@ static Result RegisterProgram(u64 *programHandle, FS_ProgramInfo *title, FS_Prog
     u64 titleId;
 
     titleId = title->programId;
-    if (titleId >> 32 != 0xFFFF0000)
+    if (IsHioId(titleId))
     {
-        res = FSREG_CheckHostLoadId(titleId);
-        //if ((res >= 0 && (unsigned)res >> 27) || (res < 0 && ((unsigned)res >> 27)-32))
-        if (R_FAILED(res) || (R_SUCCEEDED(res) && R_LEVEL(res) != RL_SUCCESS))
+        if ((title->mediaType != update->mediaType) || (titleId != update->programId))
+            panic(1);
+
+        TRY(FSREG_LoadProgram(programHandle, title));
+
+        if (!IsHioId(*programHandle)) // double check this is indeed HIO
+            panic(2);
+    }
+    else
+    {
+        bool loadedCxiFromStorage = false;
+        if (IsSysmoduleId(titleId) && CONFIG(LOADEXTFIRMSANDMODULES))
         {
-            TRY(PXIPM_RegisterProgram(programHandle, title, update));
-            if (*programHandle >> 32 != 0xFFFF0000)
+            u64 tid2 = titleId & ~0xF0000000ull;
+            // Forbid having two such file handles being open at the same time
+            // Also reload the file even if already cached.
+            InvalidateCachedCxiFile();
+
+            res = openSysmoduleCxi(&g_cached_sysmoduleCxiFile, tid2);
+            if (R_SUCCEEDED(res))
             {
-                res = FSREG_CheckHostLoadId(*programHandle);
-                //if ((res >= 0 && (unsigned)res >> 27) || (res < 0 && ((unsigned)res >> 27)-32))
-                if (R_FAILED(res) || (R_SUCCEEDED(res) && R_LEVEL(res) != RL_SUCCESS))
-                {
-                    return 0;
-                }
+                // A .cxi with the correct name in /luma/sysmodule exists, proceed (ignoring N3DS TID bits)
+                *programHandle = SYSMODULE_CXI_COOKIE_MASK | (u32)tid2;
+                g_cached_sysmoduleCxiCookie = *programHandle;
+                loadedCxiFromStorage = true;
             }
-            panic(0);
+        }
+
+        if (!loadedCxiFromStorage)
+        {
+            // Otherwise, just load as normal
+            TRY(PXIPM_RegisterProgram(programHandle, title, update));
+            if (IsHioId(*programHandle)) // double check this is indeed *not* HIO
+                panic(0);
         }
     }
-
-    if ((title->mediaType != update->mediaType) || (titleId != update->programId))
-        panic(1);
-
-    TRY(FSREG_LoadProgram(programHandle, title));
-    if (*programHandle >> 32 == 0xFFFF0000)
-        return 0;
-
-    res = FSREG_CheckHostLoadId(*programHandle);
-    //if ((res >= 0 && (unsigned)res >> 27) || (res < 0 && ((unsigned)res >> 27)-32))
-    if (R_FAILED(res) || (R_SUCCEEDED(res) && R_LEVEL(res) != RL_SUCCESS))
-        panic(2);
 
     return res;
 }
 
 static Result UnregisterProgram(u64 programHandle)
 {
-    Result res;
+    if (g_cached_programHandle == programHandle)
+        g_cached_programHandle = 0;
 
-    if (programHandle >> 32 == 0xFFFF0000)
-        return FSREG_UnloadProgram(programHandle);
-    else
+    if (IsSysmoduleCxiCookie(programHandle))
     {
-        res = FSREG_CheckHostLoadId(programHandle);
-        //if ((res >= 0 && (unsigned)res >> 27) || (res < 0 && ((unsigned)res >> 27)-32))
-        if (R_FAILED(res) || (R_SUCCEEDED(res) && R_LEVEL(res) != RL_SUCCESS))
-            return PXIPM_UnregisterProgram(programHandle);
-        else
-            return FSREG_UnloadProgram(programHandle);
+        if (programHandle == g_cached_sysmoduleCxiCookie)
+            InvalidateCachedCxiFile();
+        return 0;
     }
+    else
+        return IsHioId(programHandle) ? FSREG_UnloadProgram(programHandle) : PXIPM_UnregisterProgram(programHandle);
 }
 
 void loaderHandleCommands(void *ctx)
@@ -407,6 +541,7 @@ void loaderHandleCommands(void *ctx)
     (void)ctx;
     FS_ProgramInfo title;
     FS_ProgramInfo update;
+    ControlApplicationMemoryModeOverrideConfig memModeOverride;
     u32* cmdbuf;
     u16 cmdid;
     int res;
@@ -435,31 +570,31 @@ void loaderHandleCommands(void *ctx)
             break;
         case 3: // UnregisterProgram
             memcpy(&programHandle, &cmdbuf[1], 8);
-
-            if (g_cached_programHandle == programHandle)
-                g_cached_programHandle = 0;
             cmdbuf[1] = UnregisterProgram(programHandle);
             cmdbuf[0] = IPC_MakeHeader(3, 1, 0);
             break;
         case 4: // GetProgramInfo
             memcpy(&programHandle, &cmdbuf[1], 8);
-            if (programHandle != g_cached_programHandle || hbldrIs3dsxTitle(g_exheaderInfo.aci.local_caps.title_id))
-            {
-                res = GetProgramInfo(&g_exheaderInfo, programHandle);
-                g_cached_programHandle = R_SUCCEEDED(res) ? programHandle : 0;
-            }
-            memcpy(&g_ret_buf, &g_exheaderInfo, sizeof(ExHeader_Info));
+            res = GetProgramInfo(programHandle);
             cmdbuf[0] = IPC_MakeHeader(4, 1, 2);
             cmdbuf[1] = res;
             cmdbuf[2] = IPC_Desc_StaticBuffer(sizeof(ExHeader_Info), 0); //0x1000002;
-            cmdbuf[3] = (u32)&g_ret_buf;
+            cmdbuf[3] = (u32)&g_exheaderInfo; // official Loader makes a copy here, but this is isn't necessary
             break;
         // Custom
         case 0x100: // DisableNextGamePatch
             nextGamePatchDisabled = true;
             cmdbuf[0] = IPC_MakeHeader(0x100, 1, 0);
-            cmdbuf[1] = MAKERESULT(RL_SUCCESS, RS_SUCCESS, RM_COMMON, RD_SUCCESS);
+            cmdbuf[1] = (Result)0;
             break;
+        case 0x101: // ControlApplicationMemoryModeOverride
+            memcpy(&memModeOverride, &cmdbuf[1], sizeof(ControlApplicationMemoryModeOverrideConfig));
+            if (!memModeOverride.query)
+                g_memoryOverrideConfig = memModeOverride;
+            cmdbuf[0] = IPC_MakeHeader(0x101, 2, 0);
+            cmdbuf[1] = (Result)0;
+            memcpy(&cmdbuf[2], &g_memoryOverrideConfig, sizeof(ControlApplicationMemoryModeOverrideConfig));
+            break; 
         default: // error
             cmdbuf[0] = IPC_MakeHeader(0, 1, 0);
             cmdbuf[1] = 0xD900182F;

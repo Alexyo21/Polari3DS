@@ -4,6 +4,7 @@
 #include "memory.h"
 #include "strings.h"
 #include "romfsredir.h"
+#include "util.h"
 
 static u32 patchMemory(u8 *start, u32 size, const void *pattern, u32 patSize, s32 offset, const void *replace, u32 repSize, u32 count)
 {
@@ -264,12 +265,22 @@ static inline bool applyCodeIpsPatch(u64 progId, u8 *code, u32 size)
     /* Here we look for "/luma/titles/[u64 titleID in hex, uppercase]/code.ips"
        If it exists it should be an IPS format patch */
 
-    char path[] = "/luma/titles/0000000000000000/code.ips";
-    progIdToStr(path + 28, progId);
-
+    bool isSysmodule = (progId >> 32) == 0x00040130;
     IFile file;
 
-    if(!openLumaFile(&file, path)) return true;
+    if (isSysmodule)
+    {
+        char path[] = "/luma/sysmodules/0000000000000000.ips";
+        progId &= ~0xF0000000ull; // clear N3DS bit
+        progIdToStr(path + 32, progId);
+        if(!openLumaFile(&file, path)) return true;
+    }
+    else
+    {
+        char path[] = "/luma/titles/0000000000000000/code.ips";
+        progIdToStr(path + 28, progId);
+        if(!openLumaFile(&file, path)) return true;
+    }
 
     bool ret = false;
     u8 buffer[5];
@@ -318,23 +329,68 @@ exit:
     return ret;
 }
 
-bool useN3dsSettings(u64 progId)
+Result openSysmoduleCxi(IFile *outFile, u64 progId)
 {
-    IFile file;
-    Result res = 0;
+    progId &= ~0xF0000000ull; // clear N3DS bit
+    char path[] = "/luma/sysmodules/0000000000000000.cxi";
+    progIdToStr(path + sizeof("/luma/sysmodules/0000000000000000") - 2, progId);
 
-    char path[] = "/luma/n3ds/0000000000000000.bin";
-    progIdToStr(path + 26, progId);
+    FS_ArchiveID archiveId = isSdMode ? ARCHIVE_SDMC : ARCHIVE_NAND_RW;
+    return fileOpen(outFile, archiveId, path, FS_OPEN_READ);
+}
 
-    res = IFile_Open(&file, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""), fsMakePath(PATH_ASCII, path), FS_OPEN_READ);
+bool readSysmoduleCxiNcchHeader(Ncch *outNcchHeader, IFile *file)
+{
+    u64 total = 0;
+    return R_SUCCEEDED(IFile_ReadAt(file, &total, outNcchHeader, 0, sizeof(Ncch))) && total == sizeof(Ncch);
+}
 
-    if(R_SUCCEEDED(res))
+bool readSysmoduleCxiExHeaderInfo(ExHeader_Info *outExhi, const Ncch *ncchHeader, IFile *file)
+{
+    u64 total = 0;
+    u32 size = ncchHeader->exHeaderSize;
+    if (size < sizeof(ExHeader_Info))
+        return false;
+    return R_SUCCEEDED(IFile_ReadAt(file, &total, outExhi, sizeof(Ncch), size)) && total == size;
+}
+
+bool readSysmoduleCxiCode(u8 *outCode, u32 *outSize, u32 maxSize, IFile *file, const Ncch *ncchHeader)
+{
+    u32 contentUnitShift = 9 + ncchHeader->flags[6];
+    u32 exeFsOffset = ncchHeader->exeFsOffset << contentUnitShift;
+    u32 exeFsSize = ncchHeader->exeFsSize << contentUnitShift;
+
+    if (exeFsSize < sizeof(ExeFsHeader) || exeFsOffset < 0x200 + ncchHeader->exHeaderSize)
+        return false;
+
+    // Read ExeFs header
+    ExeFsHeader hdr;
+    u64 total = 0;
+    u32 size = sizeof(ExeFsHeader);
+    Result res = IFile_ReadAt(file, &total, &hdr, exeFsOffset, size);
+
+    if (R_FAILED(res) || total != size)
+        return false;
+
+    // Get .code section info
+    ExeFsFileHeader *codeHdr = NULL;
+    for (u32 i = 0; i < 8; i++)
     {
-        IFile_Close(&file);
-
-        return true;
+        ExeFsFileHeader *fileHdr = &hdr.fileHeaders[i];
+        if (strncmp(fileHdr->name, ".code", 8) == 0)
+            codeHdr = fileHdr;
     }
-    return false;
+
+    if (codeHdr == NULL)
+        return false;
+
+    size = codeHdr->size;
+    *outSize = size;
+    if (size > maxSize)
+        return false;
+
+    res = IFile_ReadAt(file, &total, outCode, exeFsOffset + sizeof(ExeFsHeader) + codeHdr->offset, size);
+    return R_SUCCEEDED(res) && total == size;
 }
 
 bool loadTitleCodeSection(u64 progId, u8 *code, u32 size)
@@ -502,15 +558,68 @@ exit:
 
 static inline bool patchLayeredFs(u64 progId, u8 *code, u32 size, u32 textSize, u32 roSize, u32 dataSize, u32 roAddress, u32 dataAddress)
 {
-    /* Here we look for "/luma/titles/[u64 titleID in hex, uppercase]/romfs"
-       If it exists it should be a folder containing ROMFS files */
-
-    char path[] = "/luma/titles/0000000000000000/romfs";
-    progIdToStr(path + 28, progId);
-
+    char fileRedirect[] = "/luma/titles/0000000000000000/layeredfs.txt";
+    progIdToStr(fileRedirect + 28, progId);
+  
+    IFile file;
+    u64 pathSize = 36;
+    // Check for the existence of a layeredfs text file. If it doesn't exist or
+    // cannot be opened, we will default to the romfs/ directory within the
+    // game's luma directory.
+    bool hasFileRedirect = openLumaFile(&file, fileRedirect);
+    if(hasFileRedirect)
+    {
+        if(R_FAILED(IFile_GetSize(&file, &pathSize)))
+        {
+            IFile_Close(&file);
+            hasFileRedirect = false;
+            pathSize = 36;
+        }
+    }
+    char path[36 > pathSize ? 36 : pathSize];
+    // If the file exists, we'll try to read it. If we can't, we'll fall back
+    // to the default.
+    if(hasFileRedirect)
+    {
+        u64 total;
+        if(R_FAILED(IFile_Read(&file, &total, path, --pathSize)))
+        {
+            hasFileRedirect = false;
+            pathSize = 36;
+            memcpy(path, "/luma/titles/0000000000000000/romfs", pathSize);
+            progIdToStr(path + 28, progId);
+        }
+        else
+        {
+            path[pathSize++] = 0;
+        }
+        IFile_Close(&file);
+    }
+    else
+    {
+        memcpy(path, "/luma/titles/0000000000000000/romfs", pathSize);
+        progIdToStr(path + 28, progId);
+    }
+    
     u32 archiveId = checkLumaDir(path);
 
-    if(!archiveId) return true;
+    if(!archiveId)
+    {
+        // If we failed to find the redirect path, we'll fall back to the
+        // default and try again.
+        if(hasFileRedirect)
+        {
+            pathSize = 36;
+            memcpy(path, "/luma/titles/0000000000000000/romfs", pathSize);
+            progIdToStr(path + 28, progId);
+            archiveId = checkLumaDir(path);
+            if (!(archiveId = checkLumaDir(path))) return true;
+        }
+        else
+        {
+          return true;
+        }
+    }
 
     u32 fsMountArchive = 0xFFFFFFFF,
         fsRegisterArchive = 0xFFFFFFFF,
@@ -556,7 +665,7 @@ static inline bool patchLayeredFs(u64 progId, u8 *code, u32 size, u32 textSize, 
     memcpy(payload, romfsRedirPatch, romfsRedirPatchSize);
 
     memcpy(code + pathOffset, "lf:", 3);
-    memcpy(code + pathOffset + 3, path, sizeof(path));
+    memcpy(code + pathOffset + 3, path, pathSize);
 
     //Place the hooks
     *(u32 *)(code + fsOpenFileDirectly) = MAKE_BRANCH(fsOpenFileDirectly, payloadOffset);
@@ -573,6 +682,10 @@ void patchCode(u64 progId, u16 progVer, u8 *code, u32 size, u32 textSize, u32 ro
                       progId == 0x000400300000A902LL || //KOR Home Menu
                       progId == 0x000400300000A102LL || //CHN Home Menu
                       progId == 0x000400300000B102LL;   //TWN Home Menu
+
+    bool isApp = ((progId >> 32) & ~0x12) == 0x00040000;
+    bool isApplet = (progId >> 32) == 0x00040030;
+    bool isSysmodule = (progId >> 32) == 0x00040130;
 
     if(isHomeMenu)
     {
@@ -650,7 +763,7 @@ void patchCode(u64 progId, u16 progVer, u8 *code, u32 size, u32 textSize, u32 ro
             && CONFIG(PATCHVERSTRING))
     {
         static const u16 pattern[] = u"Ve";
-        static u16 *patch;
+        const u16 *patch;
         u32 patchSize = 0,
         currentNand = BOOTCFG_NAND;
 
@@ -661,26 +774,9 @@ void patchCode(u64 progId, u16 progVer, u8 *code, u32 size, u32 textSize, u32 ro
         else
         {
             patchSize = 8;
-            u32 currentFirm = BOOTCFG_FIRM;
 
-            static u16 *verStringsNands[] = { u" Sys",
-                                              u" Emu",
-                                              u"Emu2",
-                                              u"Emu3",
-                                              u"Emu4" },
-
-                       *verStringsEmuSys[] = { u"EmuS",
-                                               u"Em2S",
-                                               u"Em3S",
-                                               u"Em4S" },
-
-                       *verStringsSysEmu[] = { u"SysE",
-                                               u"SyE2",
-                                               u"SyE3",
-                                               u"SyE4" };
-
-            patch = (currentFirm != 0) == (currentNand != 0) ? verStringsNands[currentNand] :
-                                          (!currentNand ? verStringsSysEmu[currentFirm - 1] : verStringsEmuSys[currentNand - 1]);
+            static const u16 *const verStringNandEmu[] = { u" Emu", u"Emu2", u"Emu3", u"Emu4" };
+            patch = currentNand == 0 ? u" Sys" : verStringNandEmu[BOOTCFG_EMUINDEX];
         }
 
         //Patch Ver. string
@@ -765,7 +861,7 @@ void patchCode(u64 progId, u16 progVer, u8 *code, u32 size, u32 textSize, u32 ro
             0x00, 0x26
         };
 
-        //Disable SecureInfo signature check
+        //Disable SecureInfo signature check (redundant)
         if(!patchMemory(code, textSize,
                 pattern,
                 sizeof(pattern), 0,
@@ -803,7 +899,7 @@ void patchCode(u64 progId, u16 progVer, u8 *code, u32 size, u32 textSize, u32 ro
             0x00, 0x00, 0xA0, 0xE3, 0x1E, 0xFF, 0x2F, 0xE1 //mov r0, #0; bx lr
         };
 
-        //Disable CRR0 signature (RSA2048 with SHA256) check and CRO0/CRR0 SHA256 hash checks (section hashes, and hash table)
+        //Disable CRR0 signature (RSA2048 with SHA256) check (redundant) and CRO0/CRR0 SHA256 hash checks (section hashes, and hash table)
         if(!patchMemory(code, textSize,
                 pattern,
                 sizeof(pattern), -9,
@@ -864,6 +960,7 @@ void patchCode(u64 progId, u16 progVer, u8 *code, u32 size, u32 textSize, u32 ro
 
     else if((progId & ~0xF0000001ULL) == 0x0004013000001A02LL) //DSP, SAFE_FIRM DSP
     {
+        // This patch is redundant
         static const u8 pattern[] = {
             0xE3, 0x10, 0x10, 0x80, 0xE2
         },
@@ -880,12 +977,21 @@ void patchCode(u64 progId, u16 progVer, u8 *code, u32 size, u32 textSize, u32 ro
             )) goto error;
     }
 
-    if(CONFIG(PATCHGAMES) && !nextGamePatchDisabled)
+    if (isSysmodule && CONFIG(LOADEXTFIRMSANDMODULES))
     {
         if(!patcherApplyCodeBpsPatch(progId, code, size)) goto error;
         if(!applyCodeIpsPatch(progId, code, size)) goto error;
+    }
 
-        if((u32)((progId >> 0x20) & 0xFFFFFFEDULL) == 0x00040000 || isHomeMenu)
+    if(CONFIG(PATCHGAMES) && !(isApp && nextGamePatchDisabled))
+    {
+        if (!isSysmodule)
+        {
+            if(!patcherApplyCodeBpsPatch(progId, code, size)) goto error;
+            if(!applyCodeIpsPatch(progId, code, size)) goto error;
+        }
+
+        if(isApp || isApplet)
         {
             u8 mask,
                regionId,
