@@ -25,11 +25,11 @@ AccessControlInfo:
 
   DisableDebug                  : false
   EnableForceDebug              : false
-  CanWriteSharedPage            : false
-  CanUsePrivilegedPriority      : false
-  CanUseNonAlphabetAndNumber    : false
-  PermitMainFunctionArgument    : false
-  CanShareDeviceMemory          : false
+  CanWriteSharedPage            : true
+  CanUsePrivilegedPriority      : true
+  CanUseNonAlphabetAndNumber    : true
+  PermitMainFunctionArgument    : true
+  CanShareDeviceMemory          : true
   RunnableOnSleep               : true
   SpecialMemoryArrange          : false
   ResourceLimitCategory         : Other
