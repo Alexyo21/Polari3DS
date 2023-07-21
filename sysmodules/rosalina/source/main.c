@@ -1,6 +1,6 @@
 /*
 *   This file is part of Luma3DS
-*   Copyright (C) 2016-2020 Aurora Wright, TuxSH
+*   Copyright (C) 2016-2021 Aurora Wright, TuxSH
 *
 *   This program is free software: you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -29,8 +29,6 @@
 #include "menu.h"
 #include "service_manager.h"
 #include "errdisp.h"
-#include "hbloader.h"
-#include "3dsx.h"
 #include "utils.h"
 #include "sleep.h"
 #include "MyThread.h"
@@ -39,17 +37,16 @@
 #include "menus/screen_filters.h"
 #include "menus/cheats.h"
 #include "menus/sysconfig.h"
-#include "redshift/redshift.h"
 #include "input_redirection.h"
 #include "minisoc.h"
 #include "draw.h"
+#include "bootdiag.h"
+#include "shell.h"
 
 #include "task_runner.h"
 #include "plugin.h"
 
 bool isN3DS;
-bool wifiOnBeforeSleep;
-bool hasTopScreen;
 
 Result __sync_init(void);
 Result __sync_fini(void);
@@ -87,19 +84,11 @@ void initSystem(void)
 
     isN3DS = svcGetSystemInfo(&out, 0x10001, 0) == 0;
 
-    svcGetSystemInfo(&out, 0x10000, 0x100);
-    Luma_SharedConfig->hbldr_3dsx_tid = out == 0 ? HBLDR_DEFAULT_3DSX_TID : (u64)out;
-    Luma_SharedConfig->use_hbldr = true;
-
     svcGetSystemInfo(&out, 0x10000, 0x101);
     menuCombo = out == 0 ? DEFAULT_MENU_COMBO : (u32)out;
-    
+
     svcGetSystemInfo(&out, 0x10000, 0x103);
     lastNtpTzOffset = (s16)out;
-
-    miscellaneousMenu.items[0].title = Luma_SharedConfig->hbldr_3dsx_tid == HBLDR_DEFAULT_3DSX_TID ?
-        "Switch the hb. title to the current app." :
-        "Switch the hb. title to hblauncher_loader";
 
     for(res = 0xD88007FA; res == (Result)0xD88007FA; svcSleepThread(500 * 1000LL))
     {
@@ -116,6 +105,10 @@ void initSystem(void)
 
     if (R_FAILED(FSUSER_SetPriority(-16)))
         svcBreak(USERBREAK_PANIC);
+
+    miscellaneousMenu.items[0].title = Luma_SharedConfig->selected_hbldr_3dsx_tid == HBLDR_DEFAULT_3DSX_TID ?
+        "Switch the hb. title to the current app." :
+        "Switch the hb. title to " HBLDR_DEFAULT_3DSX_TITLE_NAME;
 
     // **** DO NOT init services that don't come from KIPs here ****
     // Instead, init the service only where it's actually init (then deinit it).
@@ -145,9 +138,6 @@ static void handleTermNotification(u32 notificationId)
 
 static void handleSleepNotification(u32 notificationId)
 {
-    // Quick dirty fix
-    Sleep__HandleNotification(notificationId);
-
     ptmSysmInit();
     s32 ackValue = ptmSysmGetNotificationAckValue(notificationId);
     switch (notificationId)
@@ -174,43 +164,21 @@ static void handleSleepNotification(u32 notificationId)
 
 static void handleShellNotification(u32 notificationId)
 {
+    // Quick dirty fix
+    Sleep__HandleNotification(notificationId);
+    
     if (notificationId == 0x213) {
         // Shell opened
-        // Note that this notification is fired on system init    
-
-        if(nightLightSettingsRead && !ScreenFiltersMenu_RestoreCct())
-        { 
-            Redshift_ApplyNightLightSettings();
-        }
-        
+        // Note that this notification is also fired on system init.
+        // Sequence goes like this: MCU fires notif. 0x200 on shell open
+        // and shell close, then NS demuxes it and fires 0x213 and 0x214.
+        handleShellOpened();
         menuShouldExit = false;
-
-//        if(wifiOnBeforeSleep && CONFIG(CUTWIFISLEEP) && isServiceUsable("nwm::EXT")){
-//            nwmExtInit();
-//            NWMEXT_ControlWirelessEnabled(true);
-//            nwmExtExit();
-//        }
-    } 
-    else {
+    } else {
         // Shell closed
         menuShouldExit = true;
-
-//        if(CONFIG(CUTWIFISLEEP))
-//        {      
-//            u8 wireless = (*(vu8 *)((0x10140000 | (1u << 31)) + 0x180));
-//
-//            if (isServiceUsable("nwm::EXT") && wireless)
-//            {
-//                wifiOnBeforeSleep = true;
-//                nwmExtInit();
-//                NWMEXT_ControlWirelessEnabled(false);
-//                nwmExtExit();
-//            }
-//            else {
-//                wifiOnBeforeSleep = false;
-//            }
-//        }
     }
+
 }
 
 static void handlePreTermNotification(u32 notificationId)
@@ -252,14 +220,15 @@ static void handleNextApplicationDebuggedByForce(u32 notificationId)
     TaskRunner_RunTask(debuggerFetchAndSetNextApplicationDebugHandleTask, NULL, 0);
 }
 
+#if 0
 static void handleRestartHbAppNotification(u32 notificationId)
 {
     (void)notificationId;
     TaskRunner_RunTask(HBLDR_RestartHbApplication, NULL, 0);
 }
+#endif
 
 static const ServiceManagerServiceEntry services[] = {
-    { "hb:ldr", 2, HBLDR_HandleCommands, true },
     { "plg:ldr", 1, PluginLoader__HandleCommands, true },
     { NULL },
 };
@@ -277,7 +246,6 @@ static const ServiceManagerNotificationEntry notifications[] = {
     { 0x214,                        handleShellNotification                 },
     { 0x1000,                       handleNextApplicationDebuggedByForce    },
     { 0x2000,                       handlePreTermNotification               },
-    { 0x3000,                       handleRestartHbAppNotification          },
     { 0x1001,                       PluginLoader__HandleKernelEvent         },
     { 0x000, NULL },
 };
@@ -285,36 +253,20 @@ static const ServiceManagerNotificationEntry notifications[] = {
 // Some changes to commit
 int main(void)
 {
-    static u8 ipcBuf[0x100] = {0};  // used by both err:f and hb:ldr
-
     Sleep__Init();
     PluginLoader__Init();
-
-    u8 sysModel;
-    cfguInit();
-    CFGU_GetSystemModel(&sysModel);
-    cfguExit();
-    hasTopScreen = (sysModel != 3); // 3 = o2DS
-
-    nightLightSettingsRead = Redshift_ReadNightLightSettings();
-
-    // Set up static buffers for IPC
-    u32* bufPtrs = getThreadStaticBuffers();
-    memset(bufPtrs, 0, 16 * 2 * 4);
-    bufPtrs[0] = IPC_Desc_StaticBuffer(sizeof(ipcBuf), 0);
-    bufPtrs[1] = (u32)ipcBuf;
-    bufPtrs[2] = IPC_Desc_StaticBuffer(sizeof(ldrArgvBuf), 1);
-    bufPtrs[3] = (u32)ldrArgvBuf;
 
     if(R_FAILED(svcCreateEvent(&preTerminationEvent, RESET_STICKY)))
         svcBreak(USERBREAK_ASSERT);
 
     Draw_Init();
     Cheat_SeedRng(svcGetSystemTick());
+    ScreenFiltersMenu_LoadConfig();
 
     MyThread *menuThread = menuCreateThread();
     MyThread *taskRunnerThread = taskRunnerCreateThread();
     MyThread *errDispThread = errDispCreateThread();
+    bootdiagCreateThread();
 
     if (R_FAILED(ServiceManager_Run(services, notifications, NULL)))
         svcBreak(USERBREAK_PANIC);

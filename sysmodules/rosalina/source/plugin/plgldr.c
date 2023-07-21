@@ -8,7 +8,7 @@ static Handle   plgLdrArbiter;
 static s32*     plgEvent;
 static s32*     plgReply;
 static int      plgLdrRefCount;
-static bool     isN3DS;
+static bool     plgIsN3DS;
 static OnPlgLdrEventCb_t    onPlgLdrEventCb = NULL;
 
 static Result   PLGLDR__GetArbiter(void)
@@ -32,7 +32,7 @@ Result  plgLdrInit(void)
     Result res = 0;
 
     svcGetSystemInfo(&out, 0x10000, 0x201);
-    isN3DS = out != 0;
+    plgIsN3DS = out != 0;
     if (AtomicPostIncrement(&plgLdrRefCount) == 0)
         res = svcConnectToPort(&plgLdrHandle, "plg:ldr");
 
@@ -100,7 +100,7 @@ Result  PLGLDR__SetPluginLoadParameters(PluginLoadParameters *parameters)
     u32 *cmdbuf = getThreadCommandBuffer();
 
     cmdbuf[0] = IPC_MakeHeader(4, 2, 4);
-    cmdbuf[1] = (u32)parameters->noFlash;
+    cmdbuf[1] = (u32)parameters->noFlash | (((u32)parameters->pluginMemoryStrategy) << 8);
     cmdbuf[2] = parameters->lowTitleId;
     cmdbuf[3] = IPC_Desc_Buffer(256, IPC_BUFFER_R);
     cmdbuf[4] = (u32)parameters->path;
@@ -236,7 +236,7 @@ Result  PLGLDR__SetRosalinaMenuBlock(bool shouldBlock)
     return res;
 }
 
-Result  PLGLDR__SetSwapSettings(char* swapPath, void* encFunc, void* decFunc, void* args)
+Result  PLGLDR__SetSwapSettings(char* swapPath, void* saveFunc, void* loadFunc, void* args)
 {
 	Result res = 0;
 
@@ -252,8 +252,8 @@ Result  PLGLDR__SetSwapSettings(char* swapPath, void* encFunc, void* decFunc, vo
 	u32* cmdbuf = getThreadCommandBuffer();
 
 	cmdbuf[0] = IPC_MakeHeader(12, 2, 4);
-	cmdbuf[1] = (encFunc) ? svcConvertVAToPA(encFunc, false) | (1 << 31) : 0;
-	cmdbuf[2] = (decFunc) ? svcConvertVAToPA(decFunc, false) | (1 << 31) : 0;
+	cmdbuf[1] = (saveFunc) ? svcConvertVAToPA(saveFunc, false) | (1 << 31) : 0;
+	cmdbuf[2] = (loadFunc) ? svcConvertVAToPA(loadFunc, false) | (1 << 31) : 0;
 	cmdbuf[3] = IPC_Desc_Buffer(4 * sizeof(u32), IPC_BUFFER_R);
 	cmdbuf[4] = (u32)trueArgs;
 	cmdbuf[5] = IPC_Desc_Buffer(strlen(trueSwapPath) + 1, IPC_BUFFER_R);
@@ -266,7 +266,7 @@ Result  PLGLDR__SetSwapSettings(char* swapPath, void* encFunc, void* decFunc, vo
 	return res;
 }
 
-Result  PLGLDR__SetExeDecSettings(void* decFunc, void* args)
+Result  PLGLDR__SetExeLoadSettings(void* loadFunc, void* args)
 {
 	Result res = 0;
 
@@ -278,7 +278,7 @@ Result  PLGLDR__SetExeDecSettings(void* decFunc, void* args)
 	u32* cmdbuf = getThreadCommandBuffer();
 
 	cmdbuf[0] = IPC_MakeHeader(13, 1, 2);
-	cmdbuf[1] = (decFunc) ? svcConvertVAToPA(decFunc, false) | (1 << 31) : 0;
+	cmdbuf[1] = (loadFunc) ? svcConvertVAToPA(loadFunc, false) | (1 << 31) : 0;
 	cmdbuf[2] = IPC_Desc_Buffer(4 * sizeof(u32), IPC_BUFFER_R);
 	cmdbuf[3] = (u32)trueArgs;
 

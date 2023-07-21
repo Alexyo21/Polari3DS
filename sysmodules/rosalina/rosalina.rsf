@@ -27,9 +27,9 @@ AccessControlInfo:
   EnableForceDebug              : true
   CanWriteSharedPage            : true
   CanUsePrivilegedPriority      : true
-  CanUseNonAlphabetAndNumber    : false
-  PermitMainFunctionArgument    : false
-  CanShareDeviceMemory          : false
+  CanUseNonAlphabetAndNumber    : true
+  PermitMainFunctionArgument    : true
+  CanShareDeviceMemory          : true
   RunnableOnSleep               : true
   SpecialMemoryArrange          : true
   ResourceLimitCategory         : Other

@@ -19,9 +19,9 @@
 */
 
 #include <stdint.h>
-#include <math.h>
+//#include <math.h>
 
-#include "redshift/redshift.h"
+//#include "redshift/redshift.h"
 
 /* Whitepoint values for temperatures at 100K intervals.
    These will be interpolated for the actual temperature.
@@ -281,54 +281,13 @@ interpolate_color(float a, const float *c1, const float *c2, float *c)
 	c[2] = (1.0-a)*c1[2] + a*c2[2];
 }
 
-/* Helper macro used in the fill function */
-#define F1(Y, C)  ((Y) * white_point[C])
 
-void
-colorramp_fill(uint16_t *gamma_r, uint16_t *gamma_g, uint16_t *gamma_b,
-	       int size, const color_setting_t *setting)
+// Not in original code
+void colorramp_get_white_point(float *out_white_point, int temperature)
 {
 	/* Approximate white point */
-	float white_point[3];
-	float alpha = (setting->temperature % 100) / 100.0;
-	int temp_index = ((setting->temperature - 1000) / 100)*3;
+	float alpha = (temperature % 100) / 100.0;
+	int temp_index = ((temperature - 1000) / 100)*3;
 	interpolate_color(alpha, &blackbody_color[temp_index],
-			  &blackbody_color[temp_index+3], white_point);
-
-	for (int i = 0; i < size; i++) {
-		gamma_r[i] = F1((double)gamma_r[i]/(UINT16_MAX+1), 0) *
-			(UINT16_MAX+1);
-		gamma_g[i] = F1((double)gamma_g[i]/(UINT16_MAX+1), 1) *
-			(UINT16_MAX+1);
-		gamma_b[i] = F1((double)gamma_b[i]/(UINT16_MAX+1), 2) *
-			(UINT16_MAX+1);
-	}
+			  &blackbody_color[temp_index+3], out_white_point);
 }
-
-#undef F1
-
-#define F2(Y, C)  pow((Y) * setting->brightness * \
-		     white_point[C], 1.0/setting->gamma[C])
-
-void
-colorramp_fill_brightness(uint16_t *gamma_r, uint16_t *gamma_g, uint16_t *gamma_b,
-	       int size, const color_setting_t *setting)
-{
-	/* Approximate white point */
-	float white_point[3];
-	float alpha = (setting->temperature % 100) / 100.0;
-	int temp_index = ((setting->temperature - 1000) / 100)*3;
-	interpolate_color(alpha, &blackbody_color[temp_index],
-			  &blackbody_color[temp_index+3], white_point);
-
-	for (int i = 0; i < size; i++) {
-		gamma_r[i] = F2((double)gamma_r[i]/(UINT16_MAX+1), 0) *
-			(UINT16_MAX+1);
-		gamma_g[i] = F2((double)gamma_g[i]/(UINT16_MAX+1), 1) *
-			(UINT16_MAX+1);
-		gamma_b[i] = F2((double)gamma_b[i]/(UINT16_MAX+1), 2) *
-			(UINT16_MAX+1);
-	}	
-}
-
-#undef F2

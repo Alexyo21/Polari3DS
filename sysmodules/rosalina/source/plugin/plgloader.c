@@ -1,6 +1,7 @@
 #include <3ds.h>
 #include "ifile.h"
 #include "utils.h" // for makeARMBranch
+#include "luma_config.h"
 #include "plugin.h"
 #include "fmt.h"
 #include "menu.h"
@@ -9,7 +10,7 @@
 #include "sleep.h"
 #include "task_runner.h"
 
-#define PLGLDR_VERSION (SYSTEM_VERSION(1, 0, 0))
+#define PLGLDR_VERSION (SYSTEM_VERSION(1, 0, 1))
 
 #define THREADVARS_MAGIC  0x21545624 // !TV$
 
@@ -26,13 +27,15 @@ void        PluginLoader__Init(void)
 
     memset(ctx, 0, sizeof(PluginLoaderContext));
 
-    s64 rosalinaFlags = 0;
+    s64 pluginLoaderFlags = 0;
 
-    svcGetSystemInfo(&rosalinaFlags, 0x10000, 0x102);
-    ctx->isEnabled = rosalinaFlags & 1;
+    svcGetSystemInfo(&pluginLoaderFlags, 0x10000, 0x180);
+    ctx->isEnabled = pluginLoaderFlags & 1;
 
     ctx->plgEventPA = (s32 *)PA_FROM_VA_PTR(&ctx->plgEvent);
     ctx->plgReplyPA = (s32 *)PA_FROM_VA_PTR(&ctx->plgReply);
+
+    ctx->pluginMemoryStrategy = PLG_STRATEGY_SWAP;
 
     MemoryBlock__ResetSwapSettings();
 
@@ -55,7 +58,7 @@ bool        PluginLoader__IsEnabled(void)
 void        PluginLoader__MenuCallback(void)
 {
     PluginLoaderCtx.isEnabled = !PluginLoaderCtx.isEnabled;
-    SaveSettings();
+    LumaConfig_RequestSaveSettings();
     PluginLoader__UpdateMenu();
 }
 
@@ -70,22 +73,50 @@ void        PluginLoader__UpdateMenu(void)
     rosalinaMenu.items[3].title = status[PluginLoaderCtx.isEnabled];
 }
 
+static ControlApplicationMemoryModeOverrideConfig g_memorymodeoverridebackup = { 0 };
+Result  PluginLoader__SetMode3AppMode(bool enable)
+{
+	Handle loaderHandle;
+    Result res = srvGetServiceHandle(&loaderHandle, "Loader");
 
+    if (R_FAILED(res)) return res;
 
+    u32 *cmdbuf = getThreadCommandBuffer();
+
+    if (enable) {
+        ControlApplicationMemoryModeOverrideConfig* mode = (ControlApplicationMemoryModeOverrideConfig*)&cmdbuf[1];
+        
+        memset(mode, 0, sizeof(ControlApplicationMemoryModeOverrideConfig));
+        mode->query = true;
+        cmdbuf[0] = IPC_MakeHeader(0x101, 1, 0); // ControlApplicationMemoryModeOverride
+
+        if (R_SUCCEEDED((res = svcSendSyncRequest(loaderHandle))) && R_SUCCEEDED(res = cmdbuf[1]))
+        {
+            memcpy(&g_memorymodeoverridebackup, &cmdbuf[2], sizeof(ControlApplicationMemoryModeOverrideConfig));
+
+            memset(mode, 0, sizeof(ControlApplicationMemoryModeOverrideConfig));
+            mode->enable_o3ds = true;
+            mode->o3ds_mode = SYSMODE_DEV2;
+            cmdbuf[0] = IPC_MakeHeader(0x101, 1, 0); // ControlApplicationMemoryModeOverride
+            if (R_SUCCEEDED((res = svcSendSyncRequest(loaderHandle)))) {
+                res = cmdbuf[1];
+            }
+        }
+    } else {
+        ControlApplicationMemoryModeOverrideConfig* mode = (ControlApplicationMemoryModeOverrideConfig*)&cmdbuf[1];
+        *mode = g_memorymodeoverridebackup;
+        cmdbuf[0] = IPC_MakeHeader(0x101, 1, 0); // ControlApplicationMemoryModeOverride
+        if (R_SUCCEEDED((res = svcSendSyncRequest(loaderHandle)))) {
+            res = cmdbuf[1];
+        }
+    }
+    
+	svcCloseHandle(loaderHandle);
+    return res;
+}
+static void j_PluginLoader__SetMode3AppMode(void* arg) {(void)arg; PluginLoader__SetMode3AppMode(false);}
 
 void CheckMemory(void);
-
-
-// Update config memory field(used by k11 extension)
-static void     SetConfigMemoryStatus(u32 status)
-{
-    *(vu32 *)PA_FROM_VA_PTR(0x1FF800F0) = status;
-}
-
-static u32      GetConfigMemoryEvent(void)
-{
-    return (*(vu32 *)PA_FROM_VA_PTR(0x1FF800F0)) & ~0xFFFF;
-}
 
 void    PLG__NotifyEvent(PLG_Event event, bool signal);
 
@@ -100,20 +131,22 @@ void     PluginLoader__HandleCommands(void *_ctx)
     {
         case 1: // Load plugin
         {
-            if (cmdbuf[0] != IPC_MakeHeader(1, 0, 2))
+            if (cmdbuf[0] != IPC_MakeHeader(1, 1, 0))
             {
                 error(cmdbuf, 0xD9001830);
                 break;
             }
 
             ctx->plgEvent = PLG_OK;
-            ctx->target = cmdbuf[2];
+            svcOpenProcess(&ctx->target, cmdbuf[1]);
 
+            if (ctx->useUserLoadParameters && ctx->userLoadParameters.pluginMemoryStrategy == PLG_STRATEGY_MODE3)
+                TaskRunner_RunTask(j_PluginLoader__SetMode3AppMode, NULL, 0);
+
+            bool flash = !(ctx->useUserLoadParameters && ctx->userLoadParameters.noFlash);
             if (ctx->isEnabled && TryToLoadPlugin(ctx->target))
             {
-                if (!ctx->useUserLoadParameters && ctx->userLoadParameters.noFlash)
-                    ctx->userLoadParameters.noFlash = false;
-                else
+                if (flash)
                 {
                     // A little flash to notify the user that the plugin is loaded
                     for (u32 i = 0; i < 64; i++)
@@ -125,7 +158,7 @@ void     PluginLoader__HandleCommands(void *_ctx)
                 }
                 //if (!ctx->userLoadParameters.noIRPatch)
                 //    IR__Patch();
-                SetConfigMemoryStatus(PLG_CFG_RUNNING);
+                PLG__SetConfigMemoryStatus(PLG_CFG_RUNNING);
             }
             else
             {
@@ -163,7 +196,7 @@ void     PluginLoader__HandleCommands(void *_ctx)
             if (cmdbuf[1] != ctx->isEnabled)
             {
                 ctx->isEnabled = cmdbuf[1];
-                SaveSettings();
+                LumaConfig_RequestSaveSettings();
                 PluginLoader__UpdateMenu();
             }
 
@@ -183,13 +216,19 @@ void     PluginLoader__HandleCommands(void *_ctx)
             PluginLoadParameters *params = &ctx->userLoadParameters;
 
             ctx->useUserLoadParameters = true;
-            params->noFlash = cmdbuf[1];
+            params->noFlash = cmdbuf[1] & 0xFF;
+            params->pluginMemoryStrategy = (cmdbuf[1] >> 8) & 0xFF;
             params->lowTitleId = cmdbuf[2];
+            
             strncpy(params->path, (const char *)cmdbuf[4], 255);
             memcpy(params->config, (void *)cmdbuf[6], 32 * sizeof(u32));
 
+            if (params->pluginMemoryStrategy == PLG_STRATEGY_MODE3)
+                cmdbuf[1] = PluginLoader__SetMode3AppMode(true);
+            else
+                cmdbuf[1] = 0;
+
             cmdbuf[0] = IPC_MakeHeader(4, 1, 0);
-            cmdbuf[1] = 0;
             break;
         }
 
@@ -325,11 +364,11 @@ void     PluginLoader__HandleCommands(void *_ctx)
                 break;
             }
 
-            u32* remoteEncPhysAddr = (u32*)(cmdbuf[1] | (1 << 31));
-            u32* remoteDecPhysAddr = (u32*)(cmdbuf[2] | (1 << 31));
+            u32* remoteSavePhysAddr = (u32*)(cmdbuf[1] | (1 << 31));
+            u32* remoteLoadPhysAddr = (u32*)(cmdbuf[2] | (1 << 31));
 
-            Result ret = MemoryBlock__SetSwapSettings(remoteEncPhysAddr, false, (u32*)cmdbuf[4]);
-            if (!ret) ret = MemoryBlock__SetSwapSettings(remoteDecPhysAddr, true, (u32*)cmdbuf[4]);
+            Result ret = MemoryBlock__SetSwapSettings(remoteSavePhysAddr, false, (u32*)cmdbuf[4]);
+            if (!ret) ret = MemoryBlock__SetSwapSettings(remoteLoadPhysAddr, true, (u32*)cmdbuf[4]);
 
             if (ret) {
                 cmdbuf[1] = MAKERESULT(RL_PERMANENT, RS_INVALIDARG, RM_LDR, RD_TOO_LARGE);
@@ -347,7 +386,7 @@ void     PluginLoader__HandleCommands(void *_ctx)
             break;
         }
 
-        case 13: // Set plugin exe dec
+        case 13: // Set plugin exe load func
         {
             if (cmdbuf[0] != IPC_MakeHeader(13, 1, 2))
             {
@@ -355,22 +394,22 @@ void     PluginLoader__HandleCommands(void *_ctx)
                 break;
             }
             cmdbuf[0] = IPC_MakeHeader(13, 1, 0);
-            Reset_3gx_DecParams();
+            Reset_3gx_LoadParams();
             if (!cmdbuf[1]) {
                 cmdbuf[1] = MAKERESULT(RL_PERMANENT, RS_INVALIDARG, RM_LDR, RD_INVALID_ADDRESS);
                 break;
             }
 
-            u32* remoteDecExeFuncAddr = (u32*)(cmdbuf[1] | (1 << 31));
-            Result ret = Set_3gx_DecParams(remoteDecExeFuncAddr, (u32*)cmdbuf[3]);
+            u32* remoteLoadExeFuncAddr = (u32*)(cmdbuf[1] | (1 << 31));
+            Result ret = Set_3gx_LoadParams(remoteLoadExeFuncAddr, (u32*)cmdbuf[3]);
             if (ret)
             {
                 cmdbuf[1] = MAKERESULT(RL_PERMANENT, RS_INVALIDARG, RM_LDR, RD_TOO_LARGE);
-                Reset_3gx_DecParams();
+                Reset_3gx_LoadParams();
                 break;
             }
             
-            ctx->isExeDecFunctionset = true;
+            ctx->isExeLoadFunctionset = true;
 
             svcInvalidateEntireInstructionCache(); // Could use the range one
 
@@ -423,11 +462,29 @@ void    PLG__WaitForReply(void)
     svcArbitrateAddress(PluginLoaderCtx.arbiter, (u32)PluginLoaderCtx.plgReplyPA, ARBITRATION_WAIT_IF_LESS_THAN_TIMEOUT, PLG_OK, 10000000000ULL);
 }
 
+void     PLG__SetConfigMemoryStatus(u32 status)
+{
+    *(vu32 *)PA_FROM_VA_PTR(0x1FF800F0) = status;
+}
+
+u32      PLG__GetConfigMemoryStatus(void)
+{
+    return (*(vu32 *)PA_FROM_VA_PTR((u32 *)0x1FF800F0)) & 0xFFFF;
+}
+
+u32      PLG__GetConfigMemoryEvent(void)
+{
+    return (*(vu32 *)PA_FROM_VA_PTR(0x1FF800F0)) & ~0xFFFF;
+}
+
 static void WaitForProcessTerminated(void *arg)
 {
     (void)arg;
     PluginLoaderContext *ctx = &PluginLoaderCtx;
 
+    // Wait until all threads of the process have finished (svcWaitSynchronization == 0) or 5 seconds have passed.
+    for (u32 i = 0; svcWaitSynchronization(ctx->target, 0) != 0 && i < 100; i++) svcSleepThread(50000000); // 50ms
+    
     // Unmap plugin's memory before closing the process
     if (!ctx->pluginIsSwapped) {
         MemoryBlock__UnmountFromProcess();
@@ -436,11 +493,13 @@ static void WaitForProcessTerminated(void *arg)
     // Terminate process
     svcCloseHandle(ctx->target);
     // Reset plugin loader state
-    SetConfigMemoryStatus(PLG_CFG_NONE);
+    PLG__SetConfigMemoryStatus(PLG_CFG_NONE);
     ctx->pluginIsSwapped = false;
+    ctx->pluginIsHome = false;
     ctx->target = 0;
-    ctx->isExeDecFunctionset = false;
+    ctx->isExeLoadFunctionset = false;
     ctx->isSwapFunctionset = false;
+    ctx->pluginMemoryStrategy = PLG_STRATEGY_SWAP;
     g_blockMenuOpen = 0;
     MemoryBlock__ResetSwapSettings();
     //if (!ctx->userLoadParameters.noIRPatch)
@@ -450,11 +509,18 @@ static void WaitForProcessTerminated(void *arg)
 void    PluginLoader__HandleKernelEvent(u32 notifId)
 {
     (void)notifId;
+    if (PLG__GetConfigMemoryStatus() == PLG_CFG_EXITING)
+    {
+        srvPublishToSubscriber(0x1002, 0);
+        return;
+    }
+
     PluginLoaderContext *ctx = &PluginLoaderCtx;
-    u32 event = GetConfigMemoryEvent();
+    u32 event = PLG__GetConfigMemoryEvent();
 
     if (event == PLG_CFG_EXIT_EVENT)
     {
+        PLG__SetConfigMemoryStatus(PLG_CFG_EXITING);
         if (!ctx->pluginIsSwapped)
         {
             // Signal the plugin that the game is exiting
@@ -465,35 +531,63 @@ void    PluginLoader__HandleKernelEvent(u32 notifId)
         // Start a task to wait for process to be terminated
         TaskRunner_RunTask(WaitForProcessTerminated, NULL, 0);
     }
-    else if (event == PLG_CFG_SWAP_EVENT)
+    else if (event == PLG_CFG_HOME_EVENT)
     {
-        if (ctx->pluginIsSwapped)
-        {
-            // Reload data from swap file
-            MemoryBlock__IsReady();
-            MemoryBlock__FromSwapFile();
-            MemoryBlock__MountInProcess();
-            // Unlock plugin threads
-            svcControlProcess(ctx->target, PROCESSOP_SCHEDULE_THREADS, 0, (u32)ThreadPredicate);
-            // Resume plugin execution
-            PLG__NotifyEvent(PLG_OK, true);
-            SetConfigMemoryStatus(PLG_CFG_RUNNING);
+        if ((ctx->pluginMemoryStrategy == PLG_STRATEGY_SWAP) && !isN3DS) {
+            if (ctx->pluginIsSwapped)
+            {
+                // Reload data from swap file
+                MemoryBlock__IsReady();
+                MemoryBlock__FromSwapFile();
+                MemoryBlock__MountInProcess();
+                // Unlock plugin threads
+                svcControlProcess(ctx->target, PROCESSOP_SCHEDULE_THREADS, 0, (u32)ThreadPredicate);
+                // Resume plugin execution
+                PLG__NotifyEvent(PLG_OK, true);
+                PLG__SetConfigMemoryStatus(PLG_CFG_RUNNING);
+            }
+            else
+            {
+                // Signal plugin that it's about to be swapped
+                PLG__NotifyEvent(PLG_ABOUT_TO_SWAP, false);
+                // Wait for plugin reply
+                PLG__WaitForReply();
+                // Lock plugin threads
+                svcControlProcess(ctx->target, PROCESSOP_SCHEDULE_THREADS, 1, (u32)ThreadPredicate);
+                // Put data into file and release memory
+                MemoryBlock__UnmountFromProcess();
+                MemoryBlock__ToSwapFile();
+                MemoryBlock__Free();
+                PLG__SetConfigMemoryStatus(PLG_CFG_INHOME);
+            }
+            ctx->pluginIsSwapped = !ctx->pluginIsSwapped;
+        } else {
+            // Needed for compatibility with old plugins that don't expect the PLG_HOME events.
+            volatile PluginHeader* mappedHeader = PA_FROM_VA_PTR(MemoryBlock__GetMappedPluginHeader());
+            bool doNotification = mappedHeader ? mappedHeader->notifyHomeEvent : false;
+            if (ctx->pluginIsHome)
+            {
+                if (doNotification) {
+                    // Signal plugin that it's about to exit home menu
+                    PLG__NotifyEvent(PLG_HOME_EXIT, false);
+                    // Wait for plugin reply
+                    PLG__WaitForReply();
+                }
+                PLG__SetConfigMemoryStatus(PLG_CFG_RUNNING);
+            }
+            else
+            {
+                if (doNotification) {
+                    // Signal plugin that it's about to enter home menu
+                    PLG__NotifyEvent(PLG_HOME_ENTER, false);
+                    // Wait for plugin reply
+                    PLG__WaitForReply();
+                }                
+                PLG__SetConfigMemoryStatus(PLG_CFG_INHOME);
+            }
+            ctx->pluginIsHome = !ctx->pluginIsHome;
         }
-        else
-        {
-            // Signal plugin that it's about to be swapped
-            PLG__NotifyEvent(PLG_ABOUT_TO_SWAP, false);
-            // Wait for plugin reply
-            PLG__WaitForReply();
-            // Lock plugin threads
-            svcControlProcess(ctx->target, PROCESSOP_SCHEDULE_THREADS, 1, (u32)ThreadPredicate);
-            // Put data into file and release memory
-            MemoryBlock__UnmountFromProcess();
-            MemoryBlock__ToSwapFile();
-            MemoryBlock__Free();
-            SetConfigMemoryStatus(PLG_CFG_SWAPPED);
-        }
-        ctx->pluginIsSwapped = !ctx->pluginIsSwapped;
+        
     }
     srvPublishToSubscriber(0x1002, 0);
 }

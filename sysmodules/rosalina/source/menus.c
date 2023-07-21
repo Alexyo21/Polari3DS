@@ -35,31 +35,34 @@
 #include "menus/miscellaneous.h"
 #include "menus/sysconfig.h"
 #include "menus/screen_filters.h"
-#include "menus/quick_switchers.h"
 #include "plugin.h"
 #include "ifile.h"
 #include "memory.h"
 #include "fmt.h"
 #include "process_patches.h"
 #include "luminance.h"
+#include "luma_config.h"
+#include "menus/quick_switchers.h"
 
 Menu rosalinaMenu = {
     "Rosalina menu",
     {
-        { "Screen filters", MENU, .menu = &screenFiltersMenu },
-        { "Screenshot NFTs", METHOD, .method = &RosalinaMenu_TakeScreenshot },
-        { "Cheater", METHOD, .method = &RosalinaMenu_Cheats },
-        { "", METHOD, .method = PluginLoader__MenuCallback},
-        { "New 3DS settings:", MENU, .menu = &N3DSMenu, .visibility = &menuCheckN3ds },
-        { "Quick-Switchers...", MENU, .menu = &quickSwitchersMenu },
-        { "Brightness...", METHOD, .method = &RosalinaMenu_ChangeScreenBrightness },
-        { "Process hacker", METHOD, .method = &RosalinaMenu_ProcessList },
+        { "Take screenshot", METHOD, .method = &RosalinaMenu_TakeScreenshot },
+        { "Change screen brightness", METHOD, .method = &RosalinaMenu_ChangeScreenBrightness },
+        { "Cheats...", METHOD, .method = &RosalinaMenu_Cheats },
+        { "", METHOD, .method = PluginLoader__MenuCallback },
+        { "Process list", METHOD, .method = &RosalinaMenu_ProcessList },
         { "Debugger options...", MENU, .menu = &debuggerMenu },
-        { "Other...", MENU, .menu = &miscellaneousMenu },
-        { "Power options", METHOD, .method = &RosalinaMenu_PowerOff },
+        { "System configuration...", MENU, .menu = &sysconfigMenu },
+        { "Screen filters...", MENU, .menu = &screenFiltersMenu },
+        { "New 3DS settings...", MENU, .menu = &N3DSMenu, .visibility = &menuCheckN3ds },
+        { "Quick-Switchers...", MENU, .menu = &quickSwitchersMenu },
+        { "Miscellaneous options...", MENU, .menu = &miscellaneousMenu },
+        { "Save settings", METHOD, .method = &RosalinaMenu_SaveSettings },
+        { "Go to Home", METHOD, .method = &RosalinaMenu_HomeMenu },
+        { "Power options...", METHOD, .method = &RosalinaMenu_PowerOptions },
         { "Credits", METHOD, .method = &RosalinaMenu_ShowCredits },
         { "Debug info", METHOD, .method = &RosalinaMenu_ShowDebugInfo, .visibility = &rosalinaMenuShouldShowDebugInfo },
-        { "System configuration...", MENU, .menu = &sysconfigMenu },
         {},
     }
 };
@@ -71,6 +74,28 @@ bool rosalinaMenuShouldShowDebugInfo(void)
     s64 out;
     svcGetSystemInfo(&out, 0x10000, 0x200);
     return out == 0;
+}
+
+void RosalinaMenu_SaveSettings(void)
+{
+    Result res = LumaConfig_SaveSettings();
+    Draw_Lock();
+    Draw_ClearFramebuffer();
+    Draw_FlushFramebuffer();
+    Draw_Unlock();
+
+    do
+    {
+        Draw_Lock();
+        Draw_DrawString(10, 10, COLOR_TITLE, "Save settings");
+        if(R_SUCCEEDED(res))
+            Draw_DrawString(10, 30, COLOR_WHITE, "Operation succeeded.");
+        else
+            Draw_DrawFormattedString(10, 30, COLOR_WHITE, "Operation failed (0x%08lx).", res);
+        Draw_FlushFramebuffer();
+        Draw_Unlock();
+    }
+    while(!(waitInput() & KEY_B) && !menuShouldExit);
 }
 
 void RosalinaMenu_ShowDebugInfo(void)
@@ -90,13 +115,6 @@ void RosalinaMenu_ShowDebugInfo(void)
 
     u32 kernelVer = osGetKernelVersion();
     FS_SdMmcSpeedInfo speedInfo;
-    
-    Handle hm = 0;
-    OpenProcessByName("menu", &hm);
-    s64 out = 0;
-    svcGetHandleInfo(&out, hm, 0);
-    svcCloseHandle(hm);
-    u64 timeToBootHm = 1000u * out / SYSCLOCK_ARM11;
 
     do
     {
@@ -133,11 +151,10 @@ void RosalinaMenu_ShowDebugInfo(void)
                 (int)speedInfo.highSpeedModeEnabled, SYSCLOCK_SDMMC / (1000 * clkDiv)
             );
         }
-        if (timeToBootHm != 0)
         {
             posY = Draw_DrawFormattedString(
-                10, posY, COLOR_WHITE, "Time to boot to Home Menu: %llums\n",
-                timeToBootHm
+                10, posY, COLOR_WHITE, "APPMEMTYPE: %lu\n",
+                OS_KernelConfig->app_memtype
             );
         }
         Draw_FlushFramebuffer();
@@ -158,12 +175,11 @@ void RosalinaMenu_ShowCredits(void)
         Draw_Lock();
         Draw_DrawString(10, 10, COLOR_TITLE, "Rosalina -- Luma3DS credits");
 
-        u32 posY = Draw_DrawString(10, 30, COLOR_WHITE, "Luma3DS (c) 2016-2020 AuroraWright, TuxSH") + SPACING_Y;
+        u32 posY = Draw_DrawString(10, 30, COLOR_WHITE, "Luma3DS (c) 2016-2023 AuroraWright, TuxSH") + SPACING_Y;
 
         posY = Draw_DrawString(10, posY + SPACING_Y, COLOR_WHITE, "3DSX loading code by fincs");
         posY = Draw_DrawString(10, posY + SPACING_Y, COLOR_WHITE, "Networking code & basic GDB functionality by Stary");
         posY = Draw_DrawString(10, posY + SPACING_Y, COLOR_WHITE, "InputRedirection by Stary (PoC by ShinyQuagsire)");
-        posY = Draw_DrawString(10, posY + SPACING_Y, COLOR_WHITE, "Edited by cooolgamer using Luma Redshift as base");
 
         posY += 2 * SPACING_Y;
 
@@ -172,8 +188,7 @@ void RosalinaMenu_ShowCredits(void)
                 "Special thanks to:\n"
                 "  fincs, WinterMute, mtheall, piepie62,\n"
                 "  Luma3DS contributors, libctru contributors,\n"
-                "  other people,\n"
-                "  Devkitpro for fucking everything so I had to\n  fix every errors, coool huh?"
+                "  other people"
             ));
 
         Draw_FlushFramebuffer();
@@ -190,14 +205,10 @@ void RosalinaMenu_ChangeScreenBrightness(void)
     Draw_Unlock();
 
     // gsp:LCD GetLuminance is stubbed on O3DS so we have to implement it ourselves... damn it.
-    u32 luminanceTop = getCurrentLuminance(true);
-    u32 luminanceBot = getCurrentLuminance(false);
+    // Assume top and bottom screen luminances are the same (should be; if not, we'll set them to the same values).
+    u32 luminance = getCurrentLuminance(false);
     u32 minLum = getMinLuminancePreset();
     u32 maxLum = getMaxLuminancePreset();
-    u32 trueMax = 172; // https://www.3dbrew.org/wiki/GSPLCD:SetBrightnessRaw
-    u32 trueMin = 0;
-    // hacky but N3DS coeffs for top screen don't seem to work and O3DS coeffs when using N3DS return 173 max brightness
-    luminanceTop = luminanceTop == 173 ? trueMax : luminanceTop;
 
     do
     {
@@ -208,43 +219,23 @@ void RosalinaMenu_ChangeScreenBrightness(void)
             10,
             posY,
             COLOR_WHITE,
-            "Preset: %lu to %lu, Extended: 0 to 172.\n",
+            "Current luminance: %lu (min. %lu, max. %lu)\n\n",
+            luminance,
             minLum,
             maxLum
         );
-        posY = Draw_DrawFormattedString(
-            10,
-            posY,
-            luminanceTop > trueMax ? COLOR_RED : COLOR_WHITE,
-            "Top screen luminance: %lu\n",
-            luminanceTop
-        );
-        posY = Draw_DrawFormattedString(
-            10,
-            posY,
-            luminanceBot > trueMax ? COLOR_RED : COLOR_WHITE,
-            "Bottom screen luminance: %lu \n\n",
-            luminanceBot
-        );
-        posY = Draw_DrawString(10, posY, COLOR_GREEN, "Controls:\n");
-        posY = Draw_DrawString(10, posY, COLOR_WHITE, "Up/Down for +/-1, Right/Left for +/-10.\n");
-        posY = Draw_DrawString(10, posY, COLOR_WHITE, "Hold X/A for Top/Bottom screen only. \n");
-        posY = Draw_DrawFormattedString(10, posY, COLOR_WHITE, "Hold L/R for extended limits (<%lu may glitch). \n", minLum);
-        if (hasTopScreen) { posY = Draw_DrawString(10, posY, COLOR_WHITE, "Press Y to toggle screen backlights.\n\n"); }
-
-        posY = Draw_DrawString(10, posY, COLOR_TITLE, "Press START to begin, B to exit.\n\n");
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, "Controls: Up/Down for +-1, Right/Left for +-10.\n");
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, "Press A to start, B to exit.\n\n");
 
         posY = Draw_DrawString(10, posY, COLOR_RED, "WARNING: \n");
-        posY = Draw_DrawString(10, posY, COLOR_WHITE, "  * values rarely glitch >172, do not use these!\n");
-        posY = Draw_DrawString(10, posY, COLOR_WHITE, "  * all changes revert on shell reopening.\n");
-        posY = Draw_DrawString(10, posY, COLOR_WHITE, "  * bottom framebuffer will be visible until exit.\n");
-        posY = Draw_DrawString(10, posY, COLOR_WHITE, "  * bottom screen functions as normal with\nbacklight turned off.\n");
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, "  * value will be limited by the presets.\n");
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, "  * bottom framebuffer will be restored until\nyou exit.");
         Draw_FlushFramebuffer();
         Draw_Unlock();
 
         u32 pressed = waitInputWithTimeout(1000);
 
-        if (pressed & KEY_START)
+        if (pressed & KEY_A)
             break;
 
         if (pressed & KEY_B)
@@ -260,110 +251,32 @@ void RosalinaMenu_ChangeScreenBrightness(void)
     svcKernelSetState(0x10000, 2); // unblock gsp
     gspLcdInit(); // assume it doesn't fail. If it does, brightness won't change, anyway.
 
-    s32 lumTop = (s32)luminanceTop;
-    s32 lumBot = (s32)luminanceBot;
+    // gsp:LCD will normalize the brightness between top/bottom screen, handle PWM, etc.
+
+    s32 lum = (s32)luminance;
 
     do
     {
-        u32 kHeld = 0;
-        kHeld = HID_PAD;
         u32 pressed = waitInputWithTimeout(1000);
         if (pressed & DIRECTIONAL_KEYS)
         {
-            if(kHeld & KEY_X)
-            {
-                if (pressed & KEY_UP)
-                    lumTop += 1;
-                else if (pressed & KEY_DOWN)
-                    lumTop -= 1;
-                else if (pressed & KEY_RIGHT)
-                    lumTop += 10;
-                else if (pressed & KEY_LEFT)
-                    lumTop -= 10;
-            }
-            else if(kHeld & KEY_A)
-            {
-                if (pressed & KEY_UP)
-                    lumBot += 1;
-                else if (pressed & KEY_DOWN)
-                    lumBot -= 1;
-                else if (pressed & KEY_RIGHT)
-                    lumBot += 10;
-                else if (pressed & KEY_LEFT)
-                    lumBot -= 10;
-            }
-            else 
-            {
-                if (pressed & KEY_UP)
-                {
-                    lumTop += 1;
-                    lumBot += 1;
-                }
-                else if (pressed & KEY_DOWN)
-                {
-                    lumTop -= 1;
-                    lumBot -= 1;
-                }
-                else if (pressed & KEY_RIGHT)
-                {
-                    lumTop += 10;
-                    lumBot += 10;
-                }
-                else if (pressed & KEY_LEFT)
-                {
-                    lumTop -= 10;
-                    lumBot -= 10;
-                }
-            }
+            if (pressed & KEY_UP)
+                lum += 1;
+            else if (pressed & KEY_DOWN)
+                lum -= 1;
+            else if (pressed & KEY_RIGHT)
+                lum += 10;
+            else if (pressed & KEY_LEFT)
+                lum -= 10;
 
-            if (kHeld & (KEY_L | KEY_R))
-            {
-                lumTop = lumTop > (s32)trueMax ? (s32)trueMax : lumTop;
-                lumBot = lumBot > (s32)trueMax ? (s32)trueMax : lumBot;
-                lumTop = lumTop < (s32)trueMin ? (s32)trueMin : lumTop;
-                lumBot = lumBot < (s32)trueMin ? (s32)trueMin : lumBot;
-            }
-            else
-            {
-                lumTop = lumTop > (s32)maxLum ? (s32)maxLum : lumTop;
-                lumBot = lumBot > (s32)maxLum ? (s32)maxLum : lumBot;
-                lumTop = lumTop < (s32)minLum ? (s32)minLum : lumTop;
-                lumBot = lumBot < (s32)minLum ? (s32)minLum : lumBot;
-            }
+            lum = lum < (s32)minLum ? (s32)minLum : lum;
+            lum = lum > (s32)maxLum ? (s32)maxLum : lum;
 
-            if (lumTop >= (s32)minLum && lumBot >= (s32)minLum) {
-                GSPLCD_SetBrightnessRaw(BIT(GSP_SCREEN_TOP), lumTop);
-                GSPLCD_SetBrightnessRaw(BIT(GSP_SCREEN_BOTTOM), lumBot);
-            }       
-            else {
-                setBrightnessAlt(lumTop, lumBot);
-            }
+            // We need to call gsp here because updating the active duty LUT is a bit tedious (plus, GSP has internal state).
+            // This is actually SetLuminance:
+            GSPLCD_SetBrightnessRaw(BIT(GSP_SCREEN_TOP) | BIT(GSP_SCREEN_BOTTOM), lum);
         }
 
-        if ((pressed & KEY_Y) && hasTopScreen)
-        {   
-            u8 result, botStatus, topStatus;
-            mcuHwcInit();
-            MCUHWC_ReadRegister(0x0F, &result, 1); // https://www.3dbrew.org/wiki/I2C_Registers#Device_3
-            mcuHwcExit();  
-            botStatus = (result >> 5) & 1; // right shift result to bit 5 ("Bottom screen backlight on") and perform bitwise AND with 1
-            topStatus = (result >> 6) & 1; // bit06: Top screen backlight on
-
-            if (botStatus == 1 && topStatus == 1)
-            {
-                GSPLCD_PowerOffBacklight(BIT(GSP_SCREEN_BOTTOM));
-            }
-            else if (botStatus == 0 && topStatus == 1)
-            {
-                GSPLCD_PowerOnBacklight(BIT(GSP_SCREEN_BOTTOM));
-                GSPLCD_PowerOffBacklight(BIT(GSP_SCREEN_TOP));
-            }
-            else if (topStatus == 0)
-            {
-                GSPLCD_PowerOnBacklight(BIT(GSP_SCREEN_TOP));
-            }
-        }
-        
         if (pressed & KEY_B)
             break;
     }
@@ -383,7 +296,7 @@ void RosalinaMenu_ChangeScreenBrightness(void)
     Draw_Unlock();
 }
 
-void RosalinaMenu_PowerOff(void) // power options
+void RosalinaMenu_PowerOptions(void) 
 {
     Draw_Lock();
     Draw_ClearFramebuffer();
@@ -394,22 +307,14 @@ void RosalinaMenu_PowerOff(void) // power options
     {
         Draw_Lock();
         Draw_DrawString(10, 10, COLOR_TITLE, "Power options");
-        Draw_DrawString(10, 30, COLOR_YELLOW, "Press X to shutdown");
-        Draw_DrawString(10, 40, COLOR_YELLOW, "Press A to reboot");
-        Draw_DrawString(10, 50, COLOR_RED, "Press Y to force reboot");
-        Draw_DrawString(10, 60, COLOR_WHITE, "Press B to go back.");
+        Draw_DrawString(10, 30, COLOR_WHITE, "Press X to power off, press Y to reboot,");
+        Draw_DrawString(10, 40, COLOR_WHITE, "Press B to go back.");
         Draw_FlushFramebuffer();
         Draw_Unlock();
 
         u32 pressed = waitInputWithTimeout(1000);
 
-        if(pressed & KEY_A)
-        {
-            menuLeave();
-            APT_HardwareResetAsync();
-            return;
-        }
-        else if(pressed & KEY_X)
+        if(pressed & KEY_X) // Soft shutdown.
         {
             menuLeave();
             srvPublishToSubscriber(0x203, 0);
@@ -417,8 +322,8 @@ void RosalinaMenu_PowerOff(void) // power options
         }
         else if(pressed & KEY_Y)
         {
-            svcKernelSetState(7);
-            __builtin_unreachable();
+            menuLeave();
+            APT_HardwareResetAsync();
             return;
         }
         else if(pressed & KEY_B)
@@ -427,6 +332,35 @@ void RosalinaMenu_PowerOff(void) // power options
     while(!menuShouldExit);
 }
 
+void RosalinaMenu_HomeMenu(void) // Trigger Home Button press
+{
+    Draw_Lock();
+    Draw_ClearFramebuffer();
+    Draw_FlushFramebuffer();
+    Draw_Unlock();
+
+    do
+    {
+        srvPublishToSubscriber(0x204, 0);
+
+        Draw_Lock();
+        Draw_ClearFramebuffer();
+        Draw_DrawString(10, 30, COLOR_WHITE, "Exit Rosalina to get back to the Home Menu.");
+        Draw_DrawString(10, 40, COLOR_WHITE, "Press A to confirm");
+        Draw_FlushFramebuffer();
+        Draw_Unlock();
+
+        u32 pressed = waitInputWithTimeout(1000);
+
+        if(pressed & KEY_A)
+        {
+          return;
+        }
+        else if(pressed & KEY_B)
+            return;
+    }
+    while(!menuShouldExit);
+}
 
 #define TRY(expr) if(R_FAILED(res = (expr))) goto end;
 
@@ -480,6 +414,7 @@ void RosalinaMenu_TakeScreenshot(void)
     Result res = 0;
 
     char filename[64];
+    char dateTimeStr[32];
 
     FS_Archive archive;
     FS_ArchiveID archiveId;
@@ -514,64 +449,21 @@ void RosalinaMenu_TakeScreenshot(void)
         FSUSER_CloseArchive(archive);
     }
 
-    // Conversion code adapted from https://stackoverflow.com/questions/21593692/convert-unix-timestamp-to-date-without-system-libs
-    // (original author @gnif under CC-BY-SA 4.0)
-    u32 seconds, minutes, hours, days, year, month;
-    u64 milliseconds = osGetTime();
-    seconds = milliseconds/1000;
-    milliseconds %= 1000;
-    minutes = seconds / 60;
-    seconds %= 60;
-    hours = minutes / 60;
-    minutes %= 60;
-    days = hours / 24;
-    hours %= 24;
+    dateTimeToString(dateTimeStr, osGetTime(), true);
 
-    year = 1900; // osGetTime starts in 1900
-
-    while(true)
-    {
-        bool leapYear = (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0));
-        u16 daysInYear = leapYear ? 366 : 365;
-        if(days >= daysInYear)
-        {
-            days -= daysInYear;
-            ++year;
-        }
-        else
-        {
-            static const u8 daysInMonth[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-            for(month = 0; month < 12; ++month)
-            {
-                u8 dim = daysInMonth[month];
-
-                if (month == 1 && leapYear)
-                    ++dim;
-
-                if (days >= dim)
-                    days -= dim;
-                else
-                    break;
-            }
-            break;
-        }
-    }
-    days++;
-    month++;
-
-    sprintf(filename, "/luma/screenshots/%04lu-%02lu-%02lu_%02lu-%02lu-%02lu.%03llu_top.bmp", year, month, days, hours, minutes, seconds, milliseconds);
+    sprintf(filename, "/luma/screenshots/%s_top.bmp", dateTimeStr);
     TRY(IFile_Open(&file, archiveId, fsMakePath(PATH_EMPTY, ""), fsMakePath(PATH_ASCII, filename), FS_OPEN_CREATE | FS_OPEN_WRITE));
     TRY(RosalinaMenu_WriteScreenshot(&file, topWidth, true, true));
     TRY(IFile_Close(&file));
 
-    sprintf(filename, "/luma/screenshots/%04lu-%02lu-%02lu_%02lu-%02lu-%02lu.%03llu_bot.bmp", year, month, days, hours, minutes, seconds, milliseconds);
+    sprintf(filename, "/luma/screenshots/%s_bot.bmp", dateTimeStr);
     TRY(IFile_Open(&file, archiveId, fsMakePath(PATH_EMPTY, ""), fsMakePath(PATH_ASCII, filename), FS_OPEN_CREATE | FS_OPEN_WRITE));
     TRY(RosalinaMenu_WriteScreenshot(&file, bottomWidth, false, true));
     TRY(IFile_Close(&file));
 
     if(is3d && (Draw_GetCurrentFramebufferAddress(true, true) != Draw_GetCurrentFramebufferAddress(true, false)))
     {
-        sprintf(filename, "/luma/screenshots/%04lu-%02lu-%02lu_%02lu-%02lu-%02lu.%03llu_top_right.bmp", year, month, days, hours, minutes, seconds, milliseconds);
+        sprintf(filename, "/luma/screenshots/%s_top_right.bmp", dateTimeStr);
         TRY(IFile_Open(&file, archiveId, fsMakePath(PATH_EMPTY, ""), fsMakePath(PATH_ASCII, filename), FS_OPEN_CREATE | FS_OPEN_WRITE));
         TRY(RosalinaMenu_WriteScreenshot(&file, topWidth, true, false));
         TRY(IFile_Close(&file));
