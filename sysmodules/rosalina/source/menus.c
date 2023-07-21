@@ -206,9 +206,14 @@ void RosalinaMenu_ChangeScreenBrightness(void)
 
     // gsp:LCD GetLuminance is stubbed on O3DS so we have to implement it ourselves... damn it.
     // Assume top and bottom screen luminances are the same (should be; if not, we'll set them to the same values).
-    u32 luminance = getCurrentLuminance(false);
+    u32 luminanceTop = getCurrentLuminance(true);
+    u32 luminanceBot = getCurrentLuminance(false);
     u32 minLum = getMinLuminancePreset();
     u32 maxLum = getMaxLuminancePreset();
+    u32 trueMax = 172; // https://www.3dbrew.org/wiki/GSPLCD:SetBrightnessRaw
+    u32 trueMin = 0;
+    // hacky but N3DS coeffs for top screen don't seem to work and O3DS coeffs when using N3DS return 173 max brightness
+    luminanceTop = luminanceTop == 173 ? trueMax : luminanceTop;
 
     do
     {
@@ -224,18 +229,39 @@ void RosalinaMenu_ChangeScreenBrightness(void)
             minLum,
             maxLum
         );
-        posY = Draw_DrawString(10, posY, COLOR_WHITE, "Controls: Up/Down for +-1, Right/Left for +-10.\n");
-        posY = Draw_DrawString(10, posY, COLOR_WHITE, "Press A to start, B to exit.\n\n");
+         posY = Draw_DrawFormattedString(
+            10,
+            posY,
+            luminanceTop > trueMax ? COLOR_RED : COLOR_WHITE,
+            "Top screen luminance: %lu\n",
+            luminanceTop
+        );
+        posY = Draw_DrawFormattedString(
+            10,
+            posY,
+            luminanceBot > trueMax ? COLOR_RED : COLOR_WHITE,
+            "Bottom screen luminance: %lu \n\n",
+            luminanceBot
+        );
+        posY = Draw_DrawString(10, posY, COLOR_GREEN, "Controls:\n");
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, "Up/Down for +/-1, Right/Left for +/-10.\n");
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, "Hold X/A for Top/Bottom screen only. \n");
+        posY = Draw_DrawFormattedString(10, posY, COLOR_WHITE, "Hold L/R for extended limits (<%lu may glitch). \n", minLum);
+        if (hasTopScreen) { posY = Draw_DrawString(10, posY, COLOR_WHITE, "Press Y to toggle screen backlights.\n\n"); }
+        
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, "Press START to begin, B to exit.\n\n");
 
         posY = Draw_DrawString(10, posY, COLOR_RED, "WARNING: \n");
-        posY = Draw_DrawString(10, posY, COLOR_WHITE, "  * value will be limited by the presets.\n");
-        posY = Draw_DrawString(10, posY, COLOR_WHITE, "  * bottom framebuffer will be restored until\nyou exit.");
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, "  * values rarely glitch >172, do not use these!\n");
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, "  * all changes revert on shell reopening.\n");
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, "  * bottom framebuffer will be visible until exit.\n");
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, "  * bottom screen functions as normal with\nbacklight turned off.\n");
         Draw_FlushFramebuffer();
         Draw_Unlock();
 
         u32 pressed = waitInputWithTimeout(1000);
 
-        if (pressed & KEY_A)
+        if (pressed & KEY_START)
             break;
 
         if (pressed & KEY_B)
@@ -253,28 +279,107 @@ void RosalinaMenu_ChangeScreenBrightness(void)
 
     // gsp:LCD will normalize the brightness between top/bottom screen, handle PWM, etc.
 
-    s32 lum = (s32)luminance;
+    s32 lumTop = (s32)luminanceTop;
+    s32 lumBot = (s32)luminanceBot;
 
     do
     {
         u32 pressed = waitInputWithTimeout(1000);
         if (pressed & DIRECTIONAL_KEYS)
         {
-            if (pressed & KEY_UP)
-                lum += 1;
-            else if (pressed & KEY_DOWN)
-                lum -= 1;
-            else if (pressed & KEY_RIGHT)
-                lum += 10;
-            else if (pressed & KEY_LEFT)
-                lum -= 10;
+            if(kHeld & KEY_X)
+            {
+                if (pressed & KEY_UP)
+                    lumTop += 1;
+                else if (pressed & KEY_DOWN)
+                    lumTop -= 1;
+                else if (pressed & KEY_RIGHT)
+                    lumTop += 10;
+                else if (pressed & KEY_LEFT)
+                    lumTop -= 10;
+            }
+            else if(kHeld & KEY_A)
+            {
+                if (pressed & KEY_UP)
+                    lumBot += 1;
+                else if (pressed & KEY_DOWN)
+                    lumBot -= 1;
+                else if (pressed & KEY_RIGHT)
+                    lumBot += 10;
+                else if (pressed & KEY_LEFT)
+                    lumBot -= 10;
+                    
+            }
+            else 
+            {
+                if (pressed & KEY_UP)
+                {
+                    lumTop += 1;
+                    lumBot += 1;
+                }
+                else if (pressed & KEY_DOWN)
+                {
+                    lumTop -= 1;
+                    lumBot -= 1;
+                }
+                else if (pressed & KEY_RIGHT)
+                {
+                    lumTop += 10;
+                    lumBot += 10;
+                }
+                else if (pressed & KEY_LEFT)
+                {
+                    lumTop -= 10;
+                    lumBot -= 10;
+                }
+            }
 
-            lum = lum < (s32)minLum ? (s32)minLum : lum;
-            lum = lum > (s32)maxLum ? (s32)maxLum : lum;
+            if (kHeld & (KEY_L | KEY_R))
+            {
+                lumTop = lumTop > (s32)trueMax ? (s32)trueMax : lumTop;
+                lumBot = lumBot > (s32)trueMax ? (s32)trueMax : lumBot;
+                lumTop = lumTop < (s32)trueMin ? (s32)trueMin : lumTop;
+                lumBot = lumBot < (s32)trueMin ? (s32)trueMin : lumBot;
+            }
+            else
+            {
+                lumTop = lumTop > (s32)maxLum ? (s32)maxLum : lumTop;
+                lumBot = lumBot > (s32)maxLum ? (s32)maxLum : lumBot;
+                lumTop = lumTop < (s32)minLum ? (s32)minLum : lumTop;
+                lumBot = lumBot < (s32)minLum ? (s32)minLum : lumBot;
+            }
 
-            // We need to call gsp here because updating the active duty LUT is a bit tedious (plus, GSP has internal state).
-            // This is actually SetLuminance:
-            GSPLCD_SetBrightnessRaw(BIT(GSP_SCREEN_TOP) | BIT(GSP_SCREEN_BOTTOM), lum);
+            if (lumTop >= (s32)minLum && lumBot >= (s32)minLum) {
+                GSPLCD_SetBrightnessRaw(BIT(GSP_SCREEN_TOP), lumTop);
+                GSPLCD_SetBrightnessRaw(BIT(GSP_SCREEN_BOTTOM), lumBot);
+            }       
+            else {
+                setBrightnessAlt(lumTop, lumBot);
+            }
+        }
+        
+       if ((pressed & KEY_Y) && hasTopScreen)
+        {   
+            u8 result, botStatus, topStatus;
+            mcuHwcInit();
+            MCUHWC_ReadRegister(0x0F, &result, 1); // https://www.3dbrew.org/wiki/I2C_Registers#Device_3
+            mcuHwcExit();  
+            botStatus = (result >> 5) & 1; // right shift result to bit 5 ("Bottom screen backlight on") and perform bitwise AND with 1
+            topStatus = (result >> 6) & 1; // bit06: Top screen backlight on
+
+            if (botStatus == 1 && topStatus == 1)
+            {
+                GSPLCD_PowerOffBacklight(BIT(GSP_SCREEN_BOTTOM));
+            }
+            else if (botStatus == 0 && topStatus == 1)
+            {
+                GSPLCD_PowerOnBacklight(BIT(GSP_SCREEN_BOTTOM));
+                GSPLCD_PowerOffBacklight(BIT(GSP_SCREEN_TOP));
+            }
+            else if (topStatus == 0)
+            {
+                GSPLCD_PowerOnBacklight(BIT(GSP_SCREEN_TOP));
+            }
         }
 
         if (pressed & KEY_B)
