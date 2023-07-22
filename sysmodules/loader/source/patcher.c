@@ -329,6 +329,25 @@ exit:
     return ret;
 }
 
+bool useN3dsSettings(u64 progId)
+{
+    IFile file;
+    Result res = 0;
+
+    char path[] = "/luma/n3ds/0000000000000000.bin";
+    progIdToStr(path + 26, progId);
+
+    res = IFile_Open(&file, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""), fsMakePath(PATH_ASCII, path), FS_OPEN_READ);
+
+    if(R_SUCCEEDED(res))
+    {
+        IFile_Close(&file);
+
+        return true;
+    }
+    return false;
+}
+
 Result openSysmoduleCxi(IFile *outFile, u64 progId)
 {
     progId &= ~0xF0000000ull; // clear N3DS bit

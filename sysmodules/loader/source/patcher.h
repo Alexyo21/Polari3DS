@@ -49,6 +49,7 @@ extern bool isN3DS, isSdMode, nextGamePatchDisabled;
 void patchCode(u64 progId, u16 progVer, u8 *code, u32 size, u32 textSize, u32 roSize, u32 dataSize, u32 roAddress, u32 dataAddress);
 bool loadTitleCodeSection(u64 progId, u8 *code, u32 size);
 bool loadTitleExheaderInfo(u64 progId, ExHeader_Info *exheaderInfo);
+bool useN3dsSettings(u64 progId);
 
 Result openSysmoduleCxi(IFile *outFile, u64 progId);
 bool readSysmoduleCxiNcchHeader(Ncch *outNcchHeader, IFile *file);
