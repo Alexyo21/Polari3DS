@@ -66,12 +66,12 @@ static const char *singleOptionIniNamesBoot[] = {
     "show_gba_boot_screen",
     "enable_dsi_external_filter",
     "allow_updown_leftright_dsi",
+    "use_dev_unitinfo",
+    "enable_safe_firm_rosalina",
 };
 
 static const char *singleOptionIniNamesMisc[] = {
-    "use_dev_unitinfo",
     "disable_arm11_exception_handlers",
-    "enable_safe_firm_rosalina",
 };
 
 static const char *keyNames[] = {
@@ -447,6 +447,19 @@ static int configIniHandler(void* user, const char* section, const char* name, c
             } else {
                 CHECK_PARSE_OPTION(-1);
             }
+        } else if (strcmp(name, "force_audio_output") == 0) {
+            if (strcasecmp(value, "off") == 0) {
+                cfg->multiConfig |= 0 << (2 * (u32)FORCEAUDIOOUTPUT);
+                return 1;
+            } else if (strcasecmp(value, "headphones") == 0) {
+                cfg->multiConfig |= 1 << (2 * (u32)FORCEAUDIOOUTPUT);
+                return 1;
+            } else if (strcasecmp(value, "speakers") == 0) {
+                cfg->multiConfig |= 2 << (2 * (u32)FORCEAUDIOOUTPUT);
+                return 1;
+            } else {
+                CHECK_PARSE_OPTION(-1);
+            }
         } else {
             CHECK_PARSE_OPTION(-1);
         }
@@ -552,23 +565,7 @@ static int configIniHandler(void* user, const char* section, const char* name, c
                 return 1;
             }
         }
-
-        if (strcmp(name, "force_audio_output") == 0) {
-            if (strcasecmp(value, "off") == 0) {
-                cfg->multiConfig |= 0 << (2 * (u32)FORCEAUDIOOUTPUT);
-                return 1;
-            } else if (strcasecmp(value, "headphones") == 0) {
-                cfg->multiConfig |= 1 << (2 * (u32)FORCEAUDIOOUTPUT);
-                return 1;
-            } else if (strcasecmp(value, "speakers") == 0) {
-                cfg->multiConfig |= 2 << (2 * (u32)FORCEAUDIOOUTPUT);
-                return 1;
-            } else {
-                CHECK_PARSE_OPTION(-1);
-            }
-        } else {
-            CHECK_PARSE_OPTION(-1);
-        }
+        CHECK_PARSE_OPTION(-1);
     } else {
         CHECK_PARSE_OPTION(-1);
     }
@@ -652,11 +649,12 @@ static size_t saveLumaIniConfigToStr(char *out)
         (int)CONFIG(PATCHGAMES), (int)CONFIG(REDIRECTAPPTHREADS),
         (int)CONFIG(PATCHVERSTRING), (int)CONFIG(SHOWGBABOOT),
         (int)CONFIG(ENABLEDSIEXTFILTER), (int)CONFIG(ALLOWUPDOWNLEFTRIGHTDSI),
+        (int)CONFIG(PATCHUNITINFO), (int)CONFIG(ENABLESAFEFIRMROSALINA),
 
         1 + (int)MULTICONFIG(DEFAULTEMU), 4 - (int)MULTICONFIG(BRIGHTNESS),
         splashPosStr, (unsigned int)cfg->splashDurationMsec,
         pinNumDigits, n3dsCpuStr,
-        autobootModeStr,
+        autobootModeStr, forceAudioOutputStr,
 
         cfg->hbldr3dsxTitleId, rosalinaMenuComboStr, (int)(cfg->pluginLoaderFlags & 1),
         (int)cfg->ntpTzOffetMinutes,
@@ -669,10 +667,7 @@ static size_t saveLumaIniConfigToStr(char *out)
 
         cfg->autobootTwlTitleId, (int)cfg->autobootCtrAppmemtype,
 
-        forceAudioOutputStr,
-
-        (int)CONFIG(PATCHUNITINFO), (int)CONFIG(DISABLEARM11EXCHANDLERS),
-        (int)CONFIG(ENABLESAFEFIRMROSALINA)
+        (int)CONFIG(DISABLEARM11EXCHANDLERS)
     );
 
     return n < 0 ? 0 : (size_t)n;
@@ -823,6 +818,7 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
                                                "PIN lock: Off( ) 4( ) 6( ) 8( ) digits",
                                                "New 3DS CPU: Off( ) Clock( ) L2( ) Clock+L2( )",
                                                "Hbmenu autoboot: Off( ) 3DS( ) DSi( )",
+                                               "Force audio: Off( ) Headphones( ) Speakers( )"
                                              };
 
     static const char *singleOptionsText[] = { "( ) Autoboot EmuNAND",
@@ -833,6 +829,8 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
                                                "( ) Show GBA boot screen in patched AGB_FIRM",
                                                "( ) Enable custom upscaling filters for DSi",
                                                "( ) Allow Left+Right / Up+Down combos for DSi",
+                                               "( ) Set developer UNITINFO",
+                                               "( ) Enable Rosalina on SAFE_FIRM",
 
                                                // Should always be the last entry
                                                "\nSave and exit"
@@ -877,6 +875,17 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
                                                  "Refer to the \"autoboot\" section in the\n"
                                                  "configuration file to configure\n"
                                                  "this feature.",
+                                                 
+                                                 "Force audio output to HPs or speakers.\n\n"
+                                                 "Currently only for NATIVE_FIRM.\n\n"
+                                                 "Due to software limitations, this gets\n"
+                                                 "undone if you actually insert then\n"
+                                                 "remove HPs (just enter then exit sleep\n"
+                                                 "mode if this happens).\n\n"
+                                                 "Also gets bypassed for camera shutter\n"
+                                                 "sound.",
+
+
 
                                                  "If enabled, an EmuNAND\n"
                                                  "will be launched on boot.\n\n"
@@ -932,7 +941,19 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
                                                  "simultaneously) in DS(i) software.\n\n"
                                                  "Commercial software filter these\n"
                                                  "combos on their own too, though.",
+                                                 
+                                                 "Make the console be always detected as a development unit,\n"
+                                                 "and conversely (Arm11-side only).\n\n"
+                                                 "This breaks online features, amiibo and retail CIAs, but\n"
+                                                 "allows installing and booting some developer software.\n\n"
+                                                 "Only enable this if you know what you are doing!",
                                                 
+                                                 "Enables Rosalina, the kernel ext. and sysmodule reimpls\n"
+                                                 "on SAFE_FIRM (New 3DS only). Also suppresses QTM error\n"
+                                                 "0xF96183FE, allowing to use 8.1-11.3 N3DS on New 2DS XL\n"
+                                                 "consoles.\n\n"
+                                                 "Only select this if you know what you are doing!",
+                                                 
                                                  // Should always be the last entry
                                                  "Save the changes and exit. To discard\n"
                                                  "any changes press the POWER button.\n"
@@ -960,7 +981,7 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
         { .visible = true },
         { .visible = ISN3DS },
         { .visible = true },
-        // { .visible = true }, audio rerouting, hidden
+        { .visible = true }, // audio rerouting, hidden
     };
 
     struct singleOption {
@@ -976,6 +997,8 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
         { .visible = true },
         { .visible = true },
         { .visible = true },
+        { .visible = true },
+        { .visible = ISN3DS },
         { .visible = true },
     };
 

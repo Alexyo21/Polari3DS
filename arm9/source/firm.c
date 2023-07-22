@@ -470,7 +470,9 @@ static void mergeSection0(FirmwareType firmType, u32 firmVersion, bool loadFromS
                    memcmp(((Cxi *)dst)->ncch.magic, "NCCH", 4) != 0 ||
                    memcmp(moduleList[i].name, ((Cxi *)dst)->exHeader.systemControlInfo.appTitle, sizeof(((Cxi *)dst)->exHeader.systemControlInfo.appTitle)) != 0)
                     error("An external FIRM module is invalid or corrupted.");
-
+                    
+                dst += dstModuleSize;
+                maxModuleSize -= dstModuleSize;
                 continue;
             }
         }
