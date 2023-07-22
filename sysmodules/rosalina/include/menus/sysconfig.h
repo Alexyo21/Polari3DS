@@ -27,7 +27,11 @@
 #pragma once
 
 #include <3ds/types.h>
+#include <3ds/os.h>
 #include "menu.h"
+#include "menus.h"
+#include "luma_shared_config.h"
+#include "menus/n3ds.h"
 
 extern Menu sysconfigMenu;
 extern bool isConnectionForced;
@@ -40,3 +44,6 @@ void SysConfigMenu_TogglePowerButton(void);
 void SysConfigMenu_ControlWifi(void);
 void SysConfigMenu_DisableForcedWifiConnection(void);
 void SysConfigMenu_ToggleCardIfPower(void);
+void SysConfigMenu_ToggleRehidFolder(void);
+void SysConfigMenu_UpdateRehidFolderStatus(void);
+void SysConfigMenu_Tip(void);

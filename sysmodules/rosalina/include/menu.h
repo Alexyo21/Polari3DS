@@ -66,12 +66,15 @@ typedef struct Menu {
 } Menu;
 
 extern u32 menuCombo;
+extern u32 g_blockMenuOpen;
 extern bool isHidInitialized;
+extern bool rosalinaOpen;
 extern u32 mcuFwVersion;
 
 // From main.c
 extern bool isN3DS;
 extern bool menuShouldExit;
+extern bool hasTopScreen;
 extern bool preTerminationRequested;
 extern Handle preTerminationEvent;
 
@@ -86,6 +89,7 @@ bool menuCheckN3ds(void);
 u32 menuCountItems(const Menu *menu);
 
 MyThread *menuCreateThread(void);
+void    openRosalina(void);
 void    menuEnter(void);
 void    menuLeave(void);
 void    menuThreadMain(void);
@@ -95,3 +99,4 @@ u32     DispErrMessage(const char *title, const char *message, const Result erro
 void    DisplayPluginMenu(u32   *cmdbuf);
 
 void menuToggleLeds(void);
+void menuMakeLedDabadeedabada(void);
