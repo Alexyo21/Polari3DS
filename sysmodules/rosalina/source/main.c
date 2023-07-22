@@ -27,6 +27,7 @@
 #include <3ds.h>
 #include "memory.h"
 #include "menu.h"
+#include "menus.h"
 #include "service_manager.h"
 #include "errdisp.h"
 #include "utils.h"
@@ -35,18 +36,27 @@
 #include "menus/miscellaneous.h"
 #include "menus/debugger.h"
 #include "menus/screen_filters.h"
+#include "luminance.h"
 #include "menus/cheats.h"
 #include "menus/sysconfig.h"
+#include "luma_config.h"
+#include "luma_shared_config.h"
+#include "menus/config_extra.h"
+#include "menus/n3ds.h"
 #include "input_redirection.h"
 #include "minisoc.h"
 #include "draw.h"
 #include "bootdiag.h"
 #include "shell.h"
-
+#include "menus/debugger.h"
 #include "task_runner.h"
 #include "plugin.h"
 
 bool isN3DS;
+bool wifiOnBeforeSleep;
+bool hasTopScreen;
+
+extern config_extra configExtra;
 
 Result __sync_init(void);
 Result __sync_fini(void);
@@ -174,9 +184,39 @@ static void handleShellNotification(u32 notificationId)
         // and shell close, then NS demuxes it and fires 0x213 and 0x214.
         handleShellOpened();
         menuShouldExit = false;
-    } else {
+        
+        if(configExtra.suppressLeds){
+            mcuHwcInit();
+            u8 off = 0;
+            MCUHWC_WriteRegister(0x28, &off, 1);
+            mcuHwcExit();
+        }
+
+        if(wifiOnBeforeSleep && configExtra.cutSleepWifi && isServiceUsable("nwm::EXT")){
+            nwmExtInit();
+            NWMEXT_ControlWirelessEnabled(true);
+            nwmExtExit();
+        }
+    }  
+    else {
         // Shell closed
         menuShouldExit = true;
+        
+        if(configExtra.cutSleepWifi)
+        {      
+            u8 wireless = (*(vu8 *)((0x10140000 | (1u << 31)) + 0x180));
+
+            if (isServiceUsable("nwm::EXT") && wireless)
+            {
+                wifiOnBeforeSleep = true;
+                nwmExtInit();
+                NWMEXT_ControlWirelessEnabled(false);
+                nwmExtExit();
+            }
+            else {
+                wifiOnBeforeSleep = false;
+            }
+        }
     }
 
 }
@@ -228,6 +268,15 @@ static void handleRestartHbAppNotification(u32 notificationId)
 }
 #endif
 
+static void handleHomeButtonNotification(u32 notificationId)
+{
+    (void)notificationId;
+    if(configExtra.homeToRosalina && isHidInitialized && !rosalinaOpen && !menuShouldExit && !preTerminationRequested && !g_blockMenuOpen)
+    {
+        openRosalina();
+    }
+}
+
 static const ServiceManagerServiceEntry services[] = {
     { "plg:ldr", 1, PluginLoader__HandleCommands, true },
     { NULL },
@@ -244,6 +293,7 @@ static const ServiceManagerNotificationEntry notifications[] = {
     { PTMNOTIFID_HALF_AWAKE,        handleSleepNotification                 },
     { 0x213,                        handleShellNotification                 },
     { 0x214,                        handleShellNotification                 },
+    { 0x204,                        handleHomeButtonNotification            },
     { 0x1000,                       handleNextApplicationDebuggedByForce    },
     { 0x2000,                       handlePreTermNotification               },
     { 0x1001,                       PluginLoader__HandleKernelEvent         },
@@ -255,6 +305,12 @@ int main(void)
 {
     Sleep__Init();
     PluginLoader__Init();
+    
+    u8 sysModel;
+    cfguInit();
+    CFGU_GetSystemModel(&sysModel);
+    cfguExit();
+    hasTopScreen = (sysModel != 3); // 3 = o2DS
 
     if(R_FAILED(svcCreateEvent(&preTerminationEvent, RESET_STICKY)))
         svcBreak(USERBREAK_ASSERT);

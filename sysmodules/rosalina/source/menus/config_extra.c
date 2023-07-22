@@ -4,7 +4,15 @@
 #include "ifile.h"
 #include "menu.h"
 #include "menus.h"
+#include "menus/miscellaneous.h"
+#include "menus/sysconfig.h"
+#include "luma_config.h"
+#include "luma_shared_config.h"
 #include "menus/config_extra.h"
+#include "luminance.h"
+#include "menus/n3ds.h"
+
+#include "configExtra_ini.h"
 
 config_extra configExtra = { .suppressLeds = false, .cutSlotPower = false, .cutSleepWifi = false, .homeToRosalina = false, .toggleBottomLcd = false };
 bool configExtraSaved = false;
@@ -95,7 +103,7 @@ void ConfigExtra_ReadConfigExtra(void)
     Result res = 0;
 
     res = IFile_Open(&file, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""),
-            fsMakePath(PATH_ASCII, "/luma/configExtra.bin"), FS_OPEN_READ);
+            fsMakePath(PATH_ASCII, "/luma/configExtra.ini"), FS_OPEN_READ);
         
     if(R_SUCCEEDED(res))
     {
@@ -115,7 +123,7 @@ void ConfigExtra_WriteConfigExtra(void)
     Result res = 0;
 
     res = IFile_Open(&file, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""),
-            fsMakePath(PATH_ASCII, "/luma/configExtra.bin"), FS_OPEN_CREATE | FS_OPEN_WRITE);
+            fsMakePath(PATH_ASCII, "/luma/configExtra.ini"), FS_OPEN_CREATE | FS_OPEN_WRITE);
         
     if(R_SUCCEEDED(res))
     {

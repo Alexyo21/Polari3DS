@@ -27,6 +27,7 @@
 #include <3ds.h>
 #include "menus/miscellaneous.h"
 #include "luma_config.h"
+#include "luma_shared_config.h"
 #include "input_redirection.h"
 #include "ntp.h"
 #include "memory.h"

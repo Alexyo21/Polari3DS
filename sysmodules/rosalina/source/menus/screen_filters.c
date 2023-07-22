@@ -28,6 +28,12 @@
 #include <math.h>
 #include "memory.h"
 #include "menu.h"
+#include "menus.h"
+#include "luma_config.h"
+#include "luma_shared_config.h"
+#include "menus/config_extra.h"
+#include "luminance.h"
+#include "menus/miscellaneous.h"
 #include "menus/screen_filters.h"
 #include "draw.h"
 #include "redshift/colorramp.h"

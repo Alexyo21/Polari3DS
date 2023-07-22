@@ -28,6 +28,8 @@
 #include "memory.h"
 #include "fmt.h"
 #include "luma_config.h"
+#include "luma_shared_config.h"
+#include "menus/n3ds.h"
 #include "screen_filters.h"
 #include "config_template_ini.h"
 #include "ifile.h"
@@ -169,11 +171,12 @@ static size_t LumaConfig_SaveLumaIniConfigToStr(char *out, const CfgData *cfg)
         (int)CONFIG(PATCHGAMES), (int)CONFIG(REDIRECTAPPTHREADS),
         (int)CONFIG(PATCHVERSTRING), (int)CONFIG(SHOWGBABOOT),
         (int)CONFIG(ENABLEDSIEXTFILTER), (int)CONFIG(ALLOWUPDOWNLEFTRIGHTDSI),
+        (int)CONFIG(PATCHUNITINFO), (int)CONFIG(ENABLESAFEFIRMROSALINA),
 
         1 + (int)MULTICONFIG(DEFAULTEMU), 4 - (int)MULTICONFIG(BRIGHTNESS),
         splashPosStr, (unsigned int)cfg->splashDurationMsec,
         pinNumDigits, n3dsCpuStr,
-        autobootModeStr,
+        autobootModeStr, forceAudioOutputStr,
 
         cfg->hbldr3dsxTitleId, rosalinaMenuComboStr, (int)(cfg->pluginLoaderFlags & 1),
         (int)cfg->ntpTzOffetMinutes,
@@ -186,10 +189,7 @@ static size_t LumaConfig_SaveLumaIniConfigToStr(char *out, const CfgData *cfg)
 
         cfg->autobootTwlTitleId, (int)cfg->autobootCtrAppmemtype,
 
-        forceAudioOutputStr,
-
-        (int)CONFIG(PATCHUNITINFO), (int)CONFIG(DISABLEARM11EXCHANDLERS),
-        (int)CONFIG(ENABLESAFEFIRMROSALINA)
+        (int)CONFIG(DISABLEARM11EXCHANDLERS)
     );
 
     return n < 0 ? 0 : (size_t)n;

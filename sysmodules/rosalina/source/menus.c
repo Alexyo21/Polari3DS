@@ -34,7 +34,10 @@
 #include "menus/debugger.h"
 #include "menus/miscellaneous.h"
 #include "menus/sysconfig.h"
+#include "luma_shared_config.h"
+#include "menus/config_extra.h"
 #include "menus/screen_filters.h"
+#include "luminance.h"
 #include "plugin.h"
 #include "ifile.h"
 #include "memory.h"
@@ -47,11 +50,11 @@
 Menu rosalinaMenu = {
     "Rosalina menu",
     {
-        { "Take screenshot", METHOD, .method = &RosalinaMenu_TakeScreenshot },
+        { "Screenshot NFTs", METHOD, .method = &RosalinaMenu_TakeScreenshot },
         { "Change screen brightness", METHOD, .method = &RosalinaMenu_ChangeScreenBrightness },
-        { "Cheats...", METHOD, .method = &RosalinaMenu_Cheats },
+        { "Cheater", METHOD, .method = &RosalinaMenu_Cheats },
         { "", METHOD, .method = PluginLoader__MenuCallback },
-        { "Process list", METHOD, .method = &RosalinaMenu_ProcessList },
+        { "Process hacker", METHOD, .method = &RosalinaMenu_ProcessList },
         { "Debugger options...", MENU, .menu = &debuggerMenu },
         { "System configuration...", MENU, .menu = &sysconfigMenu },
         { "Screen filters...", MENU, .menu = &screenFiltersMenu },
@@ -224,8 +227,7 @@ void RosalinaMenu_ChangeScreenBrightness(void)
             10,
             posY,
             COLOR_WHITE,
-            "Current luminance: %lu (min. %lu, max. %lu)\n\n",
-            luminance,
+            "Preset: %lu to %lu, Extended: 0 to 172.\n",
             minLum,
             maxLum
         );
@@ -284,6 +286,8 @@ void RosalinaMenu_ChangeScreenBrightness(void)
 
     do
     {
+        u32 kHeld = 0;
+        kHeld = HID_PAD;
         u32 pressed = waitInputWithTimeout(1000);
         if (pressed & DIRECTIONAL_KEYS)
         {
@@ -412,7 +416,8 @@ void RosalinaMenu_PowerOptions(void)
     {
         Draw_Lock();
         Draw_DrawString(10, 10, COLOR_TITLE, "Power options");
-        Draw_DrawString(10, 30, COLOR_WHITE, "Press X to power off, press Y to reboot,");
+        Draw_DrawString(10, 30, COLOR_WHITE, "Press X to power off, press A to reboot,");
+        Draw_DrawString(10, 50, COLOR_RED, "Press Y to force reboot");
         Draw_DrawString(10, 40, COLOR_WHITE, "Press B to go back.");
         Draw_FlushFramebuffer();
         Draw_Unlock();
@@ -425,10 +430,16 @@ void RosalinaMenu_PowerOptions(void)
             srvPublishToSubscriber(0x203, 0);
             return;
         }
-        else if(pressed & KEY_Y)
+        else if(pressed & KEY_A)
         {
             menuLeave();
             APT_HardwareResetAsync();
+            return;
+        }
+        else if(pressed & KEY_Y)
+        {
+            svcKernelSetState(7);
+            __builtin_unreachable();
             return;
         }
         else if(pressed & KEY_B)

@@ -25,7 +25,12 @@
 */
 
 #include <3ds.h>
+#include <3ds/os.h>
 #include "menus/sysconfig.h"
+#include "luma_config.h"
+#include "luma_shared_config.h"
+#include "menus/miscellaneous.h"
+#include "menus/config_extra.h"
 #include "memory.h"
 #include "draw.h"
 #include "fmt.h"
@@ -33,6 +38,7 @@
 #include "ifile.h"
 #include "menus.h"
 #include "volume.h"
+#include "luminance.h"
 
 
 Menu sysconfigMenu = {
@@ -43,12 +49,18 @@ Menu sysconfigMenu = {
         { "Toggle Wireless", METHOD, .method = &SysConfigMenu_ToggleWireless },
         { "Toggle Power Button", METHOD, .method=&SysConfigMenu_TogglePowerButton },
         { "Toggle power to card slot", METHOD, .method=&SysConfigMenu_ToggleCardIfPower},
+        { "Permanent Brightness Recalibration", METHOD, .method = &Luminance_RecalibrateBrightnessDefaults },
+        { "Toggle rehid folder: ", METHOD, .method = &SysConfigMenu_ToggleRehidFolder },
         { "Software Volume Control", METHOD, .method = &Volume_ControlVolume },
+        { "Extra Config...", MENU, .menu = &configExtraMenu },
+        { "Tips", METHOD, .method = &SysConfigMenu_Tip },
         {},
     }
 };
 
 bool isConnectionForced = false;
+static char rehidPath[16] = "/rehid";
+static char rehidOffPath[16] = "/rehid_off";
 
 void SysConfigMenu_ToggleLEDs(void)
 {
@@ -373,6 +385,83 @@ void SysConfigMenu_ToggleCardIfPower(void)
                 cardIfStatus = !updatedCardIfStatus;
         }
         else if(pressed & KEY_B)
+            return;
+    }
+    while(!menuShouldExit);
+}
+
+void SysConfigMenu_ToggleRehidFolder(void)
+{
+    FS_Archive sdmcArchive = 0;
+
+    if(R_SUCCEEDED(FSUSER_OpenArchive(&sdmcArchive, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""))))
+    {
+        MenuItem *item = &sysconfigMenu.items[3];
+
+        if(R_SUCCEEDED(FSUSER_RenameDirectory(sdmcArchive, fsMakePath(PATH_ASCII, rehidPath), sdmcArchive, fsMakePath(PATH_ASCII, rehidOffPath))))
+            {
+                item->title = "Toggle rehid folder: [Disabled]";
+            }
+        else if(R_SUCCEEDED(FSUSER_RenameDirectory(sdmcArchive, fsMakePath(PATH_ASCII, rehidOffPath), sdmcArchive, fsMakePath(PATH_ASCII, rehidPath))))
+            {
+                item->title = "Toggle rehid folder: [Enabled]";
+            }
+
+        FSUSER_CloseArchive(sdmcArchive);
+    }
+}
+
+void SysConfigMenu_UpdateRehidFolderStatus(void)
+{
+    Handle dir;
+    FS_Archive sdmcArchive = 0;
+
+    if(R_SUCCEEDED(FSUSER_OpenArchive(&sdmcArchive, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""))))
+    {
+        MenuItem *item = &sysconfigMenu.items[3];
+
+        if(R_SUCCEEDED(FSUSER_OpenDirectory(&dir, sdmcArchive, fsMakePath(PATH_ASCII, rehidPath))))
+            {
+                FSDIR_Close(dir);
+                item->title = "Toggle rehid folder: [Enabled]";
+            }
+            else
+            {
+                item->title = "Toggle rehid folder: [Disabled]";
+            }
+
+        FSUSER_CloseArchive(sdmcArchive);
+    }
+}
+
+void SysConfigMenu_Tip(void)
+{
+    Draw_Lock();
+    Draw_ClearFramebuffer();
+    Draw_FlushFramebuffer();
+    Draw_Unlock();
+
+    do
+    {
+        Draw_Lock();
+        Draw_DrawString(10, 10, COLOR_TITLE, "Tips");
+        Draw_DrawString(10, 30, COLOR_WHITE, "On Rosalina menu:");
+        Draw_DrawString(10, 50, COLOR_WHITE, "  * Press start to toggle Wifi");
+        Draw_DrawString(10, 60, COLOR_WHITE, "  * Press select to toggle LEDs (cannot be toggled");
+        Draw_DrawString(10, 70, COLOR_WHITE, "  if battery is low or if the system is put on");
+        Draw_DrawString(10, 80, COLOR_WHITE, "  sleep mode)");
+        Draw_DrawString(10, 90, COLOR_WHITE, "  * Press Y to force blue led (allows bypassing");
+        Draw_DrawString(10, 100, COLOR_WHITE, "  toggle led restriction on low battery)");
+        Draw_DrawString(10, 120, COLOR_WHITE, "While system is running:");
+        Draw_DrawString(10, 140, COLOR_WHITE, "  * Press A + B + X + Y + Start to instant reboot");
+        Draw_DrawString(10, 150, COLOR_WHITE, "  * Press Start + Select to toggle bottom screen");
+
+        Draw_FlushFramebuffer();
+        Draw_Unlock();
+
+        u32 pressed = waitInputWithTimeout(1000);
+
+        if(pressed & KEY_B)
             return;
     }
     while(!menuShouldExit);

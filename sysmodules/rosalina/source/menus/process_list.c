@@ -27,6 +27,8 @@
 #include <3ds.h>
 #include "menus/process_list.h"
 #include "process_patches.h"
+#include "luma_config.h"
+#include "luma_shared_config.h"
 #include "memory.h"
 #include "csvc.h"
 #include "draw.h"

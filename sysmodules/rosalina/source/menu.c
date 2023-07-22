@@ -27,9 +27,16 @@
 #include <3ds.h>
 #include "menu.h"
 #include "draw.h"
+#include "menus/n3ds.h"
+#include "menus/sysconfig.h"
+#include "luma_shared_config.h"
+#include "menus/config_extra.h"
+#include "menus/miscellaneous.h"
 #include "fmt.h"
 #include "memory.h"
 #include "ifile.h"
+#include "menus.h"
+#include "memory.h"
 #include "menus.h"
 #include "utils.h"
 #include "luma_config.h"
@@ -38,23 +45,35 @@
 #include "minisoc.h"
 #include "plugin.h"
 #include "menus/screen_filters.h"
+#include "luminance.h"
 #include "shell.h"
 #include "menus/quick_switchers.h"
 #include "volume.h"
 
 u32 menuCombo = 0;
 bool isHidInitialized = false;
+bool rosalinaOpen = false;
 u32 mcuFwVersion = 0;
 
 void menuToggleLeds(void)
 {          
         // toggle LEDs
-        mcuHwcInit();
-        u8 result;
-        MCUHWC_ReadRegister(0x28, &result, 1);
-        result = ~result;
-        MCUHWC_WriteRegister(0x28, &result, 1);
-        mcuHwcExit();
+    mcuHwcInit();
+    u8 result;
+    MCUHWC_ReadRegister(0x28, &result, 1);
+    result = ~result;
+    MCUHWC_WriteRegister(0x28, &result, 1);
+    mcuHwcExit();
+}
+
+void menuMakeLedDabadeedabada(void)
+{
+    // Do shit with LEDs
+    mcuHwcInit();
+    u8 result;
+    result = 1;
+    MCUHWC_WriteRegister(0x29, &result, 1);
+    mcuHwcExit();
 }
 
 // libctru redefinition:
@@ -289,6 +308,8 @@ void menuThreadMain(void)
         N3DSMenu_UpdateStatus();
     
     QuickSwitchers_UpdateStatuses();
+    SysConfigMenu_UpdateRehidFolderStatus;
+    ConfigExtra_UpdateAllMenuItems();
 
     while (!isServiceUsable("ac:u") || !isServiceUsable("hid:USER") || !isServiceUsable("gsp::Gpu") || !isServiceUsable("cdc:CHK"))
         svcSleepThread(250 * 1000 * 1000LL);
@@ -306,20 +327,66 @@ void menuThreadMain(void)
 
         Cheat_ApplyCheats();
 
-        if(((scanHeldKeys() & menuCombo) == menuCombo) && !g_blockMenuOpen)
+        if(((scanHeldKeys() & menuCombo) == menuCombo) && !rosalinaOpen && !g_blockMenuOpen)
         {
-            menuEnter();
+            openRosalina();
+           /* menuEnter();
             if(isN3DS) N3DSMenu_UpdateStatus();
             PluginLoader__UpdateMenu();
             menuShow(&rosalinaMenu);
-            menuLeave();
+            menuLeave();*/        
+        }
+        
+        // force reboot combo key
+        if(((scanHeldKeys() & (KEY_A | KEY_B | KEY_X | KEY_Y | KEY_START)) == (KEY_A | KEY_B | KEY_X | KEY_Y | KEY_START)))
+        {
+            svcKernelSetState(7);
+            __builtin_unreachable();
         }
 
+        // toggle bottom screen combo
+        if(((scanHeldKeys() & (KEY_SELECT | KEY_START)) == (KEY_SELECT | KEY_START)))
+        {
+            u8 result, botStatus;
+            mcuHwcInit();
+            MCUHWC_ReadRegister(0x0F, &result, 1); // https://www.3dbrew.org/wiki/I2C_Registers#Device_3
+            mcuHwcExit();  
+            botStatus = (result >> 5) & 1; // right shift result to bit 5 ("Bottom screen backlight on") and perform bitwise AND with 1
+
+            gspLcdInit();
+            if(botStatus)
+            {
+                GSPLCD_PowerOffBacklight(BIT(GSP_SCREEN_BOTTOM));
+            }
+            else
+            {
+                GSPLCD_PowerOnBacklight(BIT(GSP_SCREEN_BOTTOM));
+            }
+            gspLcdExit();
+            while (scanHeldKeys() & (KEY_SELECT | KEY_START));
+        }
+        
         if (saveSettingsRequest) {
             LumaConfig_SaveSettings();
             saveSettingsRequest = false;
+        
         }
     }
+}
+
+void openRosalina(void)
+{
+    rosalinaOpen = true;
+    menuEnter();
+    if(isN3DS) {
+        N3DSMenu_UpdateStatus();
+        N3DSMenu_CheckForConfigFile();
+    }
+    
+    PluginLoader__UpdateMenu();
+    menuShow(&rosalinaMenu);
+    menuLeave();
+    rosalinaOpen = false;
 }
 
 static s32 menuRefCount = 0;
@@ -425,7 +492,14 @@ static void menuDraw(Menu *menu, u32 selected)
         u32 out = (u32)((coe * 100.0F) + (1 / 256.0F));
         char volBuf[32];
         int n2 = sprintf(volBuf, "Volume: %lu%%", out);
-        Draw_DrawString(SCREEN_BOT_WIDTH - 10 - SPACING_X * n2, 10, COLOR_WHITE, volBuf);
+        if(miniSocEnabled)
+        {
+            Draw_DrawString(SCREEN_BOT_WIDTH - 10 - SPACING_X * n2, SCREEN_BOT_HEIGHT - 30, COLOR_WHITE, volBuf);
+        }
+        else 
+        {
+            Draw_DrawString(SCREEN_BOT_WIDTH - 10 - SPACING_X * n2, 10, COLOR_WHITE, volBuf);
+        }
     }
     else
         Draw_DrawFormattedString(SCREEN_BOT_WIDTH - 10 - SPACING_X * 19, SCREEN_BOT_HEIGHT - 20, COLOR_WHITE, "%19s", "");
@@ -533,6 +607,42 @@ void menuShow(Menu *root)
         else if(pressed & KEY_SELECT)
         {
             menuToggleLeds();
+        }
+         else if(pressed & KEY_Y)
+        {
+            menuMakeLedDabadeedabada();
+        }
+        else if(pressed & KEY_START)
+        {
+            if (isServiceUsable("nwm::EXT"))
+            {
+                u8 wireless = (*(vu8 *)((0x10140000 | (1u << 31)) + 0x180));
+                nwmExtInit();
+                NWMEXT_ControlWirelessEnabled(!wireless);
+                nwmExtExit();
+            }
+        }
+        else if ((pressed & (KEY_START | KEY_SELECT)) && configExtra.toggleBottomLcd && hasTopScreen)
+        {
+            u8 result, botStatus;
+            mcuHwcInit();
+            MCUHWC_ReadRegister(0x0F, &result, 1); // https://www.3dbrew.org/wiki/I2C_Registers#Device_3
+            mcuHwcExit();  
+            botStatus = (result >> 5) & 1; // right shift result to bit 5 ("Bottom screen backlight on") and perform bitwise AND with 1
+
+            svcKernelSetState(0x10000, 2); // unblock gsp
+            gspLcdInit();
+            if(botStatus)
+            {
+                GSPLCD_PowerOffBacklight(BIT(GSP_SCREEN_BOTTOM));
+            }
+            else
+            {
+                GSPLCD_PowerOnBacklight(BIT(GSP_SCREEN_BOTTOM));
+            }
+            gspLcdExit();
+            svcKernelSetState(0x10000, 2); // block gsp again
+            break;
         }
 
         Draw_Lock();
