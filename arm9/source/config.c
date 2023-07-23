@@ -773,7 +773,7 @@ bool readConfig(void)
         configData.config |= 1u;
         configData.splashDurationMsec = 2000;
         configData.hbldr3dsxTitleId = HBLDR_DEFAULT_3DSX_TID;
-        configData.rosalinaMenuCombo = 1u << 9 | 1u << 7 | 1u << 2; // L+Start+Select
+        configData.rosalinaMenuCombo = 1u << 9 | 1u << 6; // L+Up
         configData.topScreenFilter.cct = 6500; // default temp, no-op
         configData.topScreenFilter.gammaEnc = 1 * FLOAT_CONV_MULT; // 1.0f
         configData.topScreenFilter.contrastEnc = 1 * FLOAT_CONV_MULT; // 1.0f
