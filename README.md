@@ -10,15 +10,25 @@ But it's more stable than the NTR firmware. You can switch games and the games I
 Some of the code is inspired by NTR but most of it is a complete reimplementation, because I wanted to figure out where the annoying bugs with the NTR firmware are. (e.g. 3DS hanging when switching processes)
 
 ### What's in here also  different from official luma3DS?
-- It's based from [DullPointer's custom luma3DS](https://github.com/DullPointer/Luma3DS) so it contains all of their added features such as night mode,
-- Changed some text and colors cuz why not,
-- Instant reboot: Press A + B + X + Y + Start to instantly reboot the console,
-- Toggle bottom screen anywhere: inspired by thirdtube, press Start + Select to toggle bottom screen,
-- Power off and reboot are now in a Power options menu (don't know why that wasn't already the case),
-- Workaround for toggle led in low battery, press Y in rosalina menu to make it blue so it can be turned off,
-- Errdisp doesn't reboot the console, so you can experiment playing games and remove cart/sd card for fun,
-- Oh yeah brightness is broken, don't go way down while changing brightness in rosalina menu or it'll set it very high (won't break the screen don't worry)
-- I made it for fun, it's not meant to be used for everyone, it's just that I use it for me, and made it open source so other people can inspire of this and make a better custom luma, if you plan to use it as your main cfw, well do, but keep in mind it's based on a older version of luma3DS.
+
+    Restored UNITINFO and enable rosalina on safe_firm and disable arm11exceptions  and alos cut down wifi options on the luma config menu
+    Added shortcuts:
+        Press start + select to toggle bottom screen (nice when you watch videos) inspired by This
+        Press A + B + X + Y + Start to instantly reboot the console. Useful in case of freeze, but don't complain if your sdcard get corrupted because of this.
+        Press Start on Rosalina menu to toggle wifi -> From here
+        Press Select on Rosalina menu to toggle LEDs -> From this (and press Y to force blue led as a workaround when the battery is low)
+    Added n3ds clock + L2 status in rosalina menu -> From here
+    Added Software Volume Control -> From here
+    Added extended brightness presets -> From this
+    separate brightness for both screen
+    you can open the rosalina menu with home button remember to disable it if you don't use it(extra config), for who has some button broken
+    rosalina emulate also home button you can come the home menu without pressing it...
+    Added permanent brightness calibration by Nutez -> From here
+    Changed colors on config menu because why not
+    Continue running after a errdisp error happens (you can press the instant reboot combo to reboot if nothing works)
+    also extra_config menu (led always turn off (little broken for now)
+    and new3ds title configurator so you can chose which game
+
 -Also added streaming in it juts cause why not, thanks to Byebyesky.
 
 ## Usage of the streaming capability
