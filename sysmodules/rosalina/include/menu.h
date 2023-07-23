@@ -30,6 +30,8 @@
 #include <3ds/services/hid.h>
 #include "MyThread.h"
 #include "utils.h"
+#include "shell.h"
+#include "sleep.h"
 
 #define HID_PAD           (REG32(0x10146000) ^ 0xFFF)
 
