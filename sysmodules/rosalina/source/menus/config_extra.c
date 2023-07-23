@@ -16,7 +16,7 @@
 
 #include "configExtra_ini.h"
 
-config_extra configExtra = { .suppressLeds = true, .cutSlotPower = false, .cutSleepWifi = false, .homeToRosalina = true, .toggleBottomLcd = false };
+config_extra configExtra = { .suppressLeds = true, .cutSlotPower = false, .cutSleepWifi = false, .homeToRosalina = false, .toggleBottomLcd = false };
 bool configExtraSaved = false;
 
 static const char menuText[6][32] = {
