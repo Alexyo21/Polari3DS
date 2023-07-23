@@ -770,7 +770,7 @@ bool readConfig(void)
         memset(&configData, 0, sizeof(CfgData));
         configData.formatVersionMajor = CONFIG_VERSIONMAJOR;
         configData.formatVersionMinor = CONFIG_VERSIONMINOR;
-        configData.config |= 1u;
+        configData.config |= 1u << PATCHVERSTRING;
         configData.splashDurationMsec = 2000;
         configData.hbldr3dsxTitleId = HBLDR_DEFAULT_3DSX_TID;
         configData.rosalinaMenuCombo = 1u << 9 | 1u << 6; // L+Up
