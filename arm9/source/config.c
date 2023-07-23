@@ -67,11 +67,13 @@ static const char *singleOptionIniNamesBoot[] = {
     "enable_dsi_external_filter",
     "allow_updown_leftright_dsi",
     "use_dev_unitinfo",
+    "disable_arm11_exception_handlers",
     "enable_safe_firm_rosalina",
+    "cut_3ds_wifi_in_sleep_mode",
 };
 
 static const char *singleOptionIniNamesMisc[] = {
-    "disable_arm11_exception_handlers",
+    "show_advanced_settings",
 };
 
 static const char *keyNames[] = {
@@ -561,7 +563,7 @@ static int configIniHandler(void* user, const char* section, const char* name, c
             if (strcmp(name, singleOptionIniNamesMisc[i]) == 0) {
                 bool opt;
                 CHECK_PARSE_OPTION(parseBoolOption(&opt, value));
-                cfg->config |= (u32)opt << (i + (u32)PATCHUNITINFO);
+                cfg->config |= (u32)opt << (i + (u32)SHOWADVANCEDSETTINGS);
                 return 1;
             }
         }
@@ -649,7 +651,8 @@ static size_t saveLumaIniConfigToStr(char *out)
         (int)CONFIG(PATCHGAMES), (int)CONFIG(REDIRECTAPPTHREADS),
         (int)CONFIG(PATCHVERSTRING), (int)CONFIG(SHOWGBABOOT),
         (int)CONFIG(ENABLEDSIEXTFILTER), (int)CONFIG(ALLOWUPDOWNLEFTRIGHTDSI),
-        (int)CONFIG(PATCHUNITINFO), (int)CONFIG(ENABLESAFEFIRMROSALINA),
+        (int)CONFIG(PATCHUNITINFO), (int)CONFIG(DISABLEARM11EXCHANDLERS),
+        (int)CONFIG(ENABLESAFEFIRMROSALINA), (int)CONFIG(CUTSLEEPWIFI),
 
         1 + (int)MULTICONFIG(DEFAULTEMU), 4 - (int)MULTICONFIG(BRIGHTNESS),
         splashPosStr, (unsigned int)cfg->splashDurationMsec,
@@ -666,8 +669,8 @@ static size_t saveLumaIniConfigToStr(char *out)
         (int)cfg->topScreenFilter.invert, (int)cfg->bottomScreenFilter.invert,
 
         cfg->autobootTwlTitleId, (int)cfg->autobootCtrAppmemtype,
-
-        (int)CONFIG(DISABLEARM11EXCHANDLERS)
+        
+        (int)CONFIG(SHOWADVANCEDSETTINGS)
     );
 
     return n < 0 ? 0 : (size_t)n;
@@ -830,8 +833,11 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
                                                "( ) Enable custom upscaling filters for DSi",
                                                "( ) Allow Left+Right / Up+Down combos for DSi",
                                                "( ) Set developer UNITINFO",
+                                               "( ) Disable Arm11 exception handlers",                                               
                                                "( ) Enable Rosalina on SAFE_FIRM",
-
+                                               "( ) Cut 3DS Wifi in sleep mode",
+                                               "( ) Show Advanced Settings",
+                                                                                              
                                                // Should always be the last entry
                                                "\nSave and exit"
                                              };
@@ -942,17 +948,40 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
                                                  "Commercial software filter these\n"
                                                  "combos on their own too, though.",
                                                  
-                                                 "Make the console be always detected as a development unit,\n"
-                                                 "and conversely (Arm11-side only).\n\n"
-                                                 "This breaks online features, amiibo and retail CIAs, but\n"
-                                                 "allows installing and booting some developer software.\n\n"
-                                                 "Only enable this if you know what you are doing!",
+                                                 "Make the console be always detected\n"
+                                                 "as a development unit, and conversely.\n"
+                                                 "(which breaks online features, amiibo\n"
+                                                 "and retail CIAs, but allows installing\n"
+                                                 "and booting some developer software).\n\n"
+                                                 "Only select this if you know what you\n"
+                                                 "are doing!",
+                                                 
+                                                 "Disables the fatal error exception\n"
+                                                 "handlers for the Arm11 CPU.\n\n"
+                                                 "Note: Disabling the exception handlers\n"
+                                                 "will disqualify you from submitting\n"
+                                                 "issues or bug reports to the Luma3DS\n"
+                                                 "GitHub repository!",
                                                 
-                                                 "Enables Rosalina, the kernel ext. and sysmodule reimpls\n"
-                                                 "on SAFE_FIRM (New 3DS only). Also suppresses QTM error\n"
-                                                 "0xF96183FE, allowing to use 8.1-11.3 N3DS on New 2DS XL\n"
-                                                 "consoles.\n\n"
-                                                 "Only select this if you know what you are doing!",
+                                                 "Enables Rosalina, the kernel ext.\n"
+                                                 "and sysmodule reimplementations on\n"
+                                                 "SAFE_FIRM (New 3DS only).\n\n"
+                                                 "Also suppresses QTM error 0xF96183FE,\n"
+                                                 "allowing to use 8.1-11.3 N3DS on\n"
+                                                 "New 2DS XL consoles.\n\n"
+                                                 "Only select this if you know what you\n"
+                                                 "are doing!",
+                                                 
+                                                 "Cut the 3DS wifi in sleep mode.\n\n"
+                                                 "Useful to save battery but prevent\n"
+                                                 "some features like streetpass or\n"
+                                                 "spotpass to work on sleep mode.\n\n"
+                                                 "Use this if you don't use them\n"
+                                                 "in sleep mode.\n\n[Don't work yet(?)]",
+                                                 
+                                                 "Disabling this will hide extra\n"
+                                                 "settings from the luma configuration\n"
+                                                 "menu.\n",
                                                  
                                                  // Should always be the last entry
                                                  "Save the changes and exit. To discard\n"
@@ -997,8 +1026,11 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
         { .visible = true },
         { .visible = true },
         { .visible = true },
+        { .visible = CONFIG(SHOWADVANCEDSETTINGS) },
+        { .visible = CONFIG(SHOWADVANCEDSETTINGS) },
+        { .visible = ISN3DS | CONFIG(SHOWADVANCEDSETTINGS) },
         { .visible = true },
-        { .visible = ISN3DS },
+        { .visible = false },
         { .visible = true },
     };
 
@@ -1195,7 +1227,7 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
     for(u32 i = 0; i < multiOptionsAmount; i++)
         configData.multiConfig |= multiOptions[i].enabled << (i * 2);
 
-    configData.config &= ~((1 << (u32)NUMCONFIGURABLE) - 1);
+    configData.config = 0;
     for(u32 i = 0; i < singleOptionsAmount; i++)
         configData.config |= (singleOptions[i].enabled ? 1 : 0) << i;
 
