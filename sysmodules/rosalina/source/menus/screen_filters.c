@@ -37,6 +37,8 @@
 #include "menus/screen_filters.h"
 #include "draw.h"
 #include "redshift/colorramp.h"
+#include "menus/sysconfig.h"
+#include "menus/sysconfig.h"
 
 typedef union {
     struct {

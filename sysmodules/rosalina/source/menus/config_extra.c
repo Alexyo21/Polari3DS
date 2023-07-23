@@ -11,6 +11,8 @@
 #include "menus/config_extra.h"
 #include "luminance.h"
 #include "menus/n3ds.h"
+#include "menus/screen_filters.h"
+#include "menus/sysconfig.h"
 
 #include "configExtra_ini.h"
 

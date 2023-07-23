@@ -29,6 +29,8 @@
 #include "luma_config.h"
 #include "luma_shared_config.h"
 #include "input_redirection.h"
+#include "menu.h"
+#include "menus.h"
 #include "ntp.h"
 #include "memory.h"
 #include "draw.h"
@@ -39,6 +41,10 @@
 #include "pmdbgext.h"
 #include "plugin.h"
 #include "process_patches.h"
+#include "menus/screen_filters.h"
+#include "menus/config_extra.h"
+#include "menus/sysconfig.h"
+#include "menus/sysconfig.h"
 
 typedef struct DspFirmSegmentHeader {
     u32 offset;

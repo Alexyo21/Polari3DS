@@ -36,9 +36,12 @@
 #include "fmt.h"
 #include "utils.h"
 #include "ifile.h"
+#include "menu.h"
 #include "menus.h"
 #include "volume.h"
 #include "luminance.h"
+#include "menus/screen_filters.h"
+#include "menus/sysconfig.h"
 
 
 Menu sysconfigMenu = {

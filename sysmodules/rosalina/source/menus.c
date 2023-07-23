@@ -46,6 +46,7 @@
 #include "luminance.h"
 #include "luma_config.h"
 #include "menus/quick_switchers.h"
+#include "menus/streaming.h"
 
 Menu rosalinaMenu = {
     "Rosalina menu",
@@ -59,6 +60,7 @@ Menu rosalinaMenu = {
         { "System configuration...", MENU, .menu = &sysconfigMenu },
         { "Screen filters...", MENU, .menu = &screenFiltersMenu },
         { "New 3DS settings...", MENU, .menu = &N3DSMenu, .visibility = &menuCheckN3ds },
+        { "Streaming", MENU, .menu = &streamingMenu },
         { "Quick-Switchers...", MENU, .menu = &quickSwitchersMenu },
         { "Miscellaneous options...", MENU, .menu = &miscellaneousMenu },
         { "Save settings", METHOD, .method = &RosalinaMenu_SaveSettings },

@@ -51,6 +51,7 @@
 #include "menus/debugger.h"
 #include "task_runner.h"
 #include "plugin.h"
+#include "menus/streaming.h"
 
 bool isN3DS;
 bool wifiOnBeforeSleep;
