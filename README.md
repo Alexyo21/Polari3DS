@@ -9,7 +9,7 @@ It's still higly WIP and not intended for public use since framerates are quite 
 But it's more stable than the NTR firmware. You can switch games and the games I tested worked flawlessly.  
 Some of the code is inspired by NTR but most of it is a complete reimplementation, because I wanted to figure out where the annoying bugs with the NTR firmware are. (e.g. 3DS hanging when switching processes)
 
-### What's different from official luma3DS?
+### What's in here also  different from official luma3DS?
 - It's based from [DullPointer's custom luma3DS](https://github.com/DullPointer/Luma3DS) so it contains all of their added features such as night mode,
 - Changed some text and colors cuz why not,
 - Instant reboot: Press A + B + X + Y + Start to instantly reboot the console,
