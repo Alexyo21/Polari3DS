@@ -56,7 +56,7 @@ bool rosalinaOpen = false;
 u32 mcuFwVersion = 0;
 
 void menuToggleLeds(void)
-{                
+{         
         // toggle LEDs
     mcuHwcInit();
     u8 result;
@@ -329,12 +329,7 @@ void menuThreadMain(void)
 
         if(((scanHeldKeys() & menuCombo) == menuCombo) && !rosalinaOpen && !g_blockMenuOpen)
         {
-            openRosalina();
-           /* menuEnter();
-            if(isN3DS) N3DSMenu_UpdateStatus();
-            PluginLoader__UpdateMenu();
-            menuShow(&rosalinaMenu);
-            menuLeave();*/        
+            openRosalina();      
         }
         
         // force reboot combo key
@@ -345,7 +340,7 @@ void menuThreadMain(void)
         }
 
         // toggle bottom screen combo
-        if(((scanHeldKeys() & (KEY_SELECT | KEY_START)) == (KEY_SELECT | KEY_START)))
+        if(((scanHeldKeys() & (KEY_SELECT | KEY_START)) == (KEY_SELECT | KEY_START)) && configExtra.toggleBottomLcd && hasTopScreen)
         {
             u8 result, botStatus;
             mcuHwcInit();
@@ -363,7 +358,7 @@ void menuThreadMain(void)
                 GSPLCD_PowerOnBacklight(BIT(GSP_SCREEN_BOTTOM));
             }
             gspLcdExit();
-            while (!(waitInput() & (KEY_SELECT | KEY_START)));
+            while (scanHeldKeys() & (KEY_SELECT | KEY_START));
         }
         
         if (saveSettingsRequest) {
@@ -622,7 +617,7 @@ void menuShow(Menu *root)
                 nwmExtExit();
             }
         }
-        else if ((pressed & (KEY_START | KEY_SELECT)) && configExtra.toggleBottomLcd && hasTopScreen)
+/*        else if (((pressed & (KEY_START | KEY_SELECT)) == (KEY_SELECT | KEY_START)) && configExtra.toggleBottomLcd && hasTopScreen)
         {
             u8 result, botStatus;
             mcuHwcInit();
@@ -643,7 +638,7 @@ void menuShow(Menu *root)
             gspLcdExit();
             svcKernelSetState(0x10000, 2); // block gsp again
             break;
-        }
+        } */
 
         Draw_Lock();
         menuDraw(currentMenu, selectedItem);

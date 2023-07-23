@@ -268,7 +268,6 @@ static void handleRestartHbAppNotification(u32 notificationId)
 }
 #endif
 
-/*
 static void handleHomeButtonNotification(u32 notificationId)
 {
     (void)notificationId;
@@ -277,7 +276,6 @@ static void handleHomeButtonNotification(u32 notificationId)
         openRosalina();
     }
 }
-*/
 
 static const ServiceManagerServiceEntry services[] = {
     { "plg:ldr", 1, PluginLoader__HandleCommands, true },
@@ -295,18 +293,32 @@ static const ServiceManagerNotificationEntry notifications[] = {
     { PTMNOTIFID_HALF_AWAKE,        handleSleepNotification                 },
     { 0x213,                        handleShellNotification                 },
     { 0x214,                        handleShellNotification                 },
-    // { 0x204,                        handleHomeButtonNotification            },
+    { 0x204,                        handleHomeButtonNotification            },
     { 0x1000,                       handleNextApplicationDebuggedByForce    },
     { 0x2000,                       handlePreTermNotification               },
     { 0x1001,                       PluginLoader__HandleKernelEvent         },
     { 0x000, NULL },
 };
 
+static void cutPowerToCardSlotWhenTWLCard(void)
+{
+    FS_CardType card;
+    bool status;
+    if(R_SUCCEEDED(FSUSER_GetCardType(&card)) && card == 1){
+        FSUSER_CardSlotPowerOff(&status);
+    }
+}
+
 // Some changes to commit
 int main(void)
 {
     Sleep__Init();
     PluginLoader__Init();
+    ConfigExtra_ReadConfigExtra();
+    if (configExtra.cutSlotPower)
+    {
+        cutPowerToCardSlotWhenTWLCard();
+    }
     
     u8 sysModel;
     cfguInit();

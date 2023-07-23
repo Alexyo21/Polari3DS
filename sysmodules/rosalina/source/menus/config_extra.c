@@ -14,7 +14,7 @@
 
 #include "configExtra_ini.h"
 
-config_extra configExtra = { .suppressLeds = false, .cutSlotPower = false, .cutSleepWifi = false, .homeToRosalina = false, .toggleBottomLcd = false };
+config_extra configExtra = { .suppressLeds = true, .cutSlotPower = false, .cutSleepWifi = false, .homeToRosalina = false, .toggleBottomLcd = false };
 bool configExtraSaved = false;
 
 static const char menuText[6][32] = {
@@ -22,7 +22,7 @@ static const char menuText[6][32] = {
     "Cut power to TWL Flashcards",
     "Cut 3DS WiFi in sleep mode",
     "Home button opens Rosalina",
-    "Y toggle bottom LCD in menu",
+    "St+Se toggle bottom LCD in menu",
     "Save config. Changes saved"
 };
 
