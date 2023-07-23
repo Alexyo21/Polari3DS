@@ -41,6 +41,8 @@ enum singleOptions
     PATCHUNITINFO,
     DISABLEARM11EXCHANDLERS,
     ENABLESAFEFIRMROSALINA,
+    CUTSLEEPWIFI,
+    SHOWADVANCEDSETTINGS,
 };
 
 extern u32 config, multiConfig, bootConfig;
