@@ -770,8 +770,8 @@ bool readConfig(void)
         memset(&configData, 0, sizeof(CfgData));
         configData.formatVersionMajor = CONFIG_VERSIONMAJOR;
         configData.formatVersionMinor = CONFIG_VERSIONMINOR;
-        configData.config |= 1u << PATCHVERSTRING;
-        configData.splashDurationMsec = 3000;
+        configData.config |= 1u;
+        configData.splashDurationMsec = 2000;
         configData.hbldr3dsxTitleId = HBLDR_DEFAULT_3DSX_TID;
         configData.rosalinaMenuCombo = 1u << 9 | 1u << 7 | 1u << 2; // L+Start+Select
         configData.topScreenFilter.cct = 6500; // default temp, no-op
@@ -1085,7 +1085,7 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
     endPos += SPACING_Y / 2;
 
     //Display all the normal options in white except for the first one
-    for(u32 i = 0, color = COLOR_RED; i < singleOptionsAmount; i++)
+    for(u32 i = 0, color = COLOR_GREEN; i < singleOptionsAmount; i++)
     {
         if(!singleOptions[i].visible) continue;
 
@@ -1093,7 +1093,7 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
         endPos = drawString(true, 10, singleOptions[i].posY, color, singleOptionsText[i]);
         if(singleOptions[i].enabled && singleOptionsText[i][0] == '(') drawCharacter(true, 10 + SPACING_X, singleOptions[i].posY, color, selected);
 
-        if(color == COLOR_RED)
+        if(color == COLOR_GREEN)
         {
             singleSelected = i;
             selectedOption = i + multiOptionsAmount;
@@ -1182,8 +1182,8 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
                 if(singleOptions[singleOldSelected].enabled) drawCharacter(true, 10 + SPACING_X, singleOptions[singleOldSelected].posY, COLOR_WHITE, selected);
             }
 
-            if(isMultiOption) drawString(true, 10, multiOptions[selectedOption].posY, COLOR_RED, multiOptionsText[selectedOption]);
-            else drawString(true, 10, singleOptions[singleSelected].posY, COLOR_RED, singleOptionsText[singleSelected]);
+            if(isMultiOption) drawString(true, 10, multiOptions[selectedOption].posY, COLOR_GREEN, multiOptionsText[selectedOption]);
+            else drawString(true, 10, singleOptions[singleSelected].posY, COLOR_GREEN, singleOptionsText[singleSelected]);
 
             drawString(false, 10, 10, COLOR_BLACK, optionsDescription[oldSelectedOption]);
             drawString(false, 10, 10, COLOR_WHITE, optionsDescription[selectedOption]);
@@ -1204,7 +1204,7 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
                 // Save and exit was selected.
                 if (singleSelected == singleOptionsAmount - 1)
                 {
-                    drawString(true, 10, singleOptions[singleSelected].posY, COLOR_GREEN, singleOptionsText[singleSelected]);
+                    drawString(true, 10, singleOptions[singleSelected].posY, COLOR_YELLOW, singleOptionsText[singleSelected]);
                     startPressed = false;
                     break;
                 }
@@ -1218,8 +1218,8 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
         }
 
         //In any case, if the current option is enabled (or a multiple choice option is selected) we must display a red 'x'
-        if(isMultiOption) drawCharacter(true, 10 + multiOptions[selectedOption].posXs[multiOptions[selectedOption].enabled] * SPACING_X, multiOptions[selectedOption].posY, COLOR_RED, selected);
-        else if(singleOptions[singleSelected].enabled && singleOptionsText[singleSelected][0] == '(') drawCharacter(true, 10 + SPACING_X, singleOptions[singleSelected].posY, COLOR_RED, selected);
+        if(isMultiOption) drawCharacter(true, 10 + multiOptions[selectedOption].posXs[multiOptions[selectedOption].enabled] * SPACING_X, multiOptions[selectedOption].posY, COLOR_GREEN, selected);
+        else if(singleOptions[singleSelected].enabled && singleOptionsText[singleSelected][0] == '(') drawCharacter(true, 10 + SPACING_X, singleOptions[singleSelected].posY, COLOR_GREEN, selected);
     }
 
     //Parse and write the new configuration
