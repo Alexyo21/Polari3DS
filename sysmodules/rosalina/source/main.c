@@ -268,6 +268,7 @@ static void handleRestartHbAppNotification(u32 notificationId)
 }
 #endif
 
+/*
 static void handleHomeButtonNotification(u32 notificationId)
 {
     (void)notificationId;
@@ -276,6 +277,7 @@ static void handleHomeButtonNotification(u32 notificationId)
         openRosalina();
     }
 }
+*/
 
 static const ServiceManagerServiceEntry services[] = {
     { "plg:ldr", 1, PluginLoader__HandleCommands, true },
@@ -293,7 +295,7 @@ static const ServiceManagerNotificationEntry notifications[] = {
     { PTMNOTIFID_HALF_AWAKE,        handleSleepNotification                 },
     { 0x213,                        handleShellNotification                 },
     { 0x214,                        handleShellNotification                 },
-    { 0x204,                        handleHomeButtonNotification            },
+    // { 0x204,                        handleHomeButtonNotification            },
     { 0x1000,                       handleNextApplicationDebuggedByForce    },
     { 0x2000,                       handlePreTermNotification               },
     { 0x1001,                       PluginLoader__HandleKernelEvent         },

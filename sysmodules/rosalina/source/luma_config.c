@@ -35,6 +35,10 @@
 #include "ifile.h"
 #include "menus/miscellaneous.h"
 #include "plugin/plgloader.h"
+#include "menu.h"
+#include "menus.h"
+#include "menus/sysconfig.h"
+#include "menus/config_extra.h"
 
 typedef struct CfgData {
     u16 formatVersionMajor, formatVersionMinor;
@@ -171,7 +175,8 @@ static size_t LumaConfig_SaveLumaIniConfigToStr(char *out, const CfgData *cfg)
         (int)CONFIG(PATCHGAMES), (int)CONFIG(REDIRECTAPPTHREADS),
         (int)CONFIG(PATCHVERSTRING), (int)CONFIG(SHOWGBABOOT),
         (int)CONFIG(ENABLEDSIEXTFILTER), (int)CONFIG(ALLOWUPDOWNLEFTRIGHTDSI),
-        (int)CONFIG(PATCHUNITINFO), (int)CONFIG(ENABLESAFEFIRMROSALINA),
+        (int)CONFIG(PATCHUNITINFO), (int)CONFIG(DISABLEARM11EXCHANDLERS),
+        (int)CONFIG(ENABLESAFEFIRMROSALINA), (int)CONFIG(CUTSLEEPWIFI),
 
         1 + (int)MULTICONFIG(DEFAULTEMU), 4 - (int)MULTICONFIG(BRIGHTNESS),
         splashPosStr, (unsigned int)cfg->splashDurationMsec,
@@ -188,8 +193,8 @@ static size_t LumaConfig_SaveLumaIniConfigToStr(char *out, const CfgData *cfg)
         (int)cfg->topScreenFilter.invert, (int)cfg->bottomScreenFilter.invert,
 
         cfg->autobootTwlTitleId, (int)cfg->autobootCtrAppmemtype,
-
-        (int)CONFIG(DISABLEARM11EXCHANDLERS)
+        
+        (int)CONFIG(SHOWADVANCEDSETTINGS)
     );
 
     return n < 0 ? 0 : (size_t)n;
