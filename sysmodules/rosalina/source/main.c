@@ -178,6 +178,11 @@ static void handleShellNotification(u32 notificationId)
     // Quick dirty fix
     Sleep__HandleNotification(notificationId);
     
+    s64 out = 0;
+    svcGetSystemInfo(&out, 0x10000, 3);
+    u32 config = (u32)out;
+    bool cutWifiInSleep = ((config >> (u32)CUTWIFISLEEP) & 1) != 0;
+    
     if (notificationId == 0x213) {
         // Shell opened
         // Note that this notification is also fired on system init.
@@ -193,7 +198,7 @@ static void handleShellNotification(u32 notificationId)
             mcuHwcExit();
         }
 
-        if(wifiOnBeforeSleep && configExtra.cutSleepWifi && isServiceUsable("nwm::EXT")){
+        if(wifiOnBeforeSleep && cutWifiInSleep && configExtra.cutSleepWifi && isServiceUsable("nwm::EXT")){
             nwmExtInit();
             NWMEXT_ControlWirelessEnabled(true);
             nwmExtExit();
