@@ -12,7 +12,7 @@
 #include "luminance.h"
 #include "menus/n3ds.h"
 #include "menus/screen_filters.h"
-#include "menus/sysconfig.h"
+#include "config_template_ini.h"
 
 #include "configExtra_ini.h"
 

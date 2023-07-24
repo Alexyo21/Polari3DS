@@ -40,6 +40,7 @@
 #include "minisoc.h"
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include "config_template_ini.h"
 
 typedef struct ProcessInfo
 {

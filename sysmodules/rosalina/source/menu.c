@@ -50,6 +50,7 @@
 #include "menus/quick_switchers.h"
 #include "volume.h"
 #include "menus/streaming.h"
+#include "config_template_ini.h"
 
 u32 menuCombo = 0;
 bool isHidInitialized = false;

@@ -34,6 +34,7 @@
 #include "menus/debugger.h"
 #include "menus/miscellaneous.h"
 #include "menus/sysconfig.h"
+#include "luma_config.h"
 #include "luma_shared_config.h"
 #include "menus/config_extra.h"
 #include "menus/screen_filters.h"
@@ -44,9 +45,9 @@
 #include "fmt.h"
 #include "process_patches.h"
 #include "luminance.h"
-#include "luma_config.h"
 #include "menus/quick_switchers.h"
 #include "menus/streaming.h"
+#include "config_template_ini.h"
 
 Menu rosalinaMenu = {
     "Rosalina menu",

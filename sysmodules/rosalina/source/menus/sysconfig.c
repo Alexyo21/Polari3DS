@@ -41,7 +41,7 @@
 #include "volume.h"
 #include "luminance.h"
 #include "menus/screen_filters.h"
-#include "menus/sysconfig.h"
+#include "config_template_ini.h"
 
 
 Menu sysconfigMenu = {
