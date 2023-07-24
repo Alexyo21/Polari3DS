@@ -208,7 +208,7 @@ static void handleShellNotification(u32 notificationId)
         // Shell closed
         menuShouldExit = true;
         
-        if(configExtra.cutSleepWifi)
+        if(cutWifiInSleep && configExtra.cutSleepWifi)
         {      
             u8 wireless = (*(vu8 *)((0x10140000 | (1u << 31)) + 0x180));
 
