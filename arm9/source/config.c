@@ -66,10 +66,10 @@ static const char *singleOptionIniNamesBoot[] = {
     "show_gba_boot_screen",
     "enable_dsi_external_filter",
     "allow_updown_leftright_dsi",
+    "cut_wifi_sleep_mode",
     "use_dev_unitinfo",
     "disable_arm11_exception_handlers",
     "enable_safe_firm_rosalina",
-    "cut_3ds_wifi_in_sleep_mode",
 };
 
 static const char *singleOptionIniNamesMisc[] = {
@@ -651,9 +651,9 @@ static size_t saveLumaIniConfigToStr(char *out)
         (int)CONFIG(PATCHGAMES), (int)CONFIG(REDIRECTAPPTHREADS),
         (int)CONFIG(PATCHVERSTRING), (int)CONFIG(SHOWGBABOOT),
         (int)CONFIG(ENABLEDSIEXTFILTER), (int)CONFIG(ALLOWUPDOWNLEFTRIGHTDSI),
-        (int)CONFIG(PATCHUNITINFO), (int)CONFIG(DISABLEARM11EXCHANDLERS),
-        (int)CONFIG(ENABLESAFEFIRMROSALINA), (int)CONFIG(CUTSLEEPWIFI),
-
+        (int)CONFIG(CUTWIFISLEEP), (int)CONFIG(PATCHUNITINFO),
+        (int)CONFIG(DISABLEARM11EXCHANDLERS), (int)CONFIG(ENABLESAFEFIRMROSALINA),
+        
         1 + (int)MULTICONFIG(DEFAULTEMU), 4 - (int)MULTICONFIG(BRIGHTNESS),
         splashPosStr, (unsigned int)cfg->splashDurationMsec,
         pinNumDigits, n3dsCpuStr,
@@ -832,10 +832,10 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
                                                "( ) Show GBA boot screen in patched AGB_FIRM",
                                                "( ) Enable custom upscaling filters for DSi",
                                                "( ) Allow Left+Right / Up+Down combos for DSi",
+                                               "( ) Cut 3DS Wifi in sleep mode",
                                                "( ) Set developer UNITINFO",
                                                "( ) Disable Arm11 exception handlers",                                               
                                                "( ) Enable Rosalina on SAFE_FIRM",
-                                               "( ) Cut 3DS Wifi in sleep mode",
                                                "( ) Show Advanced Settings",
                                                                                               
                                                // Should always be the last entry
@@ -948,6 +948,13 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
                                                  "Commercial software filter these\n"
                                                  "combos on their own too, though.",
                                                  
+                                                 "Cut the 3DS wifi in sleep mode.\n\n"
+                                                 "Useful to save battery but prevent\n"
+                                                 "some features like streetpass or\n"
+                                                 "spotpass to work on sleep mode.\n\n"
+                                                 "Use this if you don't use them\n"
+                                                 "want to save battery in sleep mode.",
+                                                 
                                                  "Make the console be always detected\n"
                                                  "as a development unit, and conversely.\n"
                                                  "(which breaks online features, amiibo\n"
@@ -971,13 +978,6 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
                                                  "New 2DS XL consoles.\n\n"
                                                  "Only select this if you know what you\n"
                                                  "are doing!",
-                                                 
-                                                 "Cut the 3DS wifi in sleep mode.\n\n"
-                                                 "Useful to save battery but prevent\n"
-                                                 "some features like streetpass or\n"
-                                                 "spotpass to work on sleep mode.\n\n"
-                                                 "Use this if you don't use them\n"
-                                                 "in sleep mode.\n\n[Don't work yet(?)]",
                                                  
                                                  "Disabling this will hide extra\n"
                                                  "settings from the luma configuration\n"
@@ -1026,10 +1026,10 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
         { .visible = true },
         { .visible = true },
         { .visible = true },
-        { .visible = CONFIG(SHOWADVANCEDSETTINGS) },
-        { .visible = CONFIG(SHOWADVANCEDSETTINGS) },
-        { .visible = CONFIG(SHOWADVANCEDSETTINGS) },
         { .visible = true },
+        { .visible = CONFIG(SHOWADVANCEDSETTINGS) },
+        { .visible = CONFIG(SHOWADVANCEDSETTINGS) },
+        { .visible = CONFIG(SHOWADVANCEDSETTINGS) },
         { .visible = false },
         { .visible = true },
     };
