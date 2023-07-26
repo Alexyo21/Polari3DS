@@ -1,7 +1,7 @@
 # Luma3DS
 *Noob-proof (N)3DS "Custom Firmware"*
 
-cleaned source code after beivg dirty cause cloned new file on older 😅
+cleaned source code after being dirty cause cloned new file on older 😅
 ## What is this fork
 
 Many of you probably know the NTR CFW that enabled streaming the 3DS' screen to the computer over the debugger.  
