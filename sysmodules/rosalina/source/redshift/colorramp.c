@@ -19,9 +19,9 @@
 */
 
 #include <stdint.h>
-//#include <math.h>
+#include <math.h>
 
-//#include "redshift/redshift.h"
+#include "redshift/redshift.h"
 
 /* Whitepoint values for temperatures at 100K intervals.
    These will be interpolated for the actual temperature.
