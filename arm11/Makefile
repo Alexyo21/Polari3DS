@@ -28,8 +28,8 @@ INCLUDES	:=	include include/svc
 ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 DEFINES :=	-DARM11 -D__3DS__
 
-CFLAGS	:=	-g -std=gnu11 -Wall -Wextra -Werror -O2 -mword-relocations \
-			-fomit-frame-pointer -ffunction-sections -fdata-sections \
+CFLAGS	:=	-g -std=gnu11 -Wall -Wextra -Werror -Og -mword-relocations \
+		        -ffunction-sections -fdata-sections \
 			-Wno-main -fno-builtin $(ARCH) $(DEFINES)
 
 CFLAGS	+=	$(INCLUDE)
