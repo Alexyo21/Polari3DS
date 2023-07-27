@@ -34,10 +34,18 @@ INCLUDES	:=	include include/gdb include/menus include/redshift
 ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 DEFINES :=	-D__3DS__ -DHBLDR_DEFAULT_3DSX_TID="0x$(HBLDR_DEFAULT_3DSX_TID)ULL" -DHBLDR_DEFAULT_3DSX_TITLE_NAME="\"$(HBLDR_DEFAULT_3DSX_TITLE_NAME)\""
 
+ifeq ($(BUILD_FOR_GDB),1)
+	OPTFLAGS := -Og
+	LIBS := -lctrud -lm
+else
+	OPTFLAGS := -Os -fomit-frame-pointer
+	LIBS := -lctru -lm
+endif
+
 FALSEPOSITIVES := -Wno-array-bounds -Wno-stringop-overflow -Wno-stringop-overread
-CFLAGS	:=	-g -std=gnu11 -Wall -Wextra -Werror -Wno-unused-value -Os -mword-relocations \
-			-fomit-frame-pointer -ffunction-sections -fdata-sections -fno-math-errno \
-			$(FALSEPOSITIVES) $(ARCH) $(DEFINES)
+CFLAGS	:=	-g -std=gnu11 -Wall -Wextra -Werror -Wno-unused-value -mword-relocations \
+		   -ffunction-sections -fdata-sections -fno-math-errno \
+		      $(OPTFLAGS) $(FALSEPOSITIVES) $(ARCH) $(DEFINES)
 
 CFLAGS	+=	$(INCLUDE)
 
@@ -46,7 +54,7 @@ CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map),-wrap,exit,--section-start,.text=0x14000000
 
-LIBS	:=	-lctru -lm
+#LIBS	:=	-lctru -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
