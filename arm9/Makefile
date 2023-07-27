@@ -65,8 +65,8 @@ endif
 
 FALSEPOSITIVES := -Wno-array-bounds -Wno-stringop-overflow -Wno-stringop-overread
 CFLAGS	:=	-g -std=gnu11 -Wall -Wextra -Werror -Og -mword-relocations \
-		        -ffunction-sections -fdata-sections \
-			-Wno-main $(FALSEPOSITIVES) $(ARCH) $(DEFINES)
+		-ffunction-sections -fdata-sections \
+                -Wno-main $(FALSEPOSITIVES) $(ARCH) $(DEFINES)
 
 CFLAGS	+=	$(INCLUDE)
 
