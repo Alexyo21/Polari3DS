@@ -37,7 +37,7 @@ else
 endif
 
 ifeq ($(BUILD_FOR_GDB),1)
-	OPTFLAGS := -O0
+	OPTFLAGS := -Og
 	LIBS := -lctrud
 else
 	OPTFLAGS := -O2 -fomit-frame-pointer
