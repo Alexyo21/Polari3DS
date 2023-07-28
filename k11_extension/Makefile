@@ -41,7 +41,7 @@ CXXFLAGS	:= $(CFLAGS) -std=gnu++11
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=$(TOPDIR)/linker.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
-LIBS	:=
+LIBS	:= -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
