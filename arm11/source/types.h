@@ -32,7 +32,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include <string.h>
 #include <stdalign.h>
 #include <unistd.h>
 #include <math.h>
