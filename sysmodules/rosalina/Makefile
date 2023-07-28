@@ -9,6 +9,12 @@ endif
 TOPDIR ?= $(CURDIR)
 include $(DEVKITARM)/3ds_rules
 
+# Default 3DSX TitleID for hb:ldr (note: also defined in top-level Makefile)
+export HBLDR_DEFAULT_3DSX_TID ?= 000400000D921E00
+
+# What to call the title corresponding to HBLDR_DEFAULT_3DSX_TID (note: also defined in top-level Makefile)
+export HBLDR_DEFAULT_3DSX_TITLE_NAME ?= "hblauncher_loader"
+
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
 # BUILD is the directory where object files & intermediate files will be placed
@@ -18,44 +24,37 @@ include $(DEVKITARM)/3ds_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source
-DATA		:=	data
-INCLUDES	:=	include
+SOURCES		:=	source source/gdb source/menus source/plugin source/redshift
+DATA		:=	source/gdb/xml data
+INCLUDES	:=	include include/gdb include/menus include/redshift
 
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
 ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
-DEFINES :=	-D__3DS__
+DEFINES :=	-D__3DS__ -DHBLDR_DEFAULT_3DSX_TID="0x$(HBLDR_DEFAULT_3DSX_TID)ULL" -DHBLDR_DEFAULT_3DSX_TITLE_NAME="\"$(HBLDR_DEFAULT_3DSX_TITLE_NAME)\""
 
 ifeq ($(BUILD_FOR_GDB),1)
 	OPTFLAGS := -Og
-	LIBS := -lctrud
+	LIBS := -lctrud -lm
 else
-	OPTFLAGS := -O2 -fomit-frame-pointer
-	LIBS := -lctru
+	OPTFLAGS := -Os -fomit-frame-pointer
+	LIBS := -lctru -lm
 endif
 
-CFLAGS	:=\
-		-g \
-		-std=gnu11 \
-		-Wall \
-		-Wextra \
-		-Werror \
-		-mword-relocations \
-		-ffunction-sections \
-		-fdata-sections \
-		$(OPTFLAGS) \
-		$(ARCH) \
-		$(DEFINES) \
-		$(INCLUDE)
+FALSEPOSITIVES := -Wno-array-bounds -Wno-stringop-overflow -Wno-stringop-overread
+CFLAGS	:=	-g -std=gnu11 -Wall -Wextra -Werror -Wno-unused-value -mword-relocations \
+		   -ffunction-sections -fdata-sections \
+		    $(OPTFLAGS) $(FALSEPOSITIVES) $(ARCH) $(DEFINES)
 
 CFLAGS	+=	$(INCLUDE)
 
-CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
+CXXFLAGS	:= $(CFLAGS) -std=gnu++11
 
 ASFLAGS	:=	-g $(ARCH)
-LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map),-wrap,exit
+LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map),-wrap,exit,--section-start,.text=0x14000000
+
+#LIBS	:=	-lctru -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -146,12 +145,24 @@ $(OUTPUT).elf	:	$(OFILES)
 	@$(LD) $(LDFLAGS) $(OFILES) $(LIBPATHS) $(LIBS) -o $@
 	@$(NM) -CSn $@ > $(notdir $*.lst)
 
+draw.o: CFLAGS += -O3
+
 $(OFILES_SRC)	: $(HFILES_BIN)
 
 #---------------------------------------------------------------------------------
 # you need a rule like this for each extension you use as binary data
 #---------------------------------------------------------------------------------
-%.bin.o	%_bin.h :	%.bin
+%.bin.o	%_bin.h:	%.bin
+#---------------------------------------------------------------------------------
+	@echo $(notdir $<)
+	@$(bin2o)
+#---------------------------------------------------------------------------------
+%.xml.o	%_xml.h:	%.xml
+#---------------------------------------------------------------------------------
+	@echo $(notdir $<)
+	@$(bin2o)
+#---------------------------------------------------------------------------------
+%.ini.o	%_ini.h:	%.ini
 #---------------------------------------------------------------------------------
 	@echo $(notdir $<)
 	@$(bin2o)
