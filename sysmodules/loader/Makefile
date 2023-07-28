@@ -38,10 +38,10 @@ endif
 
 ifeq ($(BUILD_FOR_GDB),1)
 	OPTFLAGS := -Og
-	LIBS := -lctrud
+	LIBS := -lctrud -lm
 else
 	OPTFLAGS := -O2 -fomit-frame-pointer
-	LIBS := -lctru
+	LIBS := -lctru -lm
 endif
 
 COMMON_FLAGS =\
