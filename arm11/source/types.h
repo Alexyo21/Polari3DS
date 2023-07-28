@@ -26,8 +26,16 @@
 
 #pragma once
 
-#include <stdint.h>
+#include <inttypes.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
+#include <stdalign.h>
+#include <unistd.h>
+#include <math.h>
 
 //Common data types
 typedef uint8_t u8;
