@@ -29,18 +29,17 @@ INCLUDES	:=	include
 # options for code generation
 #---------------------------------------------------------------------------------
 ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
+DEFINES :=	-D__3DS__ -DHBLDR_DEFAULT_3DSX_TID="0x$(HBLDR_DEFAULT_3DSX_TID)ULL"
 
 ifeq ($(BUILD_FOR_EXPLOIT_DEV),1)
-	DEFINES :=	-D__3DS__ -DHBLDR_DEFAULT_3DSX_TID="0x$(HBLDR_DEFAULT_3DSX_TID)ULL" -DBUILD_FOR_EXPLOIT_DEV=1
-else
-	DEFINES :=	-D__3DS__ -DHBLDR_DEFAULT_3DSX_TID="0x$(HBLDR_DEFAULT_3DSX_TID)ULL"
+        EXTRA_DEFINES +=	-DBUILD_FOR_EXPLOIT_DEV=1
 endif
 
 ifeq ($(LOADER_ENABLE_PASLR),1)
-	DEFINES :=	-D__3DS__ -DHBLDR_DEFAULT_3DSX_TID="0x$(HBLDR_DEFAULT_3DSX_TID)ULL" -DLOADER_ENABLE_PASLR=1
-else
-	DEFINES :=	-D__3DS__ -DHBLDR_DEFAULT_3DSX_TID="0x$(HBLDR_DEFAULT_3DSX_TID)ULL"
+	EXTRA_DEFINES +=  	-DLOADER_ENABLE_PASLR=1
 endif
+
+DEFINES += 	$(EXTRA_DEFINES)
 
 ifeq ($(BUILD_FOR_GDB),1)
 	OPTFLAGS := -Og
