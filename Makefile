@@ -6,6 +6,9 @@ endif
 # Dangerous. Don't enable this unless you know what you're doing!
 export BUILD_FOR_EXPLOIT_DEV ?= 0
 
+# Build with PASLR enabled, i think you not enable this...
+export LOADER_ENABLE_PASLR ?= 1
+
 # Build with O0 & frame pointer information for use with GDB
 export BUILD_FOR_GDB ?= 1
 
