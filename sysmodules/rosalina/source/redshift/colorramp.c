@@ -19,7 +19,7 @@
 */
 
 #include <stdint.h>
-//#include <math.h>
+#include <math.h>
 
 //#include "redshift/redshift.h"
 
