@@ -48,6 +48,7 @@
 #include "menus/quick_switchers.h"
 #include "menus/streaming.h"
 #include "config_template_ini.h"
+#include "configExtra_ini.h"
 
 Menu rosalinaMenu = {
     "Rosalina menu",

@@ -42,6 +42,7 @@
 #include "luminance.h"
 #include "menus/screen_filters.h"
 #include "config_template_ini.h"
+#include "configExtra_ini.h"
 
 
 Menu sysconfigMenu = {

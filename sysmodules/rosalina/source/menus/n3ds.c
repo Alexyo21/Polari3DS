@@ -35,6 +35,7 @@
 #include "ifile.h"
 #include "pmdbgext.h"
 #include "config_template_ini.h"
+#include "configExtra_ini.h"
 
 static char clkRateBuf[128 + 1], new3dsMenuBuf[128 + 1], new3dsMenuConfigBuf[128 + 1], fileNameBuf[64];
 

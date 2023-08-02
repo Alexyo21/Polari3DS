@@ -32,6 +32,7 @@
 #include "menus/n3ds.h"
 #include "screen_filters.h"
 #include "config_template_ini.h"
+#include "configExtra_ini.h"
 #include "ifile.h"
 #include "menus/miscellaneous.h"
 #include "plugin/plgloader.h"
@@ -176,7 +177,8 @@ static size_t LumaConfig_SaveLumaIniConfigToStr(char *out, const CfgData *cfg)
         (int)CONFIG(PATCHVERSTRING), (int)CONFIG(SHOWGBABOOT),
         (int)CONFIG(ENABLEDSIEXTFILTER), (int)CONFIG(ALLOWUPDOWNLEFTRIGHTDSI),
         (int)CONFIG(CUTWIFISLEEP), (int)CONFIG(PATCHUNITINFO),
-        (int)CONFIG(DISABLEARM11EXCHANDLERS), (int)CONFIG(ENABLESAFEFIRMROSALINA),        
+        (int)CONFIG(DISABLEARM11EXCHANDLERS), (int)CONFIG(ENABLESAFEFIRMROSALINA),
+        (int)CONFIG(NOERRDISPINSTANTREBOOT),        
 
         1 + (int)MULTICONFIG(DEFAULTEMU), 4 - (int)MULTICONFIG(BRIGHTNESS),
         splashPosStr, (unsigned int)cfg->splashDurationMsec,
