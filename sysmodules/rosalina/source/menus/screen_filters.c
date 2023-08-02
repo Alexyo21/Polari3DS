@@ -39,6 +39,7 @@
 #include "redshift/colorramp.h"
 #include "menus/sysconfig.h"
 #include "config_template_ini.h"
+#include "configExtra_ini.h"
 
 typedef union {
     struct {
