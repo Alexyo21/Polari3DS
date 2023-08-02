@@ -32,6 +32,8 @@
 #include "utils.h"
 #include "shell.h"
 #include "sleep.h"
+#include "luma_config.h"
+#include "luma_shared_config.h"
 
 #define HID_PAD           (REG32(0x10146000) ^ 0xFFF)
 
