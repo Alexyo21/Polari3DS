@@ -29,11 +29,11 @@ ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 DEFINES :=	-D__3DS__
 
 ifeq ($(BUILD_FOR_GDB),1)
-	OPTFLAGS := -O0
-	LIBS := -lctrud
+	OPTFLAGS := -Og -fno-fast-math
+	LIBS := -lctrud -lm
 else
 	OPTFLAGS := -O2 -fomit-frame-pointer
-	LIBS := -lctru
+	LIBS := -lctru -lm
 endif
 
 CFLAGS	:=\
@@ -52,7 +52,7 @@ CFLAGS	:=\
 
 CFLAGS	+=	$(INCLUDE)
 
-CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
+CXXFLAGS	:= $(CFLAGS) -std=gnu++11
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map),-wrap,exit

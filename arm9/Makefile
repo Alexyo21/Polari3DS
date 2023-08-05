@@ -63,19 +63,25 @@ else
 	DEFINES :=	-DARM9 -D__3DS__ -DHBLDR_DEFAULT_3DSX_TID="0x$(HBLDR_DEFAULT_3DSX_TID)ULL"
 endif
 
+ifeq ($(BUILD_FOR_GDB),1)
+	OPTFLAGS := -Og -fno-fast-math
+else
+	OPTFLAGS := -O2 -fomit-frame-pointer -ffast-math
+endif
+
 FALSEPOSITIVES := -Wno-array-bounds -Wno-stringop-overflow -Wno-stringop-overread
-CFLAGS	:=	-g -std=gnu11 -Wall -Wextra -Werror -O2 -mword-relocations \
-			-fomit-frame-pointer -ffunction-sections -fdata-sections \
-			-Wno-main $(FALSEPOSITIVES) $(ARCH) $(DEFINES)
+CFLAGS	:=	-g -std=gnu11 -Wall -Wextra -Werror -mword-relocations \
+	        -ffunction-sections -fdata-sections \
+                -Wno-main $(OPTFLAGS) $(FALSEPOSITIVES) $(ARCH) $(DEFINES)
 
 CFLAGS	+=	$(INCLUDE)
 
-CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
+CXXFLAGS	:= $(CFLAGS) -std=gnu++11
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=$(TOPDIR)/linker.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
-LIBS	:=
+LIBS	:= -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
