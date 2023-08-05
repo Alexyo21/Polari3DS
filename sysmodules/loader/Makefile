@@ -29,19 +29,24 @@ INCLUDES	:=	include
 # options for code generation
 #---------------------------------------------------------------------------------
 ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
+DEFINES :=	-D__3DS__ -DHBLDR_DEFAULT_3DSX_TID="0x$(HBLDR_DEFAULT_3DSX_TID)ULL"
 
 ifeq ($(BUILD_FOR_EXPLOIT_DEV),1)
-	DEFINES :=	-D__3DS__ -DHBLDR_DEFAULT_3DSX_TID="0x$(HBLDR_DEFAULT_3DSX_TID)ULL" -DBUILD_FOR_EXPLOIT_DEV=1
-else
-	DEFINES :=	-D__3DS__ -DHBLDR_DEFAULT_3DSX_TID="0x$(HBLDR_DEFAULT_3DSX_TID)ULL"
+        EXTRA_DEFINES +=	-DBUILD_FOR_EXPLOIT_DEV=1
 endif
 
+ifeq ($(LOADER_ENABLE_PASLR),1)
+	EXTRA_DEFINES +=  	-DLOADER_ENABLE_PASLR=1
+endif
+
+DEFINES += 	$(EXTRA_DEFINES)
+
 ifeq ($(BUILD_FOR_GDB),1)
-	OPTFLAGS := -O0
-	LIBS := -lctrud
+	OPTFLAGS := -Og -fno-fast-math
+	LIBS := -lctrud -lm
 else
 	OPTFLAGS := -O2 -fomit-frame-pointer
-	LIBS := -lctru
+	LIBS := -lctru -lm
 endif
 
 COMMON_FLAGS =\
@@ -59,12 +64,12 @@ COMMON_FLAGS =\
 
 CFLAGS		:= -std=gnu11 $(COMMON_FLAGS)
 
-CXXFLAGS	:= -fno-rtti -fno-exceptions -std=gnu++17 $(COMMON_FLAGS)
+CXXFLAGS	:= -std=gnu++17 $(COMMON_FLAGS)
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map),-wrap,exit,--section-start,.text=0x14000000
 
-LIBS	:=	-lctru
+#LIBS	:=	-lctru
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
