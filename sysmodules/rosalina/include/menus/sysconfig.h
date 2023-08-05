@@ -30,6 +30,7 @@
 #include <3ds/os.h>
 #include "menu.h"
 #include "menus.h"
+#include "luma_config.h"
 #include "luma_shared_config.h"
 #include "menus/n3ds.h"
 

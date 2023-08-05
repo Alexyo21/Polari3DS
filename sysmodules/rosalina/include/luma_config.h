@@ -24,6 +24,8 @@
 *         reasonable ways as different from the original version.
 */
 
+#pragma once
+
 #include <3ds/types.h>
 #include "luma_shared_config.h"
 
@@ -45,6 +47,7 @@ enum singleOptions
     PATCHUNITINFO,
     DISABLEARM11EXCHANDLERS,
     ENABLESAFEFIRMROSALINA,
+    NOERRDISPINSTANTREBOOT,
     SHOWADVANCEDSETTINGS,
 };
 

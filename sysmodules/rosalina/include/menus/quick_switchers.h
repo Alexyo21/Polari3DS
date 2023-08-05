@@ -1,3 +1,5 @@
+#pragma once
+
 #include <3ds.h>
 
 #define MAX_FILES 18

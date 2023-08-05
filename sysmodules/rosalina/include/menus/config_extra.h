@@ -1,3 +1,5 @@
+#pragma once
+
 #include <3ds.h>
 #include <3ds/os.h>
 #include "fmt.h"
@@ -6,6 +8,7 @@
 #include "menu.h"
 #include "menus.h"
 #include "luminance.h"
+#include "luma_config.h"
 #include "luma_shared_config.h"
 
 #define CONFIG_FILE         "configExtra.ini"

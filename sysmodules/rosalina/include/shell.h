@@ -24,6 +24,8 @@
 *         reasonable ways as different from the original version.
 */
 
+#pragma once
+
 #include <3ds/types.h>
 
 void handleShellOpened(void);
