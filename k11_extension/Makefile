@@ -29,10 +29,16 @@ INCLUDES	:=	include include/svc
 ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft -mgeneral-regs-only
 DEFINES :=	-DARM11 -D__3DS__
 
+ifeq ($(BUILD_FOR_GDB),1)
+	OPTFLAGS := -Og -fno-fast-math
+else
+	OPTFLAGS := -O2 -fomit-frame-pointer -ffast-math
+endif
+
 FALSEPOSITIVES := -Wno-array-bounds -Wno-stringop-overflow -Wno-stringop-overread
-CFLAGS	:=	  -g -std=gnu11 -Wall -Wextra -Werror -Og -mword-relocations \
+CFLAGS	:=	  -g -std=gnu11 -Wall -Wextra -Werror -mword-relocations \
 		  -ffunction-sections -fdata-sections \
-		  -Wno-main $(FALSEPOSITIVES) $(ARCH) $(DEFINES)
+		  -Wno-main $(OPTFLAGS) $(FALSEPOSITIVES) $(ARCH) $(DEFINES)
 
 CFLAGS	+=	$(INCLUDE)
 
