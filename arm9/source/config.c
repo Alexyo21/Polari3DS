@@ -70,6 +70,7 @@ static const char *singleOptionIniNamesBoot[] = {
     "use_dev_unitinfo",
     "disable_arm11_exception_handlers",
     "enable_safe_firm_rosalina",
+    "disable_errdisp_enable_instant_reboot",
 };
 
 static const char *singleOptionIniNamesMisc[] = {
@@ -653,6 +654,7 @@ static size_t saveLumaIniConfigToStr(char *out)
         (int)CONFIG(ENABLEDSIEXTFILTER), (int)CONFIG(ALLOWUPDOWNLEFTRIGHTDSI),
         (int)CONFIG(CUTWIFISLEEP), (int)CONFIG(PATCHUNITINFO),
         (int)CONFIG(DISABLEARM11EXCHANDLERS), (int)CONFIG(ENABLESAFEFIRMROSALINA),
+        (int)CONFIG(NOERRDISPINSTANTREBOOT),
         
         1 + (int)MULTICONFIG(DEFAULTEMU), 4 - (int)MULTICONFIG(BRIGHTNESS),
         splashPosStr, (unsigned int)cfg->splashDurationMsec,
@@ -836,6 +838,7 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
                                                "( ) Set developer UNITINFO",
                                                "( ) Disable Arm11 exception handlers",                                               
                                                "( ) Enable Rosalina on SAFE_FIRM",
+                                               "( ) Enable instant reboot + disable Errdisp",
                                                "( ) Show Advanced Settings",
                                                                                               
                                                // Should always be the last entry
@@ -979,6 +982,14 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
                                                  "Only select this if you know what you\n"
                                                  "are doing!",
                                                  
+                                                 "Disable rebooting after an Errdisp\n"
+                                                 "error occurs. It also enable instant\n"
+                                                 "reboot combo, this can corrupt your\n"
+                                                 "SDcard so be careful with this.\n"
+                                                 "The combo is A + B + X + Y + Start.\n\n"
+                                                 "Only select this if you know what you\n"
+                                                 "are doing!",
+                                                 
                                                  "Disabling this will hide extra\n"
                                                  "settings from the luma configuration\n"
                                                  "menu.\n",
@@ -1027,6 +1038,7 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
         { .visible = true },
         { .visible = true },
         { .visible = true },
+        { .visible = CONFIG(SHOWADVANCEDSETTINGS) },
         { .visible = CONFIG(SHOWADVANCEDSETTINGS) },
         { .visible = CONFIG(SHOWADVANCEDSETTINGS) },
         { .visible = CONFIG(SHOWADVANCEDSETTINGS) },
