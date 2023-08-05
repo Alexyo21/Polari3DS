@@ -32,7 +32,7 @@ ifeq ($(BUILD_FOR_GDB),1)
 	OPTFLAGS := -Og -fno-fast-math
 	LIBS := -lctrud -lm
 else
-	OPTFLAGS := -O2 -fomit-frame-pointer
+	OPTFLAGS := -O2 -fomit-frame-pointer -ffast-math
 	LIBS := -lctru -lm
 endif
 
