@@ -29,19 +29,25 @@ INCLUDES	:=	include include/svc
 ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft -mgeneral-regs-only
 DEFINES :=	-DARM11 -D__3DS__
 
+ifeq ($(BUILD_FOR_GDB),1)
+	OPTFLAGS := -Og -fno-fast-math
+else
+	OPTFLAGS := -O2 -fomit-frame-pointer -ffast-math
+endif
+
 FALSEPOSITIVES := -Wno-array-bounds -Wno-stringop-overflow -Wno-stringop-overread
-CFLAGS	:=	-g -std=gnu11 -Wall -Wextra -Werror -O2 -mword-relocations \
-			-fomit-frame-pointer -ffunction-sections -fdata-sections \
-			-Wno-main $(FALSEPOSITIVES) $(ARCH) $(DEFINES)
+CFLAGS	:=	  -g -std=gnu11 -Wall -Wextra -Werror -mword-relocations \
+		  -ffunction-sections -fdata-sections \
+		  -Wno-main $(OPTFLAGS) $(FALSEPOSITIVES) $(ARCH) $(DEFINES)
 
 CFLAGS	+=	$(INCLUDE)
 
-CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
+CXXFLAGS	:= $(CFLAGS) -std=gnu++11
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=$(TOPDIR)/linker.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
-LIBS	:=
+LIBS	:= -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
