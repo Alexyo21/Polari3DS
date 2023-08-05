@@ -66,6 +66,14 @@ CFLAGS		:= -std=gnu11 $(COMMON_FLAGS)
 
 CXXFLAGS	:= -std=gnu++17 $(COMMON_FLAGS)
 
+ifeq ($(BUILD_FOR_GDB),1)
+	UFLAGS := 
+else
+	UFLAGS := -fno-rtti -fno-exceptions
+endif
+
+CXXFLAGS        += $(UFLAGS)
+
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map),-wrap,exit,--section-start,.text=0x14000000
 
