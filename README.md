@@ -2,6 +2,7 @@
 *Noob-proof (N)3DS "Custom Firmware"*
 
 ## What is this fork
+for debug build please remember to change also the sysmodule rsf to true forcedebug and false disable debug.
 
 Many of you probably know the NTR CFW that enabled streaming the 3DS' screen to the computer over the debugger.  
 This fork implements this functionality into rosalina.  
