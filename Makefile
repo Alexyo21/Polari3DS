@@ -7,10 +7,10 @@ endif
 export BUILD_FOR_EXPLOIT_DEV ?= 0
 
 # Build with PASLR enabled, i think you should not enable this...
-export LOADER_ENABLE_PASLR ?= 1
+export LOADER_ENABLE_PASLR ?= 0
 
 # Build with O0 & frame pointer information for use with GDB
-export BUILD_FOR_GDB ?= 1
+export BUILD_FOR_GDB ?= 0
 
 # Default 3DSX TitleID for hb:ldr
 export HBLDR_DEFAULT_3DSX_TID ?= 000400000D921E00
