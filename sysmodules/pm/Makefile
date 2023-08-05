@@ -29,7 +29,7 @@ ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 DEFINES :=	-D__3DS__
 
 ifeq ($(BUILD_FOR_GDB),1)
-	OPTFLAGS := -Og
+	OPTFLAGS := -Og -fno-fast-math
 	LIBS := -lctrud -lm
 else
 	OPTFLAGS := -O2 -fomit-frame-pointer
