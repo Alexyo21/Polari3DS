@@ -35,7 +35,7 @@ ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 DEFINES :=	-D__3DS__ -DHBLDR_DEFAULT_3DSX_TID="0x$(HBLDR_DEFAULT_3DSX_TID)ULL" -DHBLDR_DEFAULT_3DSX_TITLE_NAME="\"$(HBLDR_DEFAULT_3DSX_TITLE_NAME)\""
 
 ifeq ($(BUILD_FOR_GDB),1)
-	OPTFLAGS := -Og
+	OPTFLAGS := -Og -fno-fast-math
 	LIBS := -lctrud -lm
 else
 	OPTFLAGS := -Os -fomit-frame-pointer
