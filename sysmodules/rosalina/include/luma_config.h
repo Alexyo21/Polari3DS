@@ -24,7 +24,8 @@
 *         reasonable ways as different from the original version.
 */
 
-#pragma once
+#ifndef __LUMACONFIG_H__
+#define __LUMACONFIG_H__
 
 #include <3ds/types.h>
 #include "luma_shared_config.h"
@@ -65,3 +66,5 @@ enum multiOptions
 void LumaConfig_ConvertComboToString(char *out, u32 combo);
 Result LumaConfig_SaveSettings(void);
 void LumaConfig_RequestSaveSettings(void);
+
+#endif
