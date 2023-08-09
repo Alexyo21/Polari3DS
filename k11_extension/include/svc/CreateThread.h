@@ -24,9 +24,14 @@
 *         reasonable ways as different from the original version.
 */
 
+#ifndef __CREATETHREAD_H__
+#define __CREATETHREAD_H__
+
 #include "utils.h"
 #include "kernel.h"
 #include "svc.h"
 
 Result CreateThreadHookWrapper(Handle *outThreadHandle, u32 ep, u32 arg, u32 stackTop, s32 priority, s32 processorId);
 Result CreateThreadHook(Handle *outThreadHandle, u32 ep, u32 arg, u32 stackTop, s32 priority, s32 processorId);
+
+#endif
