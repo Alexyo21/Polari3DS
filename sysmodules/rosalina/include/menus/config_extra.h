@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __CONFIGEXTRA_H__
+#define __CONFIGEXTRA_H__
 
 #include <3ds.h>
 #include <3ds/os.h>
@@ -33,3 +34,5 @@ void ConfigExtra_UpdateMenuItem(int menuIndex, bool value);
 void ConfigExtra_UpdateAllMenuItems();
 void ConfigExtra_ReadConfigExtra();
 void ConfigExtra_WriteConfigExtra();
+
+#endif

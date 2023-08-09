@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __QUICKSWITCHERS_H__
+#define __QUICKSWITCHERS_H__
 
 #include <3ds.h>
 
@@ -21,3 +22,5 @@ void QuickSwitchers_Widescreen(void);
 void QuickSwitchers_AgbBg(void);
 void QuickSwitchers_OpenAgb(void);
 void QuickSwitchers_RevertWidescreen(void);
+
+#endif
