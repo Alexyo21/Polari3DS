@@ -24,9 +24,14 @@
 *         reasonable ways as different from the original version.
 */
 
+#ifndef __ARM9EXCEPTIONHANDLERS_H__
+#define __ARM9EXCEPTIONHANDLERS_H__
+
 #include "types.h"
 
 extern const u32 arm9ExceptionHandlerAddressTable[6];
 extern u32 arm9ExceptionHandlerSvcBreakAddress;
 
 u32 safecpy(void *dst, const void *src, u32 len);
+
+#endif

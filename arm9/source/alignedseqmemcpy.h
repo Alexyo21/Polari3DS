@@ -23,6 +23,12 @@
 *         or requiring that modified versions of such material be marked in
 *         reasonable ways as different from the original version.
 */
+
+#ifndef __ALIGNEDSEQMEMCPY_H__
+#define __ALIGNEDSEQMEMCPY_H__
+
 #include "types.h"
 
 void *alignedseqmemcpy(void *dst, const void *src, u32 len);
+
+#endif
