@@ -32,6 +32,7 @@ Some of the code is inspired by NTR but most of it is a complete reimplementatio
 
 -Also added streaming in it juts cause why not, thanks to Byebyesky.
 
+led extra config bug using temp-workaround, till fix. So led works but i don't suggest you to change led suppression to false it breaks things, just use the system config menu line to turn on or off, leds.
 ## Usage of the streaming capability
 
 1. Go to the rosalina menu->streaming->start strea
