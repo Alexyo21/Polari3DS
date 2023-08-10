@@ -382,9 +382,6 @@ void ScreenFiltersMenu_AdvancedConfiguration(void)
         Draw_Unlock();
     }
     while(!(input & (KEY_A | KEY_B)) && !menuShouldExit);
-    {
-         menuToggleLeds();
-    }
 }
 
 void ScreenFilter_SuppressLeds(void)
