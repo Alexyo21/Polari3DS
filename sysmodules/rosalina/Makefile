@@ -31,7 +31,7 @@ INCLUDES	:=	include include/gdb include/menus include/redshift
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
+ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mfpu=vfpv2 -mtp=soft -marm -mthumb-interwork
 DEFINES :=	-D__3DS__ -DHBLDR_DEFAULT_3DSX_TID="0x$(HBLDR_DEFAULT_3DSX_TID)ULL" -DHBLDR_DEFAULT_3DSX_TITLE_NAME="\"$(HBLDR_DEFAULT_3DSX_TITLE_NAME)\""
 
 ifeq ($(BUILD_FOR_GDB),1)
