@@ -72,6 +72,7 @@ See https://github.com/LumaTeam/Luma3DS/wiki
 #
 ### Credits
 See https://github.com/LumaTeam/Luma3DS/wiki/Credits
+also added inside the cfw itself (thinking i have to add someone else, though don't remember the name 😅)
 
 #
 ### Licensing
