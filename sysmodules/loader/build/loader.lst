@@ -1,0 +1,505 @@
+         w __deregister_frame_info
+         w __gnu_Unwind_Find_exidx
+         w __register_frame_info
+         w __syscall_exit
+         w __syscall_getreent
+         w __syscall_lock_acquire_recursive
+         w __syscall_lock_release_recursive
+         w pthread_cancel
+         w pthread_getspecific
+         w pthread_key_create
+         w pthread_key_delete
+         w pthread_mutex_lock
+         w pthread_mutex_unlock
+         w pthread_setspecific
+00000000 a shift
+00100000 A __start__
+14000000 T _start
+14000008 T __service_ptr
+1400000c T __apt_appid
+14000010 T __heap_size
+14000014 T __linear_heap_size
+14000018 T __system_arglist
+1400001c T __system_runflags
+14000020 t startup
+14000058 t ClearMem
+1400006c t ClrLoop
+14000094 T _init
+140000ac 00000014 T __restore_core_regs
+140000ac 00000014 T restore_core_regs
+140000c0 T __gnu_Unwind_Restore_VFP
+140000c8 T __gnu_Unwind_Save_VFP
+140000d0 T __gnu_Unwind_Restore_VFP_D
+140000d8 T __gnu_Unwind_Save_VFP_D
+140000e0 T __gnu_Unwind_Restore_VFP_D_16_to_31
+140000e8 T __gnu_Unwind_Save_VFP_D_16_to_31
+140000f0 T __gnu_Unwind_Restore_WMMXD
+14000134 T __gnu_Unwind_Save_WMMXD
+14000178 T __gnu_Unwind_Restore_WMMXC
+1400018c T __gnu_Unwind_Save_WMMXC
+140001a0 00000024 T _Unwind_RaiseException
+140001a0 00000024 T ___Unwind_RaiseException
+140001c4 00000024 T _Unwind_Resume
+140001c4 00000024 T ___Unwind_Resume
+140001e8 00000024 T _Unwind_Resume_or_Rethrow
+140001e8 00000024 T ___Unwind_Resume_or_Rethrow
+1400020c 00000024 T _Unwind_ForcedUnwind
+1400020c 00000024 T ___Unwind_ForcedUnwind
+14000230 00000024 T _Unwind_Backtrace
+14000230 00000024 T ___Unwind_Backtrace
+14000268 00000390 T strcmp
+140005f0 t .udivsi3_skip_div0_test
+140005f0 T __aeabi_uidiv
+140005f0 000001ec T __udivsi3
+140007dc 00000020 T __aeabi_uidivmod
+140007fc 00000004 W __aeabi_idiv0
+140007fc 00000004 W __aeabi_ldiv0
+14000800 t __do_global_dtors_aux
+14000840 t frame_dummy
+1400086c 00000048 t osGetMemRegionSize
+140008b4 0000004c t patcher::Bps::crc32(unsigned char const*, unsigned int)
+14000900 00000034 t osGetMemRegionFree
+14000934 0000004c W util::File::Close()
+14000980 000000a0 W util::File::Open(char const*, int)
+14000a20 0000005c W util::File::Read(void*, unsigned long, unsigned long long)
+14000a7c 0000004c W util::File::GetSize() const
+14000ac8 00000058 W std::basic_string_view<char, std::char_traits<char> >::compare(std::basic_string_view<char, std::char_traits<char> >) const
+14000b20 00000070 W bool std::operator!=<char, std::char_traits<char> >(std::basic_string_view<char, std::char_traits<char> >, std::__type_identity<std::basic_string_view<char, std::char_traits<char> > >::type)
+14000b90 0000005c W patcher::ScopedAppHeap::ScopedAppHeap()
+14000b90 0000005c W patcher::ScopedAppHeap::ScopedAppHeap()
+14000bec 00000038 W patcher::ScopedAppHeap::~ScopedAppHeap()
+14000bec 00000038 W patcher::ScopedAppHeap::~ScopedAppHeap()
+14000c24 00000004 W std::optional<unsigned char>::operator*() &
+14000c28 00000050 W patcher::Bps::Stream<unsigned char const>::Read(void*, unsigned int)
+14000c78 00000050 W bool patcher::Bps::Stream<unsigned char>::CopyFrom<unsigned char const>(patcher::Bps::Stream<unsigned char const>&, unsigned int)
+14000cc8 00000020 W patcher::Bps::PatchApplier::SourceRead(unsigned long)
+14000ce8 00000054 W std::optional<std::array<char, 4u> > patcher::Bps::Stream<unsigned char const>::Read<std::array<char, 4u> >()
+14000d3c 00000054 W std::optional<unsigned long> patcher::Bps::Stream<unsigned char const>::Read<unsigned long>()
+14000d90 00000064 W std::optional<unsigned char> patcher::Bps::Stream<unsigned char const>::Read<unsigned char>()
+14000df4 00000008 W std::optional<unsigned char>::operator bool() const
+14000dfc 00000060 W patcher::Bps::Stream<unsigned char const>::ReadNumber()
+14000e5c 00000064 W patcher::Bps::PatchApplier::SourceCopy(unsigned long)
+14000ec0 000000b0 W patcher::Bps::PatchApplier::TargetCopy(unsigned long)
+14000f70 0000007c W patcher::Bps::PatchApplier::HandleCommand()
+14000fec 00000370 t patcher::ApplyCodeBpsPatch(unsigned long long, unsigned char*, unsigned long)
+1400135c 0000000c T patcherApplyCodeBpsPatch
+14001368 00000044 t TranslateAddr
+140013ac 000000e0 T Ldr_Get3dsxSize
+1400148c 00000514 T Ldr_CodesetFrom3dsx
+140019a0 00000068 t u16_strncpy
+14001a08 00000004 t panic
+14001a0c 00000248 T hbldrPatchExHeaderInfo
+14001c54 000001ec T hbldrLoadProcess
+14001e40 00000150 T hbldrHandleCommands
+14001f90 00000070 T IFile_Open
+14002000 00000010 T IFile_Close
+14002010 00000028 T IFile_GetSize
+14002038 000000a8 T IFile_Read
+140020e0 00000030 T IFile_ReadAt
+14002110 00000048 T IFile_Read2
+14002158 000000ac t lzss_decompress
+14002204 00000078 t allocateProgramMemoryWrapper
+1400227c 0000005c t InvalidateCachedCxiFile
+140022d8 00000004 t panic
+140022dc 00000248 t loadCode
+14002524 00000028 t IsHioId
+1400254c 00000138 t RegisterProgram
+14002684 000000ac t UnregisterProgram
+14002730 00000230 t GetProgramInfoImpl
+14002960 000000ac t GetProgramInfo
+14002a0c 000000bc T plgldrInit
+14002ac8 00000044 T plgldrExit
+14002b0c 00000044 T PLGLDR__IsPluginLoaderEnabled
+14002b50 00000084 t PLGLDR_LoadPlugin
+14002bd4 00000284 t LoadProcessImpl
+14002e58 0000009c t LoadProcess
+14002ef4 000001e4 T loaderHandleCommands
+140030d8 00000004 t panic
+140030e0 000001c0 t loadCFWInfo
+140032a0 00000080 t fsldrPatchPermissions
+14003320 00000008 T __wrap_exit
+14003328 000000d4 T initSystem
+140033fc 00000068 T main
+14003464 000000dc T memsearch
+14003540 000000e4 t needsPaslr
+14003624 00000094 t getRandomInt
+140036b8 00000214 T allocateProgramMemory
+140038cc 00000038 t findFunctionStart
+14003904 00000238 t findLayeredFsSymbols
+14003b3c 00000284 t findLayeredFsPayloadOffset
+14003dc0 00000070 t fileOpen
+14003e30 00000040 t openLumaFile
+14003e70 00000068 t secureInfoExists
+14003ed8 000001f0 t loadCustomVerString
+140040c8 00000328 t applyCodeIpsPatch
+140043f0 00000360 t loadTitleLocaleConfig
+14004750 0000007c t patchMemory
+140047cc 000000b0 t dirCheck
+1400487c 00000044 t checkLumaDir
+140048c0 000004b0 t patchLayeredFs
+14004d70 000000b4 T useN3dsSettings
+14004e24 00000088 T openSysmoduleCxi
+14004eb0 00000070 T readSysmoduleCxiNcchHeader
+14004f20 0000007c T readSysmoduleCxiExHeaderInfo
+14004f9c 00000164 T readSysmoduleCxiCode
+14005100 000000f8 T loadTitleCodeSection
+140051f8 00000108 T loadTitleExheaderInfo
+14005300 000009c0 T patchCode
+14005cc0 000004bc T ServiceManager_Run
+1400617c 00000030 T progIdToStr
+140061ac 00000014 T __sync_init
+140061c0 0000003c t srvGetBlockingPolicy
+140061fc 00000068 T srvExit
+14006264 0000003c T srvRegisterClient
+140062a0 000000bc T srvInit
+1400635c 00000050 T srvEnableNotification
+140063ac 0000007c T srvRegisterService
+14006428 00000058 T srvUnregisterService
+14006480 0000007c T srvGetServiceHandleDirect
+140064fc 00000038 T srvGetServiceHandle
+14006534 00000038 T srvSubscribe
+1400656c 00000038 T srvUnsubscribe
+140065a4 00000050 T srvReceiveNotification
+140065f4 00000078 T pxiPmInit
+1400666c 0000004c T PXIPM_GetProgramInfo
+140066b8 00000088 T PXIPM_RegisterProgram
+14006740 0000003c T PXIPM_UnregisterProgram
+1400677c 0000000c T srvPmGetSessionHandle
+14006788 00000078 T fsRegInit
+14006800 000000a8 T FSREG_Register
+140068a8 0000006c T FSREG_GetProgramInfo
+14006914 00000068 T FSREG_LoadProgram
+1400697c 0000003c T FSREG_UnloadProgram
+140069b8 0000003c T FSREG_CheckHostLoadId
+140069f4 00000030 t fsSession
+14006a24 0000004c t fsSessionForArchive
+14006a70 00000090 T fsMakePath
+14006b00 0000000c T fsGetSessionHandle
+14006b0c 000000b8 T FSUSER_OpenFileDirectly
+14006bc4 00000070 T FSUSER_OpenDirectory
+14006c34 00000088 T FSUSER_OpenArchive
+14006cbc 00000044 T FSUSER_CloseArchive
+14006d00 00000034 T FSUSER_InitializeWithSdkVersion
+14006d34 00000030 T FSUSER_SetPriority
+14006d64 0000005c T FSFILE_Read
+14006dc0 00000040 T FSFILE_GetSize
+14006e00 0000003c T FSFILE_Close
+14006e3c 0000003c T FSDIR_Close
+14006e78 000000c0 T utf8_to_utf16
+14006f38 00000180 T decode_utf8
+140070b8 T svcControlMemory
+140070d8 T svcExitProcess
+140070e0 T svcSleepThread
+140070e8 T svcCreateAddressArbiter
+140070fc T svcCloseHandle
+14007104 T svcDuplicateHandle
+14007118 T svcGetSystemTick
+14007120 T svcGetSystemInfo
+14007138 T svcConnectToPort
+1400714c T svcSendSyncRequest
+14007154 T svcGetProcessId
+14007168 T svcBreak
+14007170 T svcCreatePort
+14007190 T svcAcceptSession
+140071a8 T svcReplyAndReceive
+140071c0 T svcCreateCodeSet
+140071dc T svcCreateProcess
+140071f4 T svcKernelSetState
+140071fc 00000044 t __name_cmp
+14007240 0000006c W envGetHandle
+140072ac 00000054 T encode_utf16
+14007300 T __cxa_end_cleanup
+14007310 00000134 T __cxa_type_match
+14007444 000000b4 T __cxa_begin_cleanup
+140074f8 000000b4 T __gnu_end_cleanup
+140075ac 00000004 T std::exception::~exception()
+140075ac 00000004 T std::exception::~exception()
+140075b0 00000004 T std::bad_exception::~bad_exception()
+140075b0 00000004 T std::bad_exception::~bad_exception()
+140075b4 0000000c T transaction clone for std::bad_exception::what() const
+140075b4 0000000c T std::bad_exception::what() const
+140075c0 00000018 T std::bad_exception::~bad_exception()
+140075d8 0000003c t eh_globals_dtor(void*)
+14007614 00000038 T __cxa_get_globals_fast
+1400764c 00000074 T __cxa_get_globals
+140076c0 00000040 t _GLOBAL__sub_I__ZN17__eh_globals_init7_S_initE
+14007700 00000034 t _GLOBAL__sub_D__ZN17__eh_globals_init7_S_initE
+14007734 0000016c t read_encoded_value_with_base(unsigned char, unsigned int, unsigned char const*, unsigned int*)
+140078a0 00000058 t base_of_encoded_value(unsigned char, _Unwind_Context*)
+140078f8 000000d8 t parse_lsda_header(_Unwind_Context*, unsigned char const*, lsda_header_info*)
+140079d0 000006a0 T __gxx_personality_v0
+14008070 00000014 T __cxxabiv1::__terminate(void (*)())
+14008084 00000018 T std::terminate()
+1400809c 0000000c T __cxxabiv1::__unexpected(void (*)())
+140080a8 00000018 T std::unexpected()
+140080c0 00000014 T std::get_terminate()
+140080d4 00000014 T std::get_unexpected()
+140080e8 00000020 T __cxxabiv1::__si_class_type_info::~__si_class_type_info()
+140080e8 00000020 T __cxxabiv1::__si_class_type_info::~__si_class_type_info()
+14008108 0000002c T __cxxabiv1::__si_class_type_info::~__si_class_type_info()
+14008134 00000138 T __cxxabiv1::__si_class_type_info::__do_dyncast(int, __cxxabiv1::__class_type_info::__sub_kind, __cxxabiv1::__class_type_info const*, void const*, __cxxabiv1::__class_type_info const*, void const*, __cxxabiv1::__class_type_info::__dyncast_result&) const
+1400826c 00000088 T __cxxabiv1::__si_class_type_info::__do_find_public_src(int, void const*, __cxxabiv1::__class_type_info const*, void const*) const
+140082f4 00000044 T __cxxabiv1::__si_class_type_info::__do_upcast(__cxxabiv1::__class_type_info const*, void const*, __cxxabiv1::__class_type_info::__upcast_result&) const
+14008338 00000004 T std::type_info::~type_info()
+14008338 00000004 T std::type_info::~type_info()
+1400833c 00000008 T std::type_info::__is_pointer_p() const
+1400833c 00000008 T std::type_info::__is_function_p() const
+14008344 0000005c T __cxxabiv1::__class_type_info::__do_upcast(__cxxabiv1::__class_type_info const*, void**) const
+140083a0 00000014 T __cxxabiv1::__class_type_info::__do_find_public_src(int, void const*, __cxxabiv1::__class_type_info const*, void const*) const
+140083b4 00000020 T __cxxabiv1::__class_type_info::~__class_type_info()
+140083b4 00000020 T __cxxabiv1::__class_type_info::~__class_type_info()
+140083d4 0000002c T __cxxabiv1::__class_type_info::~__class_type_info()
+14008400 00000064 T __cxxabiv1::__class_type_info::__do_upcast(__cxxabiv1::__class_type_info const*, void const*, __cxxabiv1::__class_type_info::__upcast_result&) const
+14008464 0000007c T __cxxabiv1::__class_type_info::__do_catch(std::type_info const*, void**, unsigned int) const
+140084e0 000000d4 T __cxxabiv1::__class_type_info::__do_dyncast(int, __cxxabiv1::__class_type_info::__sub_kind, __cxxabiv1::__class_type_info const*, void const*, __cxxabiv1::__class_type_info const*, void const*, __cxxabiv1::__class_type_info::__dyncast_result&) const
+140085b4 00000004 T operator delete(void*, unsigned int)
+140085b8 00000070 t __cxxabiv1::__is_gxx_exception_class(char*)
+14008628 0000002c T __cxa_call_terminate
+14008654 00000150 T __cxa_call_unexpected
+140087a4 000000cc T __cxa_begin_catch
+14008870 000000e0 T __cxa_end_catch
+14008950 00000060 t __gxx_exception_cleanup(_Unwind_Reason_Code, _Unwind_Control_Block*)
+140089b0 00000054 T __cxa_init_primary_exception
+14008a04 00000054 T __cxa_throw
+14008a58 000000b0 T __cxa_rethrow
+14008b08 00000004 T operator delete(void*)
+14008b0c 0000000c W __gnu_cxx::__concurrence_lock_error::what() const
+14008b18 0000000c W __gnu_cxx::__concurrence_unlock_error::what() const
+14008b24 00000020 W __gnu_cxx::__concurrence_lock_error::~__concurrence_lock_error()
+14008b24 00000020 W __gnu_cxx::__concurrence_lock_error::~__concurrence_lock_error()
+14008b44 0000002c W __gnu_cxx::__concurrence_lock_error::~__concurrence_lock_error()
+14008b70 00000020 W __gnu_cxx::__concurrence_unlock_error::~__concurrence_unlock_error()
+14008b70 00000020 W __gnu_cxx::__concurrence_unlock_error::~__concurrence_unlock_error()
+14008b90 0000002c W __gnu_cxx::__concurrence_unlock_error::~__concurrence_unlock_error()
+14008bbc 0000002c W __gnu_cxx::__throw_concurrence_lock_error()
+14008be8 0000002c W __gnu_cxx::__throw_concurrence_unlock_error()
+14008c14 00000118 t (anonymous namespace)::pool::free(void*) [clone .constprop.0]
+14008d2c 000000d4 t (anonymous namespace)::pool::allocate(unsigned int) [clone .constprop.0]
+14008e00 00000044 T __cxa_allocate_exception
+14008e44 0000002c T __cxa_free_exception
+14008e70 000001b4 t _GLOBAL__sub_I__ZN9__gnu_cxx9__freeresEv
+14009024 00000018 t selfrel_offset31
+1400903c 00000090 t search_EIT_table
+140090cc 00000040 t __gnu_unwind_get_pr_addr
+1400910c 0000010c t get_eit_entry
+14009218 00000088 t restore_non_core_regs
+140092a0 00000014 t _Unwind_decode_typeinfo_ptr.constprop.0
+140092b4 00000004 t _Unwind_DebugHook
+140092b8 00000064 t unwind_phase2
+1400931c 00000140 t unwind_phase2_forced
+1400945c 000000a4 T __gnu_Unwind_RaiseException
+14009500 00000028 T __gnu_Unwind_ForcedUnwind
+14009528 00000074 T __gnu_Unwind_Resume
+1400959c 00000020 T __gnu_Unwind_Resume_or_Rethrow
+140095bc 00000004 T _Unwind_Complete
+140095c0 00000018 T _Unwind_DeleteException
+140095d8 0000006c T _Unwind_VRS_Get
+14009644 0000002c t _Unwind_GetGR
+14009670 0000006c T _Unwind_VRS_Set
+140096dc 0000002c t _Unwind_SetGR
+14009708 000000c0 T __gnu_Unwind_Backtrace
+140097c8 00000410 t __gnu_unwind_pr_common
+14009bd8 00000008 T __aeabi_unwind_cpp_pr0
+14009be0 00000008 W __aeabi_unwind_cpp_pr1
+14009be8 00000008 W __aeabi_unwind_cpp_pr2
+14009bf0 00000424 T _Unwind_VRS_Pop
+1400a014 00000064 t next_unwind_byte
+1400a078 0000002c t _Unwind_GetGR.constprop.0
+1400a0a4 00000004 t unwind_UCB_from_context
+1400a0a8 00000464 T __gnu_unwind_execute
+1400a50c 00000048 T __gnu_unwind_frame
+1400a554 00000010 T _Unwind_GetRegionStart
+1400a564 0000001c T _Unwind_GetLanguageSpecificData
+1400a580 00000008 T _Unwind_GetDataRelBase
+1400a588 00000008 T _Unwind_GetTextRelBase
+1400a590 00000014 T abort
+1400a5a4 00000130 T strchr
+1400a6d4 000000d8 T memcmp
+1400a7ac 00000018 T malloc
+1400a7c4 00000018 T free
+1400a7dc 0000079c T _malloc_r
+1400af78 00000024 T getenv
+1400af9c 00000150 T memmove
+1400b0ec 000000c8 T _findenv_r
+1400b1b4 000000f4 T memset
+1400b2a8 0000000c T __malloc_lock
+1400b2b4 0000000c T __malloc_unlock
+1400b2c0 00000090 T _raise_r
+1400b350 00000018 T raise
+1400b368 00000090 T strlen
+1400b3f8 000000e4 T strncmp
+1400b4dc 000000c4 T strncpy
+1400b5a0 00000048 T strnlen
+1400b5e8 000001d8 t _strtoul_l.isra.0
+1400b7c0 00000034 T strtoul
+1400b7f4 0000011c T memcpy
+1400b910 0000000c T __env_lock
+1400b91c 0000000c T __env_unlock
+1400b928 000000f8 T _malloc_trim_r
+1400ba20 000002e8 T _free_r
+1400bd08 00000020 T _exit
+1400bd28 00000014 T _getpid_r
+1400bd3c 0000002c T __getreent
+1400bd68 00000014 T _kill_r
+1400bd7c 00000078 W _sbrk_r
+1400bdf4 0000001c T __libc_lock_acquire_recursive
+1400be10 0000001c T __libc_lock_release_recursive
+1400be2c T _fini
+1400c668 00000048 r kernelCaps
+1400c6b0 0000002c r dependencyListSafeFirmUids
+1400c6dc 00000048 r dependencyListNativeFirmUids
+1400c724 00000110 r serviceList
+1400c834 0000000c r codeContentPath
+1400c840 00000008 r notifications
+1400c848 00000030 r services
+1400c878 00000084 r titleUidListForPaslr
+1400c8fc 00000014 r updateRomFsMounts.0
+1400c910 000002e8 r countries.1
+1400cbf8 00000034 r languages.2
+1400cc2c 00000020 r regions.3
+1400cc4c 00000003 r bom.5
+1400cc50 00000014 r paths.6
+1400cc64 00000004 r patch.7
+1400cc68 00000005 r pattern.8
+1400cc70 00000002 r patch2.9
+1400cc74 00000001 r pattern3.10
+1400cc78 0000000c r pattern2.11
+1400cc84 00000004 r patch.12
+1400cc88 00000004 r pattern.13
+1400cc8c 00000004 r pattern3.14
+1400cc90 00000004 r pattern2.15
+1400cc94 00000008 r patch.16
+1400cc9c 00000004 r pattern.17
+1400cca0 00000004 r patch.18
+1400cca4 00000008 r pattern.19
+1400ccac 00000002 r patch.20
+1400ccb0 00000004 r pattern.21
+1400ccb4 00000004 r pattern.22
+1400ccb8 00000004 r pattern.23
+1400ccbc 00000004 r patch.24
+1400ccc0 00000004 r pattern.25
+1400ccc4 00000006 r pattern.26
+1400cccc 00000010 r verStringNandEmu.27
+1400ccdc 00000006 r pattern.28
+1400cce4 00000008 r patch.29
+1400ccec 00000004 r pattern.30
+1400ccf0 00000011 r hexDigits.0
+1400cd04 0000000d R typeinfo name for std::exception
+1400cd14 00000008 R typeinfo for std::exception
+1400cd1c 00000012 R typeinfo name for std::bad_exception
+1400cd30 0000000c R typeinfo for std::bad_exception
+1400cd3c 00000020 R typeinfo name for __cxxabiv1::__forced_unwind
+1400cd5c 00000008 R typeinfo for __cxxabiv1::__forced_unwind
+1400cd64 00000024 R typeinfo name for __cxxabiv1::__foreign_exception
+1400cd88 00000008 R typeinfo for __cxxabiv1::__foreign_exception
+1400cd90 00000014 R vtable for std::bad_exception
+1400cda4 00000025 R typeinfo name for __cxxabiv1::__si_class_type_info
+1400cdcc 0000000c R typeinfo for __cxxabiv1::__si_class_type_info
+1400cdd8 0000002c R vtable for __cxxabiv1::__si_class_type_info
+1400ce04 0000000d R typeinfo name for std::type_info
+1400ce14 00000008 R typeinfo for std::type_info
+1400ce1c 00000022 R typeinfo name for __cxxabiv1::__class_type_info
+1400ce40 0000000c R typeinfo for __cxxabiv1::__class_type_info
+1400ce4c 0000002c R vtable for __cxxabiv1::__class_type_info
+1400ce78 00000027 V typeinfo name for __gnu_cxx::__concurrence_lock_error
+1400cea0 0000000c V typeinfo for __gnu_cxx::__concurrence_lock_error
+1400ceac 00000029 V typeinfo name for __gnu_cxx::__concurrence_unlock_error
+1400ced8 0000000c V typeinfo for __gnu_cxx::__concurrence_unlock_error
+1400cee4 00000014 V vtable for __gnu_cxx::__concurrence_lock_error
+1400cef8 00000014 V vtable for __gnu_cxx::__concurrence_unlock_error
+1400cf0c 00000101 R _ctype_
+1400d010 R __tdata_align
+1400d014 r __EH_FRAME_BEGIN__
+1400d0ec R __exidx_start
+1400d2ec R __exidx_end
+1400e000 d _mountArchive
+1400e000 D romfsRedirPatch
+1400e004 D romfsRedirPatchSubstituted1
+1400e008 D romfsRedirPatchHook1
+1400e00c d _fsRedir
+1400e010 D romfsRedirPatchSubstituted2
+1400e014 D romfsRedirPatchHook2
+1400e018 d mountArchive
+1400e05c d fsRedir
+1400e078 d pathRedir
+1400e084 d pathRedir_1
+1400e094 d pathRedir_2
+1400e0a8 d pathRedir_3
+1400e0cc d endRedir
+1400e0dc d compare
+1400e0e4 d loop
+1400e100 D romfsRedirPatchArchiveName
+1400e104 D romfsRedirPatchFsMountArchive
+1400e108 D romfsRedirPatchFsRegisterArchive
+1400e10c D romfsRedirPatchArchiveId
+1400e110 D romfsRedirPatchRomFsMount
+1400e114 D romfsRedirPatchUpdateRomFsMount
+1400e118 D romfsRedirPatchCustomPath
+1400e11c d _romfsRedirPatchEnd
+1400e11c D romfsRedirPatchSize
+1400e120 00000004 D __cxxabiv1::__unexpected_handler
+1400e124 00000004 D __cxxabiv1::__terminate_handler
+1400e128 00000004 D __malloc_sbrk_base
+1400e12c 00000004 D __malloc_trim_threshold
+1400e130 00000408 D __malloc_av_
+1400e538 00000004 D _impure_ptr
+1400e540 00000120 D _impure_data
+1400e660 00000004 D environ
+1400e664 d __frame_dummy_init_array_entry
+1400e664 D __tdata_lma
+1400e664 D __tdata_lma_end
+1400e670 d __do_global_dtors_aux_fini_array_entry
+1400e678 D __bss_start__
+1400e678 b completed.1
+1400e67c b object.0
+1400e694 00000400 B ldrArgvBuf
+1400ea94 00000800 b s_relocBuf
+1400f294 00000200 b hbldrTarget
+1400f494 00000004 b plgldrHandle
+1400f498 00000004 b plgldrRefcount
+1400f49c 00000200 b g_cached_sysmoduleCxiNcch
+1400f6a0 00000008 b g_cached_sysmoduleCxiCookie
+1400f6a8 00000018 b g_cached_sysmoduleCxiFile
+1400f6c0 00000400 b g_exheaderInfo
+1400fac0 00000008 b g_cached_programHandle
+1400fac8 00000004 b g_memoryOverrideConfig
+1400facc 00000400 b staticBufferForHbldr
+1400fecc 00000001 B nextGamePatchDisabled
+1400fecd 00000001 B isSdMode
+1400fece 00000001 B isN3DS
+1400fed0 00000004 B bootConfig
+1400fed4 00000004 B multiConfig
+1400fed8 00000004 B config
+1400fee0 00000008 b state.0
+1400fee8 00000001 b exists.4
+1400feec 00000004 b arbiter
+1400fef0 00000004 b srvRefCount
+1400fef4 00000004 b srvHandle
+1400fef8 00000004 b pxiPmRefCount
+1400fefc 00000004 b pxiPmHandle
+1400ff00 00000004 b srvPmHandle
+1400ff04 00000004 b fsRegRefCount
+1400ff08 00000004 b fsRegHandle
+1400ff10 00000080 b fsExemptArchives
+1400ff90 00000004 b fsuHandle
+1400ff94 00000004 B __system_argv
+1400ff98 00000004 B __system_argc
+1400ff9c 00000004 b init
+1400ffa0 00000001 B __eh_globals_init::_S_init
+1400ffa4 0000000c b (anonymous namespace)::eh_globals
+1400ffb0 0000001c b (anonymous namespace)::emergency_pool
+1400ffcc 00000028 B __malloc_current_mallinfo
+1400fff4 00000004 B __malloc_max_total_mem
+1400fff8 00000004 B __malloc_max_sbrked_mem
+1400fffc 00000004 B __malloc_top_pad
+14010000 0000000c b __malloc_recursive_mutex
+14010010 00000168 B __sf
+14010178 00000004 b initial_env
+1401017c 0000000c b __env_recursive_mutex
+14010188 00000004 B fake_heap_start
+1401018c 00000004 B fake_heap_end
+14010190 00000004 b heap_start.0
+14010194 B __bss_end__
+14010194 A __end__
+14010194 B __tls_end
+14010194 B __tls_start
