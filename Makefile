@@ -7,7 +7,10 @@ endif
 export BUILD_FOR_EXPLOIT_DEV ?= 0
 
 # Build with PASLR enabled, i think you should not enable this...
-export LOADER_ENABLE_PASLR ?= 0
+export LOADER_ENABLE_PASLR ?= 1
+
+# Disable copying firm to ctrnand useful for dev but for end-user
+export NO_COPYING_TO_NAND ?= 1
 
 # Build with O0 & frame pointer information for use with GDB
 export BUILD_FOR_GDB ?= 0
