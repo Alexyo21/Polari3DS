@@ -523,7 +523,7 @@ bool doLumaUpgradeProcess(void)
 #endif
 
     // Try to boot.firm to CTRNAND, when applicable
-#ifndef BUILD_FOR_EXPLOIT_DEV
+#if !defined(BUILD_FOR_EXPLOIT_DEV) && !defined(NO_COPYING_TO_NAND)
     if (isSdMode && memcmp(launchedPathForFatfs, "sdmc:", 5) == 0)
         ok = fileCopy(launchedPathForFatfs, "nand:/boot.firm", true, fileCopyBuffer, sizeof(fileCopyBuffer));
 #endif
