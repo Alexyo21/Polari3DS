@@ -16,19 +16,20 @@
 
 #include "configExtra_ini.h"
 
-config_extra configExtra = { .suppressLeds = true, .cutSlotPower = false, .cutSleepWifi = false, .homeToRosalina = false, .toggleBottomLcd = false };
+config_extra configExtra = { .suppressLeds = true, .cutSlotPower = false, .cutSleepWifi = false, .homeToRosalina = false, .toggleBottomLcd = false, .turnLedsOffStandby = false };
 bool configExtraSaved = false;
 
-static const char menuText[6][32] = {
+static const char menuText[7][32] = {
     "Automatically suppress LEDs",
     "Cut power to TWL Flashcards",
     "Cut 3DS WiFi in sleep mode",
     "Home button opens Rosalina",
     "St+Se toggle bottom LCD in menu",
+    "Disable led during standby",
     "Save config. Changes saved"
 };
 
-static char menuDisplay[5][64];
+static char menuDisplay[7][64];
 
 Menu configExtraMenu = {
     "Extra config menu",
@@ -38,7 +39,8 @@ Menu configExtraMenu = {
         { menuText[2], METHOD, .method = &ConfigExtra_SetCutSleepWifi},
         { menuText[3], METHOD, .method = &ConfigExtra_SetHomeToRosalina},
         { menuText[4], METHOD, .method = &ConfigExtra_SetToggleBottomLcd},
-        { menuText[5], METHOD, .method = &ConfigExtra_WriteConfigExtra},
+        { menuText[5], METHOD, .method = &ConfigExtra_SetTurnLedsOffStandby},      
+        { menuText[6], METHOD, .method = &ConfigExtra_WriteConfigExtra},
         {},
     }
 };
@@ -48,7 +50,7 @@ void ConfigExtra_SetSuppressLeds(void)
     configExtra.suppressLeds = !configExtra.suppressLeds;
     ConfigExtra_UpdateMenuItem(0, configExtra.suppressLeds);
     configExtraSaved = false;
-    ConfigExtra_UpdateMenuItem(5, configExtraSaved);
+    ConfigExtra_UpdateMenuItem(6, configExtraSaved);
 }
 
 void ConfigExtra_SetCutSlotPower(void) 
@@ -56,7 +58,7 @@ void ConfigExtra_SetCutSlotPower(void)
     configExtra.cutSlotPower = !configExtra.cutSlotPower;
     ConfigExtra_UpdateMenuItem(1, configExtra.cutSlotPower);
     configExtraSaved = false;
-    ConfigExtra_UpdateMenuItem(5, configExtraSaved);
+    ConfigExtra_UpdateMenuItem(6, configExtraSaved);
 }
 
 void ConfigExtra_SetCutSleepWifi(void) 
@@ -64,7 +66,7 @@ void ConfigExtra_SetCutSleepWifi(void)
     configExtra.cutSleepWifi = !configExtra.cutSleepWifi;
     ConfigExtra_UpdateMenuItem(2, configExtra.cutSleepWifi);
     configExtraSaved = false;
-    ConfigExtra_UpdateMenuItem(5, configExtraSaved);
+    ConfigExtra_UpdateMenuItem(6, configExtraSaved);
 }
 
 void ConfigExtra_SetHomeToRosalina(void) 
@@ -72,7 +74,7 @@ void ConfigExtra_SetHomeToRosalina(void)
     configExtra.homeToRosalina = !configExtra.homeToRosalina;
     ConfigExtra_UpdateMenuItem(3, configExtra.homeToRosalina);
     configExtraSaved = false;
-    ConfigExtra_UpdateMenuItem(5, configExtraSaved);
+    ConfigExtra_UpdateMenuItem(6, configExtraSaved);
 }
 
 void ConfigExtra_SetToggleBottomLcd(void) 
@@ -80,7 +82,15 @@ void ConfigExtra_SetToggleBottomLcd(void)
     configExtra.toggleBottomLcd = !configExtra.toggleBottomLcd;
     ConfigExtra_UpdateMenuItem(4, configExtra.toggleBottomLcd);
     configExtraSaved = false;
-    ConfigExtra_UpdateMenuItem(5, configExtraSaved);
+    ConfigExtra_UpdateMenuItem(6, configExtraSaved);
+}
+
+void ConfigExtra_SetTurnLedsOffStandby(void)
+{
+    configExtra.turnLedsOffStandby = !configExtra.turnLedsOffStandby;
+    ConfigExtra_UpdateMenuItem(5, configExtra.turnLedsOffStandby);
+    configExtraSaved = false;
+    ConfigExtra_UpdateMenuItem(6, configExtraSaved);
 }
 
 void ConfigExtra_UpdateMenuItem(int menuIndex, bool value)
@@ -96,7 +106,8 @@ void ConfigExtra_UpdateAllMenuItems(void)
     ConfigExtra_UpdateMenuItem(2, configExtra.cutSleepWifi);
     ConfigExtra_UpdateMenuItem(3, configExtra.homeToRosalina);
     ConfigExtra_UpdateMenuItem(4, configExtra.toggleBottomLcd);
-    ConfigExtra_UpdateMenuItem(5, configExtraSaved);
+    ConfigExtra_UpdateMenuItem(5, configExtra.turnLedsOffStandby);
+    ConfigExtra_UpdateMenuItem(6, configExtraSaved);
 }
 
 void ConfigExtra_ReadConfigExtra(void)
@@ -136,7 +147,7 @@ void ConfigExtra_WriteConfigExtra(void)
         if(R_SUCCEEDED(res)) 
         {
             configExtraSaved = true;
-            ConfigExtra_UpdateMenuItem(5, configExtraSaved);
+            ConfigExtra_UpdateMenuItem(6, configExtraSaved);
         }
     }
 }

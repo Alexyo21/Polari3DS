@@ -100,7 +100,10 @@ static u8 ScreenFilterMenu_CalculatePolynomialColorLutComponent(const float coef
 
 static void ScreenFilterMenu_WritePolynomialColorLut(bool top, const float coeffs[][3], bool invert, float gamma, u32 dim)
 {
-    ScreenFilter_SuppressLeds();
+    if(configExtra.suppressLeds)
+    {
+        ScreenFilter_SuppressLeds();
+    }
     
     if (top)
         GPU_FB_TOP_COL_LUT_INDEX = 0;
@@ -176,7 +179,10 @@ void ScreenFiltersMenu_Set##name(void)\
 void ScreenFiltersMenu_RestoreSettings(void)
 {
     // Precondition: menu has not been entered    
-    ScreenFilter_SuppressLeds();
+    if(configExtra.suppressLeds)
+    {
+        ScreenFilter_SuppressLeds();
+    }
     
     // Not initialized/default: return
     if (ScreenFiltersMenu_IsDefaultSettings())
@@ -201,7 +207,10 @@ void ScreenFiltersMenu_RestoreSettings(void)
 
 void ScreenFiltersMenu_LoadConfig(void)
 {
-    ScreenFilter_SuppressLeds();
+    if(configExtra.suppressLeds)
+    {
+        ScreenFilter_SuppressLeds();
+    }
     
     s64 out = 0;
 

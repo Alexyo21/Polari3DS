@@ -192,15 +192,14 @@ static void handleShellNotification(u32 notificationId)
         // and shell close, then NS demuxes it and fires 0x213 and 0x214.
         handleShellOpened();
         menuShouldExit = false;
-        
-        if(configExtra.suppressLeds){
-            mcuHwcInit();
-            u8 off = 0;
-            MCUHWC_WriteRegister(0x28, &off, 1);
-            mcuHwcExit();
+                
+        if(configExtra.suppressLeds)
+        {
+            ScreenFilter_SuppressLeds();
         }
 
-        if(wifiOnBeforeSleep && cutWifiInSleep && configExtra.cutSleepWifi && isServiceUsable("nwm::EXT")){
+        if(wifiOnBeforeSleep && cutWifiInSleep && configExtra.cutSleepWifi && isServiceUsable("nwm::EXT"))
+        {
             nwmExtInit();
             NWMEXT_ControlWirelessEnabled(true);
             nwmExtExit();
@@ -210,6 +209,13 @@ static void handleShellNotification(u32 notificationId)
         // Shell closed
         menuShouldExit = true;
         
+/*
+        if(configExtra.suppressLeds)
+        {
+            ScreenFilter_SuppressLeds();
+        }
+*/
+       
         if(cutWifiInSleep && configExtra.cutSleepWifi)
         {      
             u8 wireless = (*(vu8 *)((0x10140000 | (1u << 31)) + 0x180));
@@ -301,7 +307,7 @@ static const ServiceManagerNotificationEntry notifications[] = {
     { PTMNOTIFID_HALF_AWAKE,        handleSleepNotification                 },
     { 0x213,                        handleShellNotification                 },
     { 0x214,                        handleShellNotification                 },
-    { 0x204,                        handleHomeButtonNotification            },
+    { 0x205,                        handleHomeButtonNotification            },
     { 0x1000,                       handleNextApplicationDebuggedByForce    },
     { 0x2000,                       handlePreTermNotification               },
     { 0x1001,                       PluginLoader__HandleKernelEvent         },
