@@ -1,4 +1,4 @@
-# Luma3DS
+# CustomLuma3DS
 *Noob-proof (N)3DS "Custom Firmware"*
 
 the release build are not synced with the latest commit so if you want to see the latest changes you how to do it
