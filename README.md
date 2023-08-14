@@ -1,5 +1,6 @@
 # Luma3DS
 *Noob-proof (N)3DS "Custom Firmware"*
+the release build are not synced with the latest commit so if you want to see the latest changes you how to do it
 
 ## What is this fork
 for debug build please remember to change also the sysmodule rsf to true forcedebug and false disable debug.
