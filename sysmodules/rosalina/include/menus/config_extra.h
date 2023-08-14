@@ -20,6 +20,7 @@ typedef struct {
 	bool cutSleepWifi;
 	bool homeToRosalina;
 	bool toggleBottomLcd;
+	bool turnLedsOffStandby;
 } config_extra;
 
 extern config_extra configExtra;
@@ -30,6 +31,7 @@ void ConfigExtra_SetCutSlotPower();
 void ConfigExtra_SetCutSleepWifi();
 void ConfigExtra_SetHomeToRosalina();
 void ConfigExtra_SetToggleBottomLcd();
+void ConfigExtra_SetTurnLedsOffStandby();
 void ConfigExtra_UpdateMenuItem(int menuIndex, bool value);
 void ConfigExtra_UpdateAllMenuItems();
 void ConfigExtra_ReadConfigExtra();
