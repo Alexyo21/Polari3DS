@@ -14,7 +14,7 @@ export VERSION_MAJOR	:=	$(shell git describe --tags --match v[0-9]* | cut -c2- |
 export VERSION_MINOR	:=	$(shell git describe --tags --match v[0-9]* | cut -c2- | cut -f1 -d- | cut -f2 -d.)
 export VERSION_BUILD	:=	$(shell git describe --tags --match v[0-9]* | cut -c2- | cut -f1 -d- | cut -f3 -d.)
 export COMMIT			:=	$(shell git rev-parse --short=8 HEAD)
-export IS_RELEASE		:=	0
+export IS_RELEASE		:=	1
 
 ifeq ($(strip $(REVISION)),)
 	export REVISION			:=	v0.0.0-0
@@ -56,12 +56,17 @@ INCLUDES	:=	include
 # options for code generation
 #---------------------------------------------------------------------------------
 ARCH	:=	-march=armv5te -mtune=arm946e-s -mfloat-abi=soft -mtp=soft -marm -mthumb-interwork
+DEFINES :=	-DARM9 -D__3DS__ -DHBLDR_DEFAULT_3DSX_TID="0x$(HBLDR_DEFAULT_3DSX_TID)ULL"
 
 ifeq ($(BUILD_FOR_EXPLOIT_DEV),1)
-	DEFINES :=	-DARM9 -D__3DS__ -DHBLDR_DEFAULT_3DSX_TID="0x$(HBLDR_DEFAULT_3DSX_TID)ULL" -DBUILD_FOR_EXPLOIT_DEV=1
-else
-	DEFINES :=	-DARM9 -D__3DS__ -DHBLDR_DEFAULT_3DSX_TID="0x$(HBLDR_DEFAULT_3DSX_TID)ULL"
+	EXTRA_DEFINES +=  	-DBUILD_FOR_EXPLOIT_DEV=1
 endif
+
+ifeq ($(NO_COPYING_TO_NAND),1)
+        EXTRA_DEFINES +=  	-DNO_COPYING_TO_NAND
+endif
+
+DEFINES += 	$(EXTRA_DEFINES)
 
 ifeq ($(BUILD_FOR_GDB),1)
 	OPTFLAGS := -Og -fno-fast-math
