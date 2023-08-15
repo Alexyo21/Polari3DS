@@ -28,9 +28,9 @@ Some of the code is inspired by NTR but most of it is a complete reimplementatio
     rosalina emulate also home button you can come the home menu without pressing it...
     Added permanent brightness calibration by Nutez -> From here
     Changed colors on config menu because why not
-    Continue running after a errdisp error happens (you can press the instant reboot combo to reboot if nothing works)
-    also extra_config menu (led always turn off (little broken for now)
+    Continue running after a errdisp error happens (you can press the instant reboot combo to reboot if nothing works
     and new3ds title configurator so you can chose which game
+changed risalina combo defsult is L+Up (Dpad)
 
 -Also added streaming in it juts cause why not, thanks to Byebyesky.
 
