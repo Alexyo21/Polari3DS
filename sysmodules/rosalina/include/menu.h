@@ -26,6 +26,8 @@
 
 #pragma once
 
+#include <stdio.h>
+#include <math.h>
 #include <3ds/types.h>
 #include <3ds/services/hid.h>
 #include "MyThread.h"
