@@ -26,12 +26,14 @@
 
 #include <3ds.h>
 #include <3ds/os.h>
+#include <3ds/services/hid.h>
 #include "menus.h"
 #include "menu.h"
 #include "draw.h"
 #include "menus/process_list.h"
 #include "menus/n3ds.h"
-#include "menus/debugger.h"
+#include "menus/debugger_menu.h"
+#include "debugger.h"
 #include "menus/miscellaneous.h"
 #include "menus/sysconfig.h"
 #include "luma_config.h"
@@ -45,6 +47,7 @@
 #include "fmt.h"
 #include "process_patches.h"
 #include "luminance.h"
+#include "pmdbgext.h"
 #include "menus/quick_switchers.h"
 #include "menus/streaming.h"
 #include "config_template_ini.h"
@@ -95,14 +98,14 @@ void RosalinaMenu_SaveSettings(void)
     {
         Draw_Lock();
         Draw_DrawString(10, 10, COLOR_TITLE, "Save settings");
-        if(R_SUCCEEDED(res))
+        if (R_SUCCEEDED(res))
             Draw_DrawString(10, 30, COLOR_WHITE, "Operation succeeded.");
         else
             Draw_DrawFormattedString(10, 30, COLOR_WHITE, "Operation failed (0x%08lx).", res);
         Draw_FlushFramebuffer();
         Draw_Unlock();
     }
-    while(!(waitInput() & KEY_B) && !menuShouldExit);
+    while (!(waitInput() & KEY_B) && !menuShouldExit);
 }
 
 void RosalinaMenu_ShowDebugInfo(void)
@@ -167,7 +170,7 @@ void RosalinaMenu_ShowDebugInfo(void)
         Draw_FlushFramebuffer();
         Draw_Unlock();
     }
-    while(!(waitInput() & KEY_B) && !menuShouldExit);
+    while (!(waitInput() & KEY_B) && !menuShouldExit);
 }
 
 void RosalinaMenu_ShowCredits(void)
@@ -202,7 +205,7 @@ void RosalinaMenu_ShowCredits(void)
         Draw_FlushFramebuffer();
         Draw_Unlock();
     }
-    while(!(waitInput() & KEY_B) && !menuShouldExit);
+    while (!(waitInput() & KEY_B) && !menuShouldExit);
 }
 
 void RosalinaMenu_ChangeScreenBrightness(void)
@@ -281,8 +284,8 @@ void RosalinaMenu_ChangeScreenBrightness(void)
     Draw_RestoreFramebuffer();
     Draw_FreeFramebufferCache();
 
-    svcKernelSetState(0x10000, 2); // unblock gsp
-    gspLcdInit(); // assume it doesn't fail. If it does, brightness won't change, anyway.
+    svcKernelSetState(0x10000, 2);  // unblock gsp
+    gspLcdInit();                   // assume it doesn't fail. If it does, brightness won't change, anyway.
 
     // gsp:LCD will normalize the brightness between top/bottom screen, handle PWM, etc.
 
@@ -296,7 +299,7 @@ void RosalinaMenu_ChangeScreenBrightness(void)
         u32 pressed = waitInputWithTimeout(1000);
         if (pressed & DIRECTIONAL_KEYS)
         {
-            if(kHeld & KEY_X)
+            if (kHeld & KEY_X)
             {
                 if (pressed & KEY_UP)
                     lumTop += 1;
@@ -307,7 +310,7 @@ void RosalinaMenu_ChangeScreenBrightness(void)
                 else if (pressed & KEY_LEFT)
                     lumTop -= 10;
             }
-            else if(kHeld & KEY_A)
+            else if (kHeld & KEY_A)
             {
                 if (pressed & KEY_UP)
                     lumBot += 1;
@@ -371,10 +374,10 @@ void RosalinaMenu_ChangeScreenBrightness(void)
         {   
             u8 result, botStatus, topStatus;
             mcuHwcInit();
-            MCUHWC_ReadRegister(0x0F, &result, 1); // https://www.3dbrew.org/wiki/I2C_Registers#Device_3
+            MCUHWC_ReadRegister(0x0F, &result, 1);  // https://www.3dbrew.org/wiki/I2C_Registers#Device_3
             mcuHwcExit();  
-            botStatus = (result >> 5) & 1; // right shift result to bit 5 ("Bottom screen backlight on") and perform bitwise AND with 1
-            topStatus = (result >> 6) & 1; // bit06: Top screen backlight on
+            botStatus = (result >> 5) & 1;  // right shift result to bit 5 ("Bottom screen backlight on") and perform bitwise AND with 1
+            topStatus = (result >> 6) & 1;  // bit06: Top screen backlight on
 
             if (botStatus == 1 && topStatus == 1)
             {
@@ -429,31 +432,31 @@ void RosalinaMenu_PowerOptions(void)
 
         u32 pressed = waitInputWithTimeout(1000);
 
-        if(pressed & KEY_X) // Soft shutdown.
+        if (pressed & KEY_X)  // Soft shutdown.
         {
             menuLeave();
             srvPublishToSubscriber(0x203, 0);
             return;
         }
-        else if(pressed & KEY_A)
+        else if (pressed & KEY_A)
         {
             menuLeave();
             APT_HardwareResetAsync();
             return;
         }
-        else if(pressed & KEY_Y)
+        else if (pressed & KEY_Y)
         {
             svcKernelSetState(7);
             __builtin_unreachable();
             return;
         }
-        else if(pressed & KEY_B)
+        else if (pressed & KEY_B)
             return;
     }
-    while(!menuShouldExit);
+    while (!menuShouldExit);
 }
 
-void RosalinaMenu_HomeMenu(void) // Trigger Home Button press
+void RosalinaMenu_HomeMenu(void)  // Trigger Home Button press
 {
     Draw_Lock();
     Draw_ClearFramebuffer();
@@ -473,14 +476,14 @@ void RosalinaMenu_HomeMenu(void) // Trigger Home Button press
 
         u32 pressed = waitInputWithTimeout(1000);
 
-        if(pressed & KEY_A)
+        if (pressed & KEY_A)
         {
           return;
         }
-        else if(pressed & KEY_B)
+        else if (pressed & KEY_B)
             return;
     }
-    while(!menuShouldExit);
+    while (!menuShouldExit);
 }
 
 #define TRY(expr) if(R_FAILED(res = (expr))) goto end;
@@ -504,7 +507,7 @@ static Result RosalinaMenu_WriteScreenshot(IFile *file, u32 width, bool top, boo
     Draw_CreateBitmapHeader(framebufferCache, width, 240);
     buf += 54;
 
-    u32 y = 0;
+    u32 y = 0;    
     // Our buffer might be smaller than the size of the screenshot...
     while (remaining != 0)
     {
@@ -516,7 +519,7 @@ static Result RosalinaMenu_WriteScreenshot(IFile *file, u32 width, bool top, boo
 
         s64 t1 = svcGetSystemTick();
         timeSpentConvertingScreenshot += t1 - t0;
-        TRY(IFile_Write(file, &total, framebufferCache, (y == 0 ? 54 : 0) + lineSize * nlines, 0)); // don't forget to write the header
+        TRY(IFile_Write(file, &total, framebufferCache, (y == 0 ? 54 : 0) + lineSize * nlines, 0));  // don't forget to write the header
         timeSpentWritingScreenshot += svcGetSystemTick() - t1;
 
         y += nlines;
@@ -545,7 +548,8 @@ void RosalinaMenu_TakeScreenshot(void)
     timeSpentConvertingScreenshot = 0;
     timeSpentWritingScreenshot = 0;
 
-    if(R_FAILED(svcGetSystemInfo(&out, 0x10000, 0x203))) svcBreak(USERBREAK_ASSERT);
+    if (R_FAILED(svcGetSystemInfo(&out, 0x10000, 0x203)))
+        svcBreak(USERBREAK_ASSERT);
     isSdMode = (bool)out;
 
     archiveId = isSdMode ? ARCHIVE_SDMC : ARCHIVE_NAND_RW;
@@ -556,16 +560,16 @@ void RosalinaMenu_TakeScreenshot(void)
     svcFlushEntireDataCache();
 
     bool is3d;
-    u32 topWidth, bottomWidth; // actually Y-dim
+    u32 topWidth, bottomWidth;  // actually Y-dim
 
     Draw_GetCurrentScreenInfo(&bottomWidth, &is3d, false);
     Draw_GetCurrentScreenInfo(&topWidth, &is3d, true);
 
     res = FSUSER_OpenArchive(&archive, archiveId, fsMakePath(PATH_EMPTY, ""));
-    if(R_SUCCEEDED(res))
+    if (R_SUCCEEDED(res))
     {
         res = FSUSER_CreateDirectory(archive, fsMakePath(PATH_ASCII, "/luma/screenshots"), 0);
-        if((u32)res == 0xC82044BE) // directory already exists
+        if ((u32)res == 0xC82044BE)  // directory already exists
             res = 0;
         FSUSER_CloseArchive(archive);
     }
@@ -582,7 +586,7 @@ void RosalinaMenu_TakeScreenshot(void)
     TRY(RosalinaMenu_WriteScreenshot(&file, bottomWidth, false, true));
     TRY(IFile_Close(&file));
 
-    if(is3d && (Draw_GetCurrentFramebufferAddress(true, true) != Draw_GetCurrentFramebufferAddress(true, false)))
+    if (is3d && (Draw_GetCurrentFramebufferAddress(true, true) != Draw_GetCurrentFramebufferAddress(true, false)))
     {
         sprintf(filename, "/luma/screenshots/%s_top_right.bmp", dateTimeStr);
         TRY(IFile_Open(&file, archiveId, fsMakePath(PATH_EMPTY, ""), fsMakePath(PATH_ASCII, filename), FS_OPEN_CREATE | FS_OPEN_WRITE));
@@ -594,7 +598,7 @@ end:
     IFile_Close(&file);
 
     if (R_FAILED(Draw_AllocateFramebufferCache(FB_BOTTOM_SIZE)))
-        __builtin_trap(); // We're f***ed if this happens
+        __builtin_trap();  // We're f***ed if this happens
 
     svcFlushEntireDataCache();
     Draw_SetupFramebuffer();
@@ -604,7 +608,7 @@ end:
     {
         Draw_Lock();
         Draw_DrawString(10, 10, COLOR_TITLE, "Screenshot");
-        if(R_FAILED(res))
+        if (R_FAILED(res))
             Draw_DrawFormattedString(10, 30, COLOR_WHITE, "Operation failed (0x%08lx).", (u32)res);
         else
         {
@@ -619,7 +623,7 @@ end:
         Draw_FlushFramebuffer();
         Draw_Unlock();
     }
-    while(!(waitInput() & KEY_B) && !menuShouldExit);
+    while (!(waitInput() & KEY_B) && !menuShouldExit);
 
 #undef TRY
 }

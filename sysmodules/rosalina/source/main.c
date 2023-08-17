@@ -25,6 +25,7 @@
 */
 
 #include <3ds.h>
+#include <3ds/services/hid.h>
 #include "memory.h"
 #include "menu.h"
 #include "menus.h"
@@ -34,7 +35,7 @@
 #include "sleep.h"
 #include "MyThread.h"
 #include "menus/miscellaneous.h"
-#include "menus/debugger.h"
+#include "menus/debugger_menu.h"
 #include "menus/screen_filters.h"
 #include "luminance.h"
 #include "menus/cheats.h"
@@ -47,8 +48,8 @@
 #include "minisoc.h"
 #include "draw.h"
 #include "bootdiag.h"
+#include "debugger.h"
 #include "shell.h"
-#include "menus/debugger.h"
 #include "task_runner.h"
 #include "plugin.h"
 #include "menus/streaming.h"
@@ -103,10 +104,10 @@ void initSystem(void)
     svcGetSystemInfo(&out, 0x10000, 0x103);
     lastNtpTzOffset = (s16)out;
 
-    for(res = 0xD88007FA; res == (Result)0xD88007FA; svcSleepThread(500 * 1000LL))
+    for (res = 0xD88007FA; res == (Result)0xD88007FA; svcSleepThread(500 * 1000LL))
     {
         res = srvInit();
-        if(R_FAILED(res) && res != (Result)0xD88007FA)
+        if (R_FAILED(res) && res != (Result)0xD88007FA)
             svcBreak(USERBREAK_PANIC);
     }
 
@@ -185,7 +186,8 @@ static void handleShellNotification(u32 notificationId)
     u32 config = (u32)out;
     bool cutWifiInSleep = ((config >> (u32)CUTWIFISLEEP) & 1) != 0;
     
-    if (notificationId == 0x213) {
+    if (notificationId == 0x213)
+    {
         // Shell opened
         // Note that this notification is also fired on system init.
         // Sequence goes like this: MCU fires notif. 0x200 on shell open
@@ -193,19 +195,20 @@ static void handleShellNotification(u32 notificationId)
         handleShellOpened();
         menuShouldExit = false;
                 
-        if(configExtra.suppressLeds)
+        if (configExtra.suppressLeds)
         {
             ScreenFilter_SuppressLeds();
         }
 
-        if(wifiOnBeforeSleep && cutWifiInSleep && configExtra.cutSleepWifi && isServiceUsable("nwm::EXT"))
+        if (wifiOnBeforeSleep && cutWifiInSleep && configExtra.cutSleepWifi && isServiceUsable("nwm::EXT"))
         {
             nwmExtInit();
             NWMEXT_ControlWirelessEnabled(true);
             nwmExtExit();
         }
     }  
-    else {
+    else
+    {
         // Shell closed
         menuShouldExit = true;
         
@@ -216,7 +219,7 @@ static void handleShellNotification(u32 notificationId)
         }
 */
        
-        if(cutWifiInSleep && configExtra.cutSleepWifi)
+        if (cutWifiInSleep && configExtra.cutSleepWifi)
         {      
             u8 wireless = (*(vu8 *)((0x10140000 | (1u << 31)) + 0x180));
 
@@ -227,7 +230,8 @@ static void handleShellNotification(u32 notificationId)
                 NWMEXT_ControlWirelessEnabled(false);
                 nwmExtExit();
             }
-            else {
+            else
+            {
                 wifiOnBeforeSleep = false;
             }
         }
@@ -249,7 +253,7 @@ static void handlePreTermNotification(u32 notificationId)
     debuggerDisable(100 * 1000 * 1000LL);
 
     // Kill the ac session if needed
-    if(isConnectionForced)
+    if (isConnectionForced)
     {
         acExit();
         isConnectionForced = false;
@@ -267,13 +271,6 @@ static void handlePreTermNotification(u32 notificationId)
     Draw_Unlock();
 }
 
-static void handleNextApplicationDebuggedByForce(u32 notificationId)
-{
-    (void)notificationId;
-    // Following call needs to be async because pm -> Loader depends on rosalina hb:ldr, handled in this very thread.
-    TaskRunner_RunTask(debuggerFetchAndSetNextApplicationDebugHandleTask, NULL, 0);
-}
-
 #if 0
 static void handleRestartHbAppNotification(u32 notificationId)
 {
@@ -285,7 +282,7 @@ static void handleRestartHbAppNotification(u32 notificationId)
 static void handleHomeButtonNotification(u32 notificationId)
 {
     (void)notificationId;
-    if(configExtra.homeToRosalina && isHidInitialized && !rosalinaOpen && !menuShouldExit && !preTerminationRequested && !g_blockMenuOpen)
+    if (configExtra.homeToRosalina && isHidInitialized && !rosalinaOpen && !menuShouldExit && !preTerminationRequested && !g_blockMenuOpen)
     {
         openRosalina();
     }
@@ -293,6 +290,7 @@ static void handleHomeButtonNotification(u32 notificationId)
 
 static const ServiceManagerServiceEntry services[] = {
     { "plg:ldr", 1, PluginLoader__HandleCommands, true },
+    { "rosalina:dbg", 5, handleRosalinaDebugger, false },
     { NULL },
 };
 
@@ -318,7 +316,7 @@ static void cutPowerToCardSlotWhenTWLCard(void)
 {
     FS_CardType card;
     bool status;
-    if(R_SUCCEEDED(FSUSER_GetCardType(&card)) && card == 1){
+    if (R_SUCCEEDED(FSUSER_GetCardType(&card)) && card == 1){
         FSUSER_CardSlotPowerOff(&status);
     }
 }
@@ -340,7 +338,7 @@ int main(void)
     cfguExit();
     hasTopScreen = (sysModel != 3); // 3 = o2DS
 
-    if(R_FAILED(svcCreateEvent(&preTerminationEvent, RESET_STICKY)))
+    if (R_FAILED(svcCreateEvent(&preTerminationEvent, RESET_STICKY)))
         svcBreak(USERBREAK_ASSERT);
 
     Draw_Init();

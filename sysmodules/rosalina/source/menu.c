@@ -25,6 +25,7 @@
 */
 
 #include <3ds.h>
+#include <3ds/services/hid.h>
 #include "menu.h"
 #include "draw.h"
 #include "menus/n3ds.h"
@@ -32,6 +33,8 @@
 #include "luma_shared_config.h"
 #include "menus/config_extra.h"
 #include "menus/miscellaneous.h"
+#include "menus/debugger_menu.h"
+#include "debugger.h"
 #include "fmt.h"
 #include "memory.h"
 #include "ifile.h"
