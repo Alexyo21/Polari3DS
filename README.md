@@ -32,6 +32,7 @@ Some of the code is inspired by NTR but most of it is a complete reimplementatio
     Continue running after a errdisp error happens (you can press the instant reboot combo to reboot if nothing works needs to be activated in adavnced menu config.
     and new3ds title configurator so you can chose which game
     extra config menu also changeable from godmode9 if you need to deactivate a feature.
+also abilty to set lareyedfs path for game patching using a txt filein root of the sd card with specied path.
 also added single screen backloght regulation
 changed rosalina combo defsult is L+Up (Dpad), you can change it after in the config menu.(less buttons to be pressed, useful for broken buttons)
 also fixed up previuos bug, now causing another one...
