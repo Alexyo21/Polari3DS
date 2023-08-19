@@ -16,8 +16,9 @@ Some of the code is inspired by NTR but most of it is a complete reimplementatio
 
     Restored UNITINFO and enable rosalina on safe_firm and disable arm11exceptions  and alos cut down wifi options on the luma config menu
     Added shortcuts:
-        Press start + select to toggle bottom screen (nice when you watch videos) inspired by This
-        Press A + B + X + Y + Start to instantly reboot the console. Useful in case of freeze, but don't complain if your sdcard get corrupted because of this.
+        Press start + select to toggle bottom screen (nice when you watch videos) inspired by This, limit on o2ds
+        , cause hardware register for up and down lcd are the same looking for new test though... 
+        Press A + B + X + Y + Start to instantly reboot the console. Useful in case of freeze, but don't complain if your sdcard get corrupted because of this. also this needs to be activated 
         Press Start on Rosalina menu to toggle wifi -> From here
         Press Select on Rosalina menu to toggle LEDs -> From this (and press Y to force blue led as a workaround when the battery is low)
     Added n3ds clock + L2 status in rosalina menu -> From here
@@ -28,10 +29,16 @@ Some of the code is inspired by NTR but most of it is a complete reimplementatio
     rosalina emulate also home button you can come the home menu without pressing it...
     Added permanent brightness calibration by Nutez -> From here
     Changed colors on config menu because why not
-    Continue running after a errdisp error happens (you can press the instant reboot combo to reboot if nothing works
+    Continue running after a errdisp error happens (you can press the instant reboot combo to reboot if nothing works needs to be activated in adavnced menu config.
     and new3ds title configurator so you can chose which game
+    extra config menu also changeable from godmode9 if you need to deactivate a feature.
 also added single screen backloght regulation
 changed rosalina combo defsult is L+Up (Dpad), you can change it after in the config menu.(less buttons to be pressed, useful for broken buttons)
+also fixed up previuos bug, now causing another one...
+standby led turning off needs some fix, i need to find some documentation abput sleep mode...
+added logo.bin abilities to replace default 3ds app launch logo try it if you want.
+added debug capabilities like Seledreams fork, thanks to you.
+next build probably will better fix volume software control and also led capabilities in standby.
 
 -Also added streaming in it juts cause why not, thanks to Byebyesky.
 
@@ -65,7 +72,7 @@ Since v8.0, Luma3DS has its own in-game menu, triggerable by <kbd>L+Up</kbd> (se
 1. Clone the repository with `git clone https://github.com/LumaTeam/Luma3DS.git`
 2. Run `make`.
 
-    The produced `boot.firm` is meant to be copied to the root of your SD card for usage with Boot9Strap.
+    The produced `boot.firm` is meant to be copied to the root of your SD card for usage with Boot9Strap/fastboot3ds/godmode9.
 
 #
 ### Setup / Usage / Features
