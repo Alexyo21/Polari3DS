@@ -54,7 +54,7 @@ next build probably will better fix volume software control and also led capabil
 2. Type the IP of your 3DS into the python script
 3. Install the dependencies with `pip3 install pygame pillow numpy`
 4. Start the script with `python3 streaming.py 4`
-
+- should even work with ntrview for wiiu.
 (Click the image for a video demo)
 [![Click for video demo](preview.png)](https://youtu.be/SAhSV_xUGCc)
 
