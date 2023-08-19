@@ -195,11 +195,14 @@ void RosalinaMenu_ShowCredits(void)
 
         Draw_DrawString(10, posY, COLOR_WHITE,
             (
-                "Special thanks to:\n"
+                " Special thanks to:\n"
                 "  fincs, WinterMute, mtheall, piepie62,\n"
                 "  Luma3DS contributors, libctru contributors,\n"
-                "  also DullPointer, Cooolgamer, PabloMK7,\n"
-                "  ByebyeSky and other people"
+                "  and other people.\n\n"
+                "  Credits for this fork:\n"
+                "  DullPointer, Cooolgamer, PabloMK7,\n"
+                "  ByebyeSky, Sono, Nutezù, Core2Extreme\n"
+                "  and other people"
             ));
 
         Draw_FlushFramebuffer();
