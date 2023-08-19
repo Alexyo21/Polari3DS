@@ -82,6 +82,19 @@ void menuMakeLedDabadeedabada(void)
     mcuHwcExit();
 }
 
+void ledOffStandby(void)
+{
+    mcuHwcInit();
+    u8 off = 0;
+    u8 Off = 3;
+    MCUHWC_WriteRegister(0x28, &off, 1);
+    MCUHWC_WriteRegister(0x2A, &off, 1);
+    MCUHWC_WriteRegister(0x2B, &off, 1);
+    MCUHWC_WriteRegister(0x2C, &off, 1);
+    MCUHWC_WriteRegister(0x29, &Off, 1);
+    mcuHwcExit();
+}
+
 // libctru redefinition:
 
 bool hidShouldUseIrrst(void)
@@ -269,6 +282,7 @@ static Result menuUpdateMcuInfo(void)
     
     // https://www.3dbrew.org/wiki/I2C_Registers#Device_3
     MCUHWC_ReadRegister(0x58, dspVolumeSlider, 2); // Register-mapped ADC register
+    MCUHWC_ReadRegister(0x59, dspVolumeSlider, 6); // Register-mapped ADC register
     MCUHWC_ReadRegister(0x27, volumeSlider + 0, 1); // Raw volume slider state
     MCUHWC_ReadRegister(0x09, volumeSlider + 1, 1); // Volume slider state
 

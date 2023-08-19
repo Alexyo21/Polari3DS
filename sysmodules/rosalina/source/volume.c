@@ -55,13 +55,20 @@ void Volume_ControlVolume(void)
     int target = 0, targetMin = 0, targetMax = 64;
     disableVolumeSlider[0] = 0xFF;
     disableVolumeSlider[1] = 0x00;
+    Result res = 0;
 
     Draw_Lock();
     Draw_ClearFramebuffer();
     Draw_FlushFramebuffer();
     Draw_Unlock();
 
-    mcuHwcInit();
+    Handle *mcuHwcHandlePtr = mcuHwcGetSessionHandle();
+    *mcuHwcHandlePtr = 0;
+
+    res = srvGetServiceHandle(mcuHwcHandlePtr, "mcu::HWC");
+    // Try to steal the handle if some other process is using the service (custom SVC)
+    if (R_FAILED(res))
+        svcControlService(SERVICEOP_STEAL_CLIENT_SESSION, mcuHwcHandlePtr, "mcu::HWC");
     // mute and disable volume slider
     MCUHWC_WriteRegister(0x58, disableVolumeSlider, 2);
 
@@ -85,8 +92,8 @@ void Volume_ControlVolume(void)
             10,
             posY,
             COLOR_WHITE,
-            "To set: %02X (%lu%%)\n\nVOL: %.2X - %.2X\nRNG: %.2X / %.2X\n\n",
-            target, in, volumeSlider[1], volumeSlider[0], dspVolumeSlider[0], dspVolumeSlider[1]
+            "To set: %02X (%lu%%)\n",
+            target, in
         );
         posY = Draw_DrawFormattedString(
             10,
@@ -95,7 +102,7 @@ void Volume_ControlVolume(void)
             "Current volume: %lu%%\n\n",
             out);
         posY = Draw_DrawString(10, posY, COLOR_GREEN, "Controls:\n");
-        posY = Draw_DrawString(10, posY, COLOR_WHITE, "Up/Down for +-1, Right/Left for +-10 [0; 64].\n\n");
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, "Up/Down for +-1, Right/Left for +-10.\n\n");
 
         if(!volumeSlider[0] || volumeSlider[0] == 0xFF)
         {
@@ -150,5 +157,5 @@ void Volume_ControlVolume(void)
     }
     while (!menuShouldExit);
 
-    mcuHwcExit();  
+    svcCloseHandle(*mcuHwcHandlePtr);
 }
