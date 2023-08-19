@@ -106,3 +106,4 @@ void    DisplayPluginMenu(u32   *cmdbuf);
 
 void menuToggleLeds(void);
 void menuMakeLedDabadeedabada(void);
+void ledOffStandby(void);
