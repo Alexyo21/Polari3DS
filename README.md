@@ -1,6 +1,9 @@
 # CustomLuma3DS
 *Noob-proof (N)3DS "Custom Firmware"*
 
+## next update 
+next build probably will better fix volume software control and also led capabilities in standby.
+and probably some form of config for update feature, i will think about it.
 the release build are not synced with the latest commit so if you want to see the latest changes you how to do it
 
 ## What is this fork
@@ -44,7 +47,6 @@ standby led turning off needs some fix, i need to find some documentation abput 
 - added logo.bin abilities to replace default 3ds app launch logo try it if you want.
 
 - added debug capabilities like Seledreams fork, thanks to you.
-next build probably will better fix volume software control and also led capabilities in standby.
 
 - Also added streaming in it juts cause why not, thanks to Byebyesky.
 
