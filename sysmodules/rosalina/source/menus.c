@@ -201,7 +201,7 @@ void RosalinaMenu_ShowCredits(void)
                 "  and other people.\n\n"
                 "  Credits for this fork:\n"
                 "  DullPointer, Cooolgamer, PabloMK7,\n"
-                "  ByebyeSky, Sono, Nutezù, Core2Extreme\n"
+                "  ByebyeSky, Sono, Nutez, Core2Extreme\n"
                 "  and other people"
             ));
 
