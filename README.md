@@ -4,7 +4,7 @@
 ## next update 
 next build probably will better fix volume software control and also led capabilities in standby.
 and probably some form of config for update feature, i will think about it.
-the release build are not synced with the latest commit so if you want to see the latest changes you how to do it
+the release build are not synced with the latest commit so if you want to see the latest changes you know how to do it
 
 ## What is this fork
 for debug build please remember to change also the sysmodule rsf to true forcedebug and false disable debug.
