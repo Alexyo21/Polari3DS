@@ -38,6 +38,7 @@
 #include "gdb/net.h"
 #include "MyThread.h"
 #include "menus/debugger_menu.h"
+#include "utils.h"
 
 
 extern GDBServer gdbServer;

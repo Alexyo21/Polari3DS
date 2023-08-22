@@ -27,6 +27,7 @@
 #pragma once
 
 #include <3ds/types.h>
+#include "utils.h"
 
 u32 getMinLuminancePreset(void);
 u32 getMaxLuminancePreset(void);

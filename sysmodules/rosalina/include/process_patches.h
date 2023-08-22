@@ -28,6 +28,7 @@
 
 #include <3ds/types.h>
 #include "menu.h"
+#include "utils.h"
 
 typedef Result(* OperateOnProcessCb)(Handle processHandle, u32 textSz, u32 roSz, u32 rwSz);
 

@@ -33,6 +33,7 @@
 #include "luma_config.h"
 #include "luma_shared_config.h"
 #include "menus/n3ds.h"
+#include "utils.h"
 
 extern Menu sysconfigMenu;
 extern bool isConnectionForced;

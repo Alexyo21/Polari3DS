@@ -28,6 +28,7 @@
 
 #include <3ds/types.h>
 #include "menu.h"
+#include "utils.h"
 
 extern Menu miscellaneousMenu;
 extern int lastNtpTzOffset;

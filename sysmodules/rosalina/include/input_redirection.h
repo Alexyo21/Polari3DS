@@ -28,6 +28,7 @@
 
 #include <3ds/types.h>
 #include "MyThread.h"
+#include "utils.h"
 
 extern bool inputRedirectionEnabled;
 extern Handle inputRedirectionThreadStartedEvent;

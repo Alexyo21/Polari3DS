@@ -26,5 +26,6 @@
 
 #pragma once
 #include "MyThread.h"
+#include "utils.h"
 
 MyThread *bootdiagCreateThread(void);

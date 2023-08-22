@@ -28,11 +28,13 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <3ds/types.h>
+#include <3ds/services/hid.h>
 #include "menu.h"
 #include "menus.h"
 #include "debugger.h"
-#include <3ds/types.h>
-#include <3ds/services/hid.h>
+#include "utils.h"
+
 
 extern Menu debuggerMenu;
 

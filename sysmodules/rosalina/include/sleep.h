@@ -26,6 +26,8 @@
 
 #pragma once
 
+#include "utils.h"
+
 void    Sleep__Init(void);
 void    Sleep__HandleNotification(u32 notifId);
 bool    Sleep__Status(void);
