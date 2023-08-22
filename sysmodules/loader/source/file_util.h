@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <string.h>
+#include "util.h"
 
 extern "C"
 {

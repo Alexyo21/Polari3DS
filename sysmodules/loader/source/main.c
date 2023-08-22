@@ -106,7 +106,7 @@ void initSystem(void)
     assertSuccess(fsRegInit());
     assertSuccess(fsldrPatchPermissions());
 
-    //fsldrInit();
+    // fsldrInit();
     assertSuccess(srvGetServiceHandle(fsGetSessionHandle(), "fs:LDR"));
 
     // Hackjob
@@ -115,7 +115,7 @@ void initSystem(void)
 
     assertSuccess(pxiPmInit());
 
-    //__libc_init_array();
+    __libc_init_array();
 }
 
 static const ServiceManagerServiceEntry services[] = {

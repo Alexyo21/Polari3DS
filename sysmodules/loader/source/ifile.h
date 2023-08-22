@@ -1,6 +1,7 @@
 #pragma once
 
 #include <3ds/services/fs.h>
+#include "util.h"
 
 #define PATH_MAX 255
 

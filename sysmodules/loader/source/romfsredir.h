@@ -1,6 +1,7 @@
 #pragma once
 
 #include <3ds/types.h>
+#include "util.h"
 
 extern const u8 romfsRedirPatch[];
 extern const u32 romfsRedirPatchSize;

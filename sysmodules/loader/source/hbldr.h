@@ -28,6 +28,7 @@
 
 #include <3ds.h>
 #include "luma_shared_config.h"
+#include "util.h"
 
 Result hbldrLoadProcess(Handle *outProcessHandle, const ExHeader_Info *exhi);
 void hbldrPatchExHeaderInfo(ExHeader_Info *exhi);
