@@ -9,6 +9,16 @@ This is part of 3ds_pxi, which is licensed under the MIT license (see LICENSE fo
 #pragma once
 
 #include <3ds.h>
+#include <inttypes.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <stdalign.h>
+#include <unistd.h>
+#include <math.h>
 
 typedef enum SessionState
 {
