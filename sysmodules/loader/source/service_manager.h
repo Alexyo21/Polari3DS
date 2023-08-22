@@ -27,6 +27,15 @@
 #pragma once
 
 #include <3ds/types.h>
+#include <inttypes.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <stdalign.h>
+#include <unistd.h>
+#include <math.h>
 
 typedef struct ServiceManagerServiceEntry {
     const char *name;

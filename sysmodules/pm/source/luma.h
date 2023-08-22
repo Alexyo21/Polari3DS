@@ -1,6 +1,8 @@
 #pragma once
 
 #include <3ds/types.h>
+#include "luma_shared_config.h"
+#include "util.h"
 
 #define CONFIG(a)        (((config >> (a)) & 1) != 0)
 #define MULTICONFIG(a)   ((multiConfig >> (2 * (a))) & 3)

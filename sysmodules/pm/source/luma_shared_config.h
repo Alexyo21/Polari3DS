@@ -17,6 +17,8 @@
 #pragma once
 
 #include <3ds/types.h>
+#include "luma.h"
+#include "util.h"
 
 /// Luma shared config type (private!).
 typedef struct LumaSharedConfig {

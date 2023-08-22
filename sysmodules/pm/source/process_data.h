@@ -3,6 +3,7 @@
 #include <3ds/types.h>
 #include <3ds/synchronization.h>
 #include "intrusive_list.h"
+#include "util.h"
 
 #define FOREACH_PROCESS(list, process) \
 for (process = ProcessList_GetFirst(list); !ProcessList_TestEnd(list, process); process = ProcessList_GetNext(process))

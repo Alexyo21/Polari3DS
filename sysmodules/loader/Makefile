@@ -28,7 +28,7 @@ INCLUDES	:=	include
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
+ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mfpu=vfpv2 -mtp=soft -marm -mthumb-interwork
 DEFINES :=	-D__3DS__ -DHBLDR_DEFAULT_3DSX_TID="0x$(HBLDR_DEFAULT_3DSX_TID)ULL"
 
 ifeq ($(BUILD_FOR_EXPLOIT_DEV),1)
@@ -45,7 +45,7 @@ ifeq ($(BUILD_FOR_GDB),1)
 	OPTFLAGS := -Og -fno-fast-math
 	LIBS := -lctrud -lm
 else
-	OPTFLAGS := -O2 -fomit-frame-pointer
+	OPTFLAGS := -O2 -fomit-frame-pointer -ffast-math
 	LIBS := -lctru -lm
 endif
 
@@ -65,6 +65,14 @@ COMMON_FLAGS =\
 CFLAGS		:= -std=gnu11 $(COMMON_FLAGS)
 
 CXXFLAGS	:= -std=gnu++17 $(COMMON_FLAGS)
+
+ifeq ($(BUILD_FOR_GDB),1)
+	UFLAGS := 
+else
+	UFLAGS := -fno-rtti -fno-exceptions
+endif
+
+CXXFLAGS        += $(UFLAGS)
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map),-wrap,exit,--section-start,.text=0x14000000

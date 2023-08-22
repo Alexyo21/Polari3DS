@@ -3,6 +3,7 @@
 #include <3ds/exheader.h>
 #include <3ds/services/fs.h>
 #include "process_data.h"
+#include "util.h"
 
 /// Custom launch flags for PM launch commands.
 enum {

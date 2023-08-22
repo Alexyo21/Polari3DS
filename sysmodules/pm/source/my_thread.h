@@ -4,6 +4,7 @@
 #include <3ds/result.h>
 #include <3ds/svc.h>
 #include <3ds/synchronization.h>
+#include "util.h"
 
 #define THREAD_STACK_SIZE 0x1000
 

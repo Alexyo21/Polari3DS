@@ -1,6 +1,7 @@
 #pragma once
 
 #include <3ds/svc.h>
+#include "util.h"
 
 Result initializeReslimits(void);
 Result setAppMemLimit(u32 limit);

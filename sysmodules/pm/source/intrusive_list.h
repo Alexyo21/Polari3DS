@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 #include <stdbool.h>
+#include "util.h"
 
 /// Intrusive node structure definition.
 typedef struct IntrusiveNode {
