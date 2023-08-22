@@ -21,6 +21,7 @@
 #define REDSHIFT_COLORRAMP_H
 
 #include <stdint.h>
+#include "utils.h"
 
 //#include "redshift.h"
 

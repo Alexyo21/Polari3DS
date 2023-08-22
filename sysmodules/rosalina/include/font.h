@@ -1,4 +1,7 @@
 #pragma once
+
+#include "utils.h"
+
 //---------------------------------------------------------------------------------
 // Linux 6x10 font
 // https://github.com/torvalds/linux/tree/master/lib/fonts

@@ -27,6 +27,7 @@
 #pragma once
 
 #include <3ds/services/fs.h>
+#include "utils.h"
 
 #define PATH_MAX 255
 

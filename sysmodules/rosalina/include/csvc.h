@@ -17,6 +17,7 @@
 #pragma once
 
 #include <3ds/types.h>
+#include "utils.h"
 
 /// Allows or disables thread redirection patches for the new thread if specified in the affinity field in svcCreateThread
 #define AFFINITY_DISABLE_THREAD_REDIRECTION(x) ((x >= 0) ? (x | 0x40) : x)

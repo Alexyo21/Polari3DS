@@ -27,8 +27,13 @@
 
 #pragma once
 
+#include <stdio.h>
+#include <math.h>
 #include <3ds/types.h>
 #include "menu.h"
+#include "debugger.h"
+#include "menus/debugger_menu.h"
+#include "utils.h"
 
 extern Menu rosalinaMenu;
 

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __CONFIGEXTRA_H__
+#define __CONFIGEXTRA_H__
 
 #include <3ds.h>
 #include <3ds/os.h>
@@ -10,6 +11,7 @@
 #include "luminance.h"
 #include "luma_config.h"
 #include "luma_shared_config.h"
+#include "utils.h"
 
 #define CONFIG_FILE         "configExtra.ini"
 
@@ -19,6 +21,7 @@ typedef struct {
 	bool cutSleepWifi;
 	bool homeToRosalina;
 	bool toggleBottomLcd;
+	bool turnLedsOffStandby;
 } config_extra;
 
 extern config_extra configExtra;
@@ -29,7 +32,10 @@ void ConfigExtra_SetCutSlotPower();
 void ConfigExtra_SetCutSleepWifi();
 void ConfigExtra_SetHomeToRosalina();
 void ConfigExtra_SetToggleBottomLcd();
+void ConfigExtra_SetTurnLedsOffStandby();
 void ConfigExtra_UpdateMenuItem(int menuIndex, bool value);
 void ConfigExtra_UpdateAllMenuItems();
 void ConfigExtra_ReadConfigExtra();
 void ConfigExtra_WriteConfigExtra();
+
+#endif

@@ -1,6 +1,8 @@
-#pragma once
+#ifndef __QUICKSWITCHERS_H__
+#define __QUICKSWITCHERS_H__
 
 #include <3ds.h>
+#include "utils.h"
 
 #define MAX_FILES 18
 #define FILE_NAME_MAX 256
@@ -21,3 +23,5 @@ void QuickSwitchers_Widescreen(void);
 void QuickSwitchers_AgbBg(void);
 void QuickSwitchers_OpenAgb(void);
 void QuickSwitchers_RevertWidescreen(void);
+
+#endif

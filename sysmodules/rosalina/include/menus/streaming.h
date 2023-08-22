@@ -4,6 +4,7 @@
 #include "menu.h"
 #include "menus.h"
 #include "sock_util.h"
+#include "utils.h"
 
 extern Menu streamingMenu;
 

@@ -13,6 +13,7 @@
 #include <3ds/srv.h>
 #include <3ds/services/soc.h>
 #include <poll.h>
+#include "utils.h"
 
 #define _REENT_ONLY
 #include <errno.h>

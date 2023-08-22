@@ -29,6 +29,7 @@
 #pragma once
 
 #include <3ds/types.h>
+#include "utils.h"
 
 #define CHEATS_PER_MENU_PAGE 18
 
