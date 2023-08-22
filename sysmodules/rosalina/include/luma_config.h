@@ -29,6 +29,7 @@
 
 #include <3ds/types.h>
 #include "luma_shared_config.h"
+#include "utils.h"
 
 #define CONFIG(a)        (((cfg->config >> (a)) & 1) != 0)
 #define MULTICONFIG(a)   ((cfg->multiConfig >> (2 * (a))) & 3)
