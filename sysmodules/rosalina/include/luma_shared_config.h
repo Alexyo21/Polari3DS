@@ -18,6 +18,7 @@
 
 #include <3ds/types.h>
 #include "utils.h"
+#include "luma_config.h"
 
 /// Luma shared config type (private!).
 typedef struct LumaSharedConfig {
