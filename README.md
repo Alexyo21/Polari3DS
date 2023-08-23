@@ -59,7 +59,14 @@ standby led turning off needs some fix, i need to find some documentation abput 
 2. Type the IP of your 3DS into the python script
 3. Install the dependencies with `pip3 install pygame pillow numpy`
 4. Start the script with `python3 streaming.py 4`
-- should even work with ntrview for wiiu.
+- should even work with ntrview for wiiu:
+
+https://github.com/yawut/ntrview-wiiu
+
+or snickerstream on pc:
+
+https://github.com/RattletraPM/Snickerstream/releases
+
 (Click the image for a video demo)
 [![Click for video demo](preview.png)](https://youtu.be/SAhSV_xUGCc)
 
