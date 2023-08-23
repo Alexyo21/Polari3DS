@@ -47,6 +47,8 @@ standby led turning off needs some fix, i need to find some documentation abput 
 
 - added logo.bin abilities to replace default 3ds app launch logo try it if you want.
 
+- rehid folder disable option 
+
 - added debug capabilities like Seledreams fork, thanks to you.
 
 - Also added streaming in it juts cause why not, thanks to Byebyesky.
