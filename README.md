@@ -4,6 +4,7 @@
 ## next update 
 next build probably will better fix volume software control and also led capabilities in standby.
 and probably some form of config for update feature, i will think about it.
+
 the release build are not synced with the latest commit so if you want to see the latest changes you know how to do it
 
 ## What is this fork
@@ -46,6 +47,8 @@ standby led turning off needs some fix, i need to find some documentation abput 
 
 - added logo.bin abilities to replace default 3ds app launch logo try it if you want.
 
+- rehid folder disable option 
+
 - added debug capabilities like Seledreams fork, thanks to you.
 
 - Also added streaming in it juts cause why not, thanks to Byebyesky.
@@ -58,7 +61,14 @@ standby led turning off needs some fix, i need to find some documentation abput 
 2. Type the IP of your 3DS into the python script
 3. Install the dependencies with `pip3 install pygame pillow numpy`
 4. Start the script with `python3 streaming.py 4`
-- should even work with ntrview for wiiu.
+- should even work with ntrview for wiiu:
+
+https://github.com/yawut/ntrview-wiiu
+
+or snickerstream on pc:
+
+https://github.com/RattletraPM/Snickerstream/releases
+
 (Click the image for a video demo)
 [![Click for video demo](preview.png)](https://youtu.be/SAhSV_xUGCc)
 
