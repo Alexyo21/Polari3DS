@@ -28,5 +28,6 @@
 
 #include <3ds/types.h>
 #include "utils.h"
+#include "menu.h"
 
 void handleShellOpened(void);
