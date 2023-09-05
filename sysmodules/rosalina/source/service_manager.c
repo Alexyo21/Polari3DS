@@ -26,6 +26,7 @@
 
 #include <3ds.h>
 #include "service_manager.h"
+#include "menus/config_extra.h"
 
 #define TRY(expr) if(R_FAILED(res = (expr))) goto cleanup;
 
@@ -150,6 +151,10 @@ Result ServiceManager_Run(const ServiceManagerServiceEntry *services, const Serv
                 services[handlerIds[off]].handler(ctxs[off]);
                 replyTarget = waitHandles[id];
             }
+           if (configExtra.suppressLeds && configExtra.turnLedsOffStandby)
+            {
+               ledOffStandby();
+            }
         }
     }
 
@@ -177,6 +182,5 @@ cleanup:
             allocator->freeSessionContext(ctxs[i]);
         }
     }
-
     return res;
 }
