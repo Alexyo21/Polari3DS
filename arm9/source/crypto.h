@@ -34,6 +34,9 @@
 #pragma once
 
 #include "types.h"
+#include "itcm.h"
+#include "fs.h"
+#include "config.h"
 
 /**************************AES****************************/
 #define REG_AESCNT          ((vu32 *)0x10009000)

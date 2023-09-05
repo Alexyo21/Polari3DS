@@ -38,6 +38,7 @@
 #include "alignedseqmemcpy.h"
 #include "strings.h"
 #include "fatfs/sdmmc/sdmmc.h"
+#include "config.h"
 
 /****************************************************************
 *                  Crypto libs
@@ -337,8 +338,16 @@ int ctrNandInit(void)
 {
     __attribute__((aligned(4))) u8 cid[AES_BLOCK_SIZE],
                                    shaSum[SHA_256_HASH_SIZE];
-
-    sdmmc_get_cid(1, (u32 *)cid);
+                                   
+   if ((getFileSize(CID_PATH) > 0) && (CONFIG(HARDWAREPATCHING)))
+     
+      {
+        memcpy(cid, (u32*)__NANDCID_ADDR, sizeof(cid));
+      }  
+       else
+      {
+        sdmmc_get_cid(1, (u32 *)cid);
+      }
     sha(shaSum, cid, sizeof(cid), SHA_256_MODE);
     memcpy(nandCtr, shaSum, sizeof(nandCtr));
 
@@ -610,8 +619,16 @@ void computePinHash(u8 *outbuf, const u8 *inbuf)
 {
     __attribute__((aligned(4))) u8 cid[AES_BLOCK_SIZE],
                                    cipherText[AES_BLOCK_SIZE];
-
-    sdmmc_get_cid(1, (u32 *)cid);
+    
+    if ((getFileSize(CID_PATH) > 0) && (CONFIG(HARDWAREPATCHING)))
+     
+      {
+        memcpy(cid, (u32*)__NANDCID_ADDR, sizeof(cid));
+      }  
+       else
+      {
+        sdmmc_get_cid(1, (u32 *)cid);
+      }
     aes_use_keyslot(0x04); //Console-unique keyslot whose keys are set by the Arm9 bootROM
     aes(cipherText, inbuf, 1, cid, AES_CBC_ENCRYPT_MODE, AES_INPUT_BE | AES_INPUT_NORMAL);
     sha(outbuf, cipherText, sizeof(cipherText), SHA_256_MODE);

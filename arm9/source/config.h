@@ -36,7 +36,7 @@
 
 #define CONFIG_FILE         "config.ini"
 #define CONFIG_VERSIONMAJOR 4
-#define CONFIG_VERSIONMINOR 1
+#define CONFIG_VERSIONMINOR 2
 
 #define BOOTCFG_NAND         BOOTCONFIG(0, 1)
 #define BOOTCFG_EMUINDEX     BOOTCONFIG(1, 3)
@@ -70,6 +70,7 @@ enum singleOptions
     ENABLESAFEFIRMROSALINA,
     NOERRDISPINSTANTREBOOT,
     SHOWADVANCEDSETTINGS,
+    HARDWAREPATCHING,
 };
 
 typedef enum ConfigurationStatus

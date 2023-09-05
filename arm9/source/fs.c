@@ -322,7 +322,7 @@ bool payloadMenu(char *path, bool *hasDisplayedMenu)
         initScreens();
         *hasDisplayedMenu = true;
 
-        drawString(true, 10, 10, COLOR_TITLE, "Luma3DS chainloader");
+        drawString(true, 10, 10, COLOR_TITLE, "CustomLuma3DS chainloader");
         drawString(true, 10, 10 + SPACING_Y, COLOR_TITLE, "Press A to select, START to quit");
 
         for(u32 i = 0, posY = 10 + 3 * SPACING_Y, color = COLOR_GREEN; i < payloadNum; i++, posY += SPACING_Y)
@@ -524,8 +524,11 @@ bool doLumaUpgradeProcess(void)
 
     // Try to boot.firm to CTRNAND, when applicable
 #if !defined(BUILD_FOR_EXPLOIT_DEV) && !defined(NO_COPYING_TO_NAND)
-    if (isSdMode && memcmp(launchedPathForFatfs, "sdmc:", 5) == 0)
-        ok = fileCopy(launchedPathForFatfs, "nand:/boot.firm", true, fileCopyBuffer, sizeof(fileCopyBuffer));
+    if (!getFileSize(NOUPD_PATH))
+     {
+      if (isSdMode && memcmp(launchedPathForFatfs, "sdmc:", 5) == 0)
+         ok = fileCopy(launchedPathForFatfs, "nand:/boot.firm", true, fileCopyBuffer, sizeof(fileCopyBuffer));
+     }
 #endif
 
     // Try to backup essential files
