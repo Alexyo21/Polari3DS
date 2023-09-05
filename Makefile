@@ -7,7 +7,7 @@ endif
 export BUILD_FOR_EXPLOIT_DEV ?= 0
 
 # Build with PASLR enabled, i think you should not enable this...
-export LOADER_ENABLE_PASLR ?= 0
+export LOADER_ENABLE_PASLR ?= 1
 
 # Disable copying firm to ctrnand useful for dev but for end-user
 export NO_COPYING_TO_NAND ?= 0
@@ -22,7 +22,7 @@ export HBLDR_DEFAULT_3DSX_TID ?= 000400000D921E00
 export HBLDR_DEFAULT_3DSX_TITLE_NAME ?= "hblauncher_loader"
 
 NAME		:=	$(notdir $(CURDIR))
-REVISION	:=	$(shell git describe --tags --match v[0-9]* --abbrev=8 | sed 's/-[0-9]*-g/-/')
+REVISION	:=	1.0.0
 
 SUBFOLDERS	:=	sysmodules arm11 arm9 k11_extension
 
