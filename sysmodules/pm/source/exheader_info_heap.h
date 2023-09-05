@@ -1,6 +1,7 @@
 #pragma once
 
 #include <3ds/exheader.h>
+#include "util.h"
 
 // Official PM uses an overly complicated allocator with semaphores
 

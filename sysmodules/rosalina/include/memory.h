@@ -28,6 +28,7 @@
 
 #include <3ds/types.h>
 #include <string.h>
+#include "utils.h"
 
 u8 *memsearch(u8 *startPos, const void *pattern, u32 size, u32 patternSize);
 void hexItoa(u64 number, char *out, u32 digits, bool uppercase);

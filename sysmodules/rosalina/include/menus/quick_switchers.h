@@ -2,6 +2,7 @@
 #define __QUICKSWITCHERS_H__
 
 #include <3ds.h>
+#include "utils.h"
 
 #define MAX_FILES 18
 #define FILE_NAME_MAX 256

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <3ds/types.h>
+#include "utils.h"
 
 #define  MAX_BUFFER (50)
 #define  MAX_ITEMS_COUNT (64)

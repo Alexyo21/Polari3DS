@@ -75,6 +75,7 @@ static const char *singleOptionIniNamesBoot[] = {
 
 static const char *singleOptionIniNamesMisc[] = {
     "show_advanced_settings",
+    "patch_hardware_crypto",
 };
 
 static const char *keyNames[] = {
@@ -613,9 +614,9 @@ static size_t saveLumaIniConfigToStr(char *out)
     }
 
     if (VERSION_BUILD != 0) {
-        sprintf(lumaVerStr, "Luma3DS v%d.%d.%d", (int)VERSION_MAJOR, (int)VERSION_MINOR, (int)VERSION_BUILD);
+        sprintf(lumaVerStr, "CustomLuma3DS v%d.%d.%d", (int)VERSION_MAJOR, (int)VERSION_MINOR, (int)VERSION_BUILD);
     } else {
-        sprintf(lumaVerStr, "Luma3DS v%d.%d", (int)VERSION_MAJOR, (int)VERSION_MINOR);
+        sprintf(lumaVerStr, "CustomLuma3DS v%d.%d", (int)VERSION_MAJOR, (int)VERSION_MINOR);
     }
 
     if (ISRELEASE) {
@@ -672,7 +673,8 @@ static size_t saveLumaIniConfigToStr(char *out)
 
         cfg->autobootTwlTitleId, (int)cfg->autobootCtrAppmemtype,
         
-        (int)CONFIG(SHOWADVANCEDSETTINGS)
+        (int)CONFIG(SHOWADVANCEDSETTINGS),
+        (int)CONFIG(HARDWAREPATCHING)
     );
 
     return n < 0 ? 0 : (size_t)n;
@@ -840,6 +842,7 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
                                                "( ) Enable Rosalina on SAFE_FIRM",
                                                "( ) Enable instant reboot + disable Errdisp",
                                                "( ) Show Advanced Settings",
+                                               "( ) Enable Nand Cid and Otp hardware patching",
                                                                                               
                                                // Should always be the last entry
                                                "\nSave and exit"
@@ -992,7 +995,17 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
                                                  
                                                  "Disabling this will hide extra\n"
                                                  "settings from the luma configuration\n"
-                                                 "menu.\n",
+                                                 "menu.",
+                                                 
+                                                 "Enabling this will cause the complete\n"
+                                                 "of the otp and nand cid, so that you\n"
+                                                 "can use another console nand backup\n"
+                                                 "on another hardware, so use this carefuly\n"
+                                                 "are doing and bla bla you already know.\n\n"
+                                                 "Remember to put nand_cid.bin and otp.bin\n"
+                                                 "to sd luma directory cause well is where\n"
+                                                 "it reads them and works only on sd card,\n"
+                                                 "cause the nand is still encrypted.",
                                                  
                                                  // Should always be the last entry
                                                  "Save the changes and exit. To discard\n"
@@ -1042,6 +1055,7 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
         { .visible = CONFIG(SHOWADVANCEDSETTINGS) },
         { .visible = CONFIG(SHOWADVANCEDSETTINGS) },
         { .visible = CONFIG(SHOWADVANCEDSETTINGS) },
+        { .visible = false },
         { .visible = false },
         { .visible = true },
     };

@@ -1,6 +1,7 @@
 #pragma once
 #include <3ds/types.h>
 #include "ifile.h"
+#include "utils.h"
 
 #define _3GX_MAGIC (0x3230303024584733) /* "3GX$0002" */
 

@@ -191,7 +191,7 @@ u32 loadNintendoFirm(FirmwareType *firmType, FirmwareSource nandType, bool loadF
     if(!ISN3DS && *firmType == NATIVE_FIRM && firm->section[0].address == (u8 *)0x1FF80000)
     {
         //We can't boot < 3.x EmuNANDs
-        if(nandType != FIRMWARE_SYSNAND) error("An old unsupported EmuNAND has been detected.\nLuma3DS is unable to boot it.");
+        if(nandType != FIRMWARE_SYSNAND) error("An old unsupported EmuNAND has been detected.\nCustomLuma3DS is unable to boot it.");
 
         //If you want to use SAFE_FIRM on 1.0, use Luma from NAND & comment this line:
         if(isSafeMode) error("SAFE_MODE is not supported on 1.x/2.x FIRM.");
@@ -731,6 +731,8 @@ u32 patch1x2xNativeAndSafeFirm(void)
         mergeSection0(NATIVE_FIRM, 0x45, false); // may change in the future
         firm->section[0].size = 0;
     }
+    
+    u32 patchNandInit(u8 *pos, u32 size);
 
     return ret;
 }
@@ -739,4 +741,18 @@ void launchFirm(int argc, char **argv)
 {
     prepareArm11ForFirmlaunch();
     chainload(argc, argv, firm);
+}
+
+u32 patchNandInit(u8 *pos, u32 size)
+{
+    static const u8 pattern[] = {0x31, 0x00, 0x38, 0x00, 0x02, 0xAA};
+    
+    u16 *off = (u16 *)memsearch(pos, pattern, size, sizeof(pattern));
+    
+    if (off == NULL) return 1;
+    
+    off[9] = 0x2000; // movs r0, #0
+    off[10] = 0xe7e3; // b -54 ; return
+    
+    return 0;
 }

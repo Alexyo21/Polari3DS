@@ -121,7 +121,7 @@ void __wrap_exit(int rc)
     svcCloseHandle(sessionManager.PXISRV11CommandReceivedEvent);
     svcCloseHandle(sessionManager.PXISRV11ReplySentEvent);
 
-    //__libc_fini_array();
+    __libc_fini_array();
     __sync_fini();
     svcExitProcess();
 }
@@ -147,7 +147,7 @@ void initSystem(void)
             svcBreak(USERBREAK_PANIC);
     }
 
-    //__libc_init_array();
+    __libc_init_array();
 }
 
 int main(void)

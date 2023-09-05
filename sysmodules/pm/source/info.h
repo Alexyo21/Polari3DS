@@ -3,6 +3,7 @@
 #include <3ds/exheader.h>
 #include <3ds/services/fs.h>
 #include "process_data.h"
+#include "util.h"
 
 Result registerProgram(u64 *programHandle, const FS_ProgramInfo *programInfo, const FS_ProgramInfo *programInfoUpdate);
 Result getAndListDependencies(u64 *dependencies, u32 *numDeps, ProcessData *process, ExHeader_Info *exheaderInfo);

@@ -2,6 +2,7 @@
 
 #include <3ds/types.h>
 #include "process_data.h"
+#include "util.h"
 
 typedef struct Manager {
     ProcessList processList;

@@ -30,6 +30,16 @@
 #include <3ds/srv.h>
 #include <3ds/result.h>
 #include <3ds/ipc.h>
+#include <inttypes.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <stdalign.h>
+#include <unistd.h>
+#include <math.h>
 #include "csvc.h"
 #include "luma_shared_config.h"
 

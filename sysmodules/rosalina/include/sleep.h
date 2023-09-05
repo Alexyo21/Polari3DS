@@ -26,6 +26,10 @@
 
 #pragma once
 
+#include <3ds/types.h>
+#include "utils.h"
+#include "menu.h"
+
 void    Sleep__Init(void);
 void    Sleep__HandleNotification(u32 notifId);
 bool    Sleep__Status(void);

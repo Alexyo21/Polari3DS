@@ -11,6 +11,7 @@
 #include <3ds/types.h>
 #include <poll.h>
 #include <netinet/in.h>
+#include "utils.h"
 
 #define MAX_PORTS (3+1)
 #define MAX_CTXS  (2 * MAX_PORTS)

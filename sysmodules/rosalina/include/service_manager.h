@@ -27,6 +27,8 @@
 #pragma once
 
 #include <3ds/types.h>
+#include "utils.h"
+#include "menu.h"
 
 typedef struct ServiceManagerServiceEntry {
     const char *name;

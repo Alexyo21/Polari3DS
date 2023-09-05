@@ -29,6 +29,7 @@
 #pragma once
 #include <3ds/types.h>
 #include "ifile.h"
+#include "util.h"
 
 // File layout:
 // - File header

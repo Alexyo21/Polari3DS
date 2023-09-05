@@ -15,6 +15,7 @@
 #include "sock_util.h"
 #include "memory.h"
 #include "ifile.h"
+#include "utils.h"
 
 #define MAX_DEBUG           3
 #define MAX_DEBUG_THREAD    127

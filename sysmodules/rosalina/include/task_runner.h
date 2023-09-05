@@ -3,6 +3,7 @@
 #include <3ds/types.h>
 #include <3ds/synchronization.h>
 #include "MyThread.h"
+#include "utils.h"
 
 typedef struct TaskRunner {
     LightEvent readyEvent;

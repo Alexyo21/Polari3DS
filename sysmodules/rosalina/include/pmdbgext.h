@@ -5,6 +5,7 @@
 
 #include <3ds/services/pmapp.h>
 #include <3ds/services/pmdbg.h>
+#include "utils.h"
 
 /// Custom launch flags for PM launch commands.
 enum {

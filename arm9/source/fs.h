@@ -45,3 +45,5 @@ u32 firmRead(void *dest, u32 firmType);
 void findDumpFile(const char *folderPath, char *fileName);
 
 bool doLumaUpgradeProcess(void);
+
+#define NOUPD_PATH "noupdate.txt"

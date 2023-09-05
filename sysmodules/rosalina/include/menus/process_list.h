@@ -27,6 +27,7 @@
 #pragma once
 
 #include <3ds/types.h>
+#include "utils.h"
 
 #define PROCESSES_PER_MENU_PAGE 18
 

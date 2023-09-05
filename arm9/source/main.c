@@ -40,6 +40,7 @@
 #include "i2c.h"
 #include "fmt.h"
 #include "fatfs/sdmmc/sdmmc.h"
+#include "itcm.h"
 
 extern u8 __itcm_start__[], __itcm_lma__[], __itcm_bss_start__[], __itcm_end__[];
 
@@ -180,6 +181,17 @@ void main(int argc, char **argv, u32 magicWord)
     }
 
     detectAndProcessExceptionDumps();
+    
+    // Writes plaintext OTP to ITCM, if OTP exists
+    if (getFileSize(OTP_PATH) > 0)
+    {
+     patchITCM();
+    }
+    
+    if (getFileSize(CID_PATH) > 0)
+    {
+     PatchITCMCid();
+    }
 
     //Attempt to read the configuration file
     needConfig = readConfig() ? MODIFY_CONFIGURATION : CREATE_CONFIGURATION;
