@@ -45,6 +45,7 @@ enum singleOptions
     ENABLESAFEFIRMROSALINA,
     NOERRDISPINSTANTREBOOT,
     SHOWADVANCEDSETTINGS,
+    HARDWAREPATCHING,
 };
 
 extern u32 config, multiConfig, bootConfig;
