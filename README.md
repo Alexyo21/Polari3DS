@@ -1,5 +1,8 @@
 # CustomLuma3DS
 *Noob-proof (N)3DS "Custom Firmware"*
+discord group
+
+https://discord.gg/3dq8d2nb
 
 ## next update 
 next build probably will better fix volume software control.
