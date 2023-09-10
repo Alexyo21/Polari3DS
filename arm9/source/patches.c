@@ -958,3 +958,17 @@ u32 patchReadFileSHA256Vtab11(u8 *pos, u32 size, u32 process9MemAddr)
 
     return 0;
 }
+
+u32 patchNandInit(u8 *pos, u32 size)
+{
+    static const u8 pattern[] = {0x31, 0x00, 0x38, 0x00, 0x02, 0xAA};
+    
+    u16 *off = (u16 *)memsearch(pos, pattern, size, sizeof(pattern));
+    
+    if (off == NULL) return 1;
+    
+    off[9] = 0x2000; // movs r0, #0
+    off[10] = 0xe7e3; // b -54 ; return
+    
+    return 0;
+}
