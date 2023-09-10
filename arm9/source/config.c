@@ -739,7 +739,7 @@ static bool readConfigMcu(void)
         checksum += data[i];
     checksum = ~checksum;
 
-    if (checksum != configDataMcu.checksum || configDataMcu.lumaVersion < MAKE_LUMA_VERSION_MCU(10, 3, 0))
+    if (checksum != configDataMcu.checksum || configDataMcu.lumaVersion > curVer)
     {
         // Invalid data stored in MCU...
         memset(&configDataMcu, 0, sizeof(CfgDataMcu));
