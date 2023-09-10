@@ -42,7 +42,7 @@ Some of the code is inspired by NTR but most of it is a complete reimplementatio
   
 - update feature disable using /luma/noupdate.txt at least one byte.
   
-- cid and otp custom loading (/luma/otp.bin and /luma/nand_cid.bin) and also opton to use another nand backup and also for using only emunand without sysnand(option hidden inside luma config.ini)
+- cid and otp(mainly for antiban) custom loading (/luma/otp.bin and /luma/nand_cid.bin) and also opton to use another nand backup and also for using only emunand without sysnand(option hidden inside luma config.ini)
 
 - standby light turning off if you want
 
