@@ -38,6 +38,16 @@ Some of the code is inspired by NTR but most of it is a complete reimplementatio
     Continue running after a errdisp error happens (you can press the instant reboot combo to reboot if nothing works needs to be activated in adavnced menu config.
     and new3ds title configurator so you can chose which game
     extra config menu also changeable from godmode9 if you need to deactivate a feature.
+- twl patch for emunand
+  
+- update feature disable using /luma/noupdate.txt at least one byte.
+  
+- cid and otp custom loading (/luma/otp.bin and /luma/nand_cid.bin) and also opton to use another nand backup and also for using only emunand without sysnand(option hidden inside luma config.ini)
+
+- standby light turning off if you want
+
+- emunand bug fix  
+
 - also abilty to set lareyedfs path for game patching using a txt file in luma/titles/titleid directory of the sd card with specied path.
 
 - also added single screen backloght regulation
