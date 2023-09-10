@@ -548,6 +548,9 @@ u32 patchNativeFirm(u32 firmVersion, FirmwareSource nandType, bool loadFromStora
 
     //Apply signature patches
     ret += patchSignatureChecks(process9Offset, process9Size);
+    
+    //Apply nand init patches
+    if(nandType != FIRMWARE_SYSNAND) ret += patchNandInit(process9Offset, process9Size);
 
     //Apply EmuNAND patches
     if(nandType != FIRMWARE_SYSNAND) ret += patchEmuNand(process9Offset, process9Size, firmVersion, false);
@@ -708,7 +711,7 @@ u32 patch1x2xNativeAndSafeFirm(void)
 
     //Apply firmlaunch patches
     //Doesn't work here if Luma is on SD. If you want to use SAFE_FIRM on 1.0, use Luma from NAND & uncomment this line:
-    //ret += patchFirmlaunches(process9Offset, process9Size, process9MemAddr);
+    ret += patchFirmlaunches(process9Offset, process9Size, process9MemAddr);
 
     if(ISN3DS && CONFIG(ENABLESAFEFIRMROSALINA))
     {
@@ -731,8 +734,6 @@ u32 patch1x2xNativeAndSafeFirm(void)
         mergeSection0(NATIVE_FIRM, 0x45, false); // may change in the future
         firm->section[0].size = 0;
     }
-    
-    u32 patchNandInit(u8 *pos, u32 size);
 
     return ret;
 }
@@ -741,18 +742,4 @@ void launchFirm(int argc, char **argv)
 {
     prepareArm11ForFirmlaunch();
     chainload(argc, argv, firm);
-}
-
-u32 patchNandInit(u8 *pos, u32 size)
-{
-    static const u8 pattern[] = {0x31, 0x00, 0x38, 0x00, 0x02, 0xAA};
-    
-    u16 *off = (u16 *)memsearch(pos, pattern, size, sizeof(pattern));
-    
-    if (off == NULL) return 1;
-    
-    off[9] = 0x2000; // movs r0, #0
-    off[10] = 0xe7e3; // b -54 ; return
-    
-    return 0;
 }
