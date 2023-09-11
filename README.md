@@ -51,12 +51,9 @@ Some of the code is inspired by NTR but most of it is a complete reimplementatio
 
 - also abilty to set lareyedfs path for game patching using a txt file in luma/titles/titleid directory of the sd card with specied path.
 
-- also added single screen backloght regulation
+- also added single screen backlight regulation
 
 - changed rosalina combo defsult is L+Up (Dpad), you can change it after in the config menu.(less buttons to be pressed, useful for broken buttons)
-
-- also fixed up previuos bug, now causing another one...
-standby led turning off needs some fix, i need to find some documentation abput sleep mode...
 
 - added logo.bin abilities to replace default 3ds app launch logo try it if you want.
 
