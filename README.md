@@ -1,6 +1,5 @@
 # CustomLuma3DS
 *Noob-proof (N)3DS "Custom Firmware"*
-discord group
 
 discord group in case of needing:
 https://discord.gg/3dq8d2nb
