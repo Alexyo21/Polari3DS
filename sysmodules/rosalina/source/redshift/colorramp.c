@@ -21,7 +21,7 @@
 #include <stdint.h>
 #include <math.h>
 
-#include "redshift/colorrmap.h
+#include "redshift/colorrmap.h"
 #include "redshift/redshift.h"
 
 /* Whitepoint values for temperatures at 100K intervals.
