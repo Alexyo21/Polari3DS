@@ -10,6 +10,6 @@ extern Menu streamingMenu;
 
 void startMainThread(void);
 void endThread(void);
-void finalize();
-void rpCloseGameHandle();
-void closeRPHandle();
+void finalize(void);
+void rpCloseGameHandle(void);
+void closeRPHandle(void);

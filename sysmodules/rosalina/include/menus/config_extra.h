@@ -27,15 +27,15 @@ typedef struct {
 extern config_extra configExtra;
 extern Menu configExtraMenu;
 
-void ConfigExtra_SetSuppressLeds();
-void ConfigExtra_SetCutSlotPower();
-void ConfigExtra_SetCutSleepWifi();
-void ConfigExtra_SetHomeToRosalina();
-void ConfigExtra_SetToggleBottomLcd();
-void ConfigExtra_SetTurnLedsOffStandby();
+void ConfigExtra_SetSuppressLeds(void);
+void ConfigExtra_SetCutSlotPower(void);
+void ConfigExtra_SetCutSleepWifi(void);
+void ConfigExtra_SetHomeToRosalina(void);
+void ConfigExtra_SetToggleBottomLcd(void);
+void ConfigExtra_SetTurnLedsOffStandby(void);
 void ConfigExtra_UpdateMenuItem(int menuIndex, bool value);
-void ConfigExtra_UpdateAllMenuItems();
-void ConfigExtra_ReadConfigExtra();
-void ConfigExtra_WriteConfigExtra();
+void ConfigExtra_UpdateAllMenuItems(void);
+void ConfigExtra_ReadConfigExtra(void);
+void ConfigExtra_WriteConfigExtra(void);
 
 #endif
