@@ -23,7 +23,7 @@
 #include <stdint.h>
 #include "utils.h"
 
-//#include "redshift.h"
+#include "redshift.h"
 
 void colorramp_get_white_point(float *out_white_point, int temperature); // not in original code
 
