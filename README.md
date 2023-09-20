@@ -5,7 +5,8 @@ discord group in case of needing:
 https://discord.gg/3dq8d2nb
 
 ## next update 
-next build probably will better fix volume software control, add twl redirection for broken nand, custom cid patch for process9(help me😰) and maybe nighshift remake...(maybe)
+next build probably will better fix volume software control, custom cid patch for process9(help me😰) and nighshift remake
+twl patch redirection aside
 
 the release build are not synced with the latest commit so if you want to see the latest changes you know how to do it
 
