@@ -36,9 +36,11 @@ DEFINES :=	-D__3DS__ -DHBLDR_DEFAULT_3DSX_TID="0x$(HBLDR_DEFAULT_3DSX_TID)ULL" -
 
 ifeq ($(BUILD_FOR_GDB),1)
 	OPTFLAGS := -Og -fno-fast-math
+	UFLAGS := 
 	LIBS := -lctrud -lm
 else
 	OPTFLAGS := -Os -fomit-frame-pointer -ffast-math
+	UFLAGS := -fno-rtti -fno-exceptions
 	LIBS := -lctru -lm
 endif
 
@@ -50,12 +52,6 @@ CFLAGS	:=	-g -std=gnu11 -Wall -Wextra -Werror -Wno-unused-value -mword-relocatio
 CFLAGS	+=	$(INCLUDE)
 
 CXXFLAGS	:= $(CFLAGS) -std=gnu++11
-
-ifeq ($(BUILD_FOR_GDB),1)
-	UFLAGS := 
-else
-	UFLAGS := -fno-rtti -fno-exceptions
-endif
 
 CXXFLAGS        += $(UFLAGS)
 
