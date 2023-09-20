@@ -1,6 +1,7 @@
 #include <3ds.h>
 #include <string.h>
 #include <stdatomic.h>
+#include "exheader_info_heap.h"
 
 typedef union Node {
     union Node *next;

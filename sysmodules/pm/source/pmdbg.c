@@ -4,6 +4,7 @@
 #include "info.h"
 #include "util.h"
 #include "manager.h"
+#include "pmdbg.h"
 
 void pmDbgHandleCommands(void *ctx)
 {

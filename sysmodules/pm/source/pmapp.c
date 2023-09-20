@@ -7,6 +7,7 @@
 #include "reslimit.h"
 #include "manager.h"
 #include "util.h"
+#include "pmapp.h"
 
 void pmAppHandleCommands(void *ctx)
 {
