@@ -1,7 +1,17 @@
-# Luma3DS
+# CustomLuma3DS
 *Noob-proof (N)3DS "Custom Firmware"*
 
+discord group in case of needing:
+https://discord.gg/3dq8d2nb
+
+## next update 
+next build probably will better fix volume software control, custom cid patch for process9(help me😰) and nighshift remake
+twl patch redirection aside
+
+the release build are not synced with the latest commit so if you want to see the latest changes you know how to do it
+
 ## What is this fork
+for debug build please remember to change also the sysmodule rsf to true forcedebug and false disable debug.
 
 Many of you probably know the NTR CFW that enabled streaming the 3DS' screen to the computer over the debugger.  
 This fork implements this functionality into rosalina.  
@@ -13,8 +23,9 @@ Some of the code is inspired by NTR but most of it is a complete reimplementatio
 
     Restored UNITINFO and enable rosalina on safe_firm and disable arm11exceptions  and alos cut down wifi options on the luma config menu
     Added shortcuts:
-        Press start + select to toggle bottom screen (nice when you watch videos) inspired by This
-        Press A + B + X + Y + Start to instantly reboot the console. Useful in case of freeze, but don't complain if your sdcard get corrupted because of this.
+        Press start + select to toggle bottom screen (nice when you watch videos) inspired by This, limit on o2ds
+        , cause hardware register for up and down lcd are the same looking for new test though... 
+        Press A + B + X + Y + Start to instantly reboot the console. Useful in case of freeze, but don't complain if your sdcard get corrupted because of this. also this needs to be activated 
         Press Start on Rosalina menu to toggle wifi -> From here
         Press Select on Rosalina menu to toggle LEDs -> From this (and press Y to force blue led as a workaround when the battery is low)
     Added n3ds clock + L2 status in rosalina menu -> From here
@@ -25,11 +36,34 @@ Some of the code is inspired by NTR but most of it is a complete reimplementatio
     rosalina emulate also home button you can come the home menu without pressing it...
     Added permanent brightness calibration by Nutez -> From here
     Changed colors on config menu because why not
-    Continue running after a errdisp error happens (you can press the instant reboot combo to reboot if nothing works)
-    also extra_config menu (led always turn off (little broken for now)
+    Continue running after a errdisp error happens (you can press the instant reboot combo to reboot if nothing works needs to be activated in adavnced menu config.
     and new3ds title configurator so you can chose which game
+    extra config menu also changeable from godmode9 if you need to deactivate a feature.
+- twl patch for emunand
+  
+- update feature disable using /luma/noupdate.txt at least one byte.
+  
+- cid and otp(mainly for antiban) custom loading (/luma/otp.bin and /luma/nand_cid.bin) and also option to use another nand backup and also for using only emunand without sysnand(option hidden inside luma config.ini)
 
--Also added streaming in it juts cause why not, thanks to Byebyesky.
+- standby light turning off if you want
+
+- emunand bug fix  
+
+- also abilty to set lareyedfs path for game patching using a txt file in luma/titles/titleid directory of the sd card with specied path.
+
+- also added single screen backlight regulation
+
+- changed rosalina combo defsult is L+Up (Dpad), you can change it after in the config menu.(less buttons to be pressed, useful for broken buttons)
+
+- added logo.bin abilities to replace default 3ds app launch logo try it if you want.
+
+- rehid folder disable option 
+
+- added debug capabilities like Seledreams fork, thanks to you.
+
+- Also added streaming in it juts cause why not, thanks to Byebyesky.
+
+- autoboot in dsi mode will boot directly twilightmenu++
 
 ## Usage of the streaming capability
 
@@ -37,6 +71,13 @@ Some of the code is inspired by NTR but most of it is a complete reimplementatio
 2. Type the IP of your 3DS into the python script
 3. Install the dependencies with `pip3 install pygame pillow numpy`
 4. Start the script with `python3 streaming.py 4`
+- should even work with ntrview for wiiu:
+
+https://github.com/yawut/ntrview-wiiu
+
+or snickerstream on pc:
+
+https://github.com/RattletraPM/Snickerstream/releases
 
 (Click the image for a video demo)
 [![Click for video demo](preview.png)](https://youtu.be/SAhSV_xUGCc)
@@ -49,7 +90,7 @@ Some of the code is inspired by NTR but most of it is a complete reimplementatio
 It also allows you to run unauthorized ("homebrew") content by removing signature checks.
 To use it, you will need a console capable of running homebrew software on the Arm9 processor.
 
-Since v8.0, Luma3DS has its own in-game menu, triggerable by <kbd>L+Down+Select</kbd> (see the [release notes](https://github.com/LumaTeam/Luma3DS/releases/tag/v8.0)).
+Since v8.0, Luma3DS has its own in-game menu, triggerable by <kbd>L+Up</kbd> (see the [release notes](https://github.com/LumaTeam/Luma3DS/releases/tag/v8.0)).
 
 #
 ### Compiling
@@ -61,7 +102,7 @@ Since v8.0, Luma3DS has its own in-game menu, triggerable by <kbd>L+Down+Select<
 1. Clone the repository with `git clone https://github.com/LumaTeam/Luma3DS.git`
 2. Run `make`.
 
-    The produced `boot.firm` is meant to be copied to the root of your SD card for usage with Boot9Strap.
+    The produced `boot.firm` is meant to be copied to the root of your SD card for usage with Boot9Strap/fastboot3ds/godmode9.
 
 #
 ### Setup / Usage / Features
@@ -70,6 +111,7 @@ See https://github.com/LumaTeam/Luma3DS/wiki
 #
 ### Credits
 See https://github.com/LumaTeam/Luma3DS/wiki/Credits
+also added inside the cfw itself (thinking i have to add someone else, though don't remember the name 😅)
 
 #
 ### Licensing
