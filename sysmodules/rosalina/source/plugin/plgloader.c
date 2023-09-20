@@ -9,6 +9,7 @@
 #include "memory.h"
 #include "sleep.h"
 #include "task_runner.h"
+#include "plugin/plgloader.h"
 
 #define PLGLDR_VERSION (SYSTEM_VERSION(1, 0, 1))
 

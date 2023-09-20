@@ -20,6 +20,7 @@
 
 #include <stdint.h>
 #include <math.h>
+#include "redshift/colorramp.h"
 
 //#include "redshift/redshift.h"
 

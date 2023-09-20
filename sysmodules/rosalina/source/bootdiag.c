@@ -28,6 +28,7 @@
 #include "MyThread.h"
 #include "ifile.h"
 #include "fmt.h"
+#include "bootdiag.h"
 
 //#define BOOTDIAG_ENABLED
 #ifdef  BOOTDIAG_ENABLED

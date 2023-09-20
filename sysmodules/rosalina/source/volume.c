@@ -1,6 +1,7 @@
 #include <3ds.h>
 #include "draw.h"
 #include "menus.h"
+#include "volume.h"
 
 float Volume_ExtractVolume(int nul, int one, int slider)
 {
@@ -17,7 +18,7 @@ float Volume_ExtractVolume(int nul, int one, int slider)
         return 1.0F;
 }
 
-static void Volume_AdjustVolume(u8* out, int slider, float value)
+void Volume_AdjustVolume(u8* out, int slider, float value)
 {
     int smin = 0xFF;
     int smax = 0x00;

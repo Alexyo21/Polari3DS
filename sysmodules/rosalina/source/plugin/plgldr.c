@@ -2,6 +2,7 @@
 #include "plugin.h"
 #include <string.h>
 #include "csvc.h"
+#include "plugin/plgldr.h"
 
 static Handle   plgLdrHandle;
 static Handle   plgLdrArbiter;

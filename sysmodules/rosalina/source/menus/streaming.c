@@ -27,12 +27,12 @@
 #define BOTSIZE BOTW*HEIGHT
 #define TOPSIZE TOPW*HEIGHT
 
-void toggleGrayscale();
-void increaseBlockSize();
-void decreaseBlockSize();
-void toggleCompression();
-void closeRPHandle();
-void toggleCPUCopy();
+void toggleGrayscale(void);
+void increaseBlockSize(void);
+void decreaseBlockSize(void);
+void toggleCompression(void);
+void closeRPHandle(void);
+void toggleCPUCopy(void);
 
 Menu streamingMenu = {
     "Streaming",
@@ -70,29 +70,53 @@ bool userNoCompress = true;
 bool isNew3DS = false;
 u32 currentBlockSize = 8;
 
-void toggleCompression(){doCompress = !doCompress;}
-void toggleGrayscale() {isGraySacle = !isGraySacle;}
-void increaseBlockSize() {if(currentBlockSize < 32) currentBlockSize = currentBlockSize+4;}
-void decreaseBlockSize() {if(currentBlockSize > 4)currentBlockSize = currentBlockSize-4;}
-void toggleCPUCopy() {isCPUCopy = !isCPUCopy;}
+void toggleCompression(void)
+{
+doCompress = !doCompress;
+}
+
+void toggleGrayscale(void)
+{
+isGraySacle = !isGraySacle;
+}
+
+void increaseBlockSize(void)
+{
+if(currentBlockSize < 32)
+currentBlockSize = currentBlockSize+4;
+}
+
+void decreaseBlockSize(void)
+{
+if(currentBlockSize > 4)
+currentBlockSize = currentBlockSize-4;
+}
+
+void toggleCPUCopy(void)
+{
+isCPUCopy = !isCPUCopy;
+}
 
 
 //Thread functions
 void commandThreadMain(void);
-MyThread *commandCreateThread(void){
+MyThread *commandCreateThread(void)
+{
     if(R_FAILED(MyThread_Create(&testThread, commandThreadMain, testThreadStack, 0x4000, 0x10, CORE_SYSTEM)))
         svcBreak(USERBREAK_PANIC);
     return &testThread;
 }
 
 void testSendThreadTCPMain(void);
-MyThread *testSendCreateTCPThread(void){
+MyThread *testSendCreateTCPThread(void)
+{
     if(R_FAILED(MyThread_Create(&testSendThread, testSendThreadTCPMain, testSendThreadStack, 0x2000, 0x20, CORE_SYSTEM)))
         svcBreak(USERBREAK_PANIC);
     return &testSendThread;
 }
 
-void showNotN3DSMessage() {
+void showNotN3DSMessage(void)
+{
     Draw_Lock();
     Draw_ClearFramebuffer();
     Draw_FlushFramebuffer();
@@ -107,7 +131,8 @@ void showNotN3DSMessage() {
     } while(!(waitInput() & KEY_B) && !menuShouldExit);
 }
 
-void startMainThread() {
+void startMainThread(void)
+{
     APT_CheckNew3DS(&isNew3DS);
     if(!isNew3DS) {
         showNotN3DSMessage();
@@ -144,7 +169,8 @@ void startMainThread() {
     }
 }
 
-void endThread() {
+void endThread(void)
+{
     Result res = 1337;
     char buf[65];
     run = false;
@@ -178,7 +204,8 @@ u8 frameBufferCacheSecond[TOPSIZE*4];
 u8 frameBufferCacheSend[TOPSIZE*4];
 
 ///Pixel processing functions
-u32 makeGrayScale(bool isTop, u8 *fb, u32 bytePerPixel, u32 format) {
+u32 makeGrayScale(bool isTop, u8 *fb, u32 bytePerPixel, u32 format)
+{
     (void)format;
     u32 size = 0;
     if(isTop) size = TOPSIZE*bytePerPixel;
@@ -212,14 +239,15 @@ u32 makeGrayScale(bool isTop, u8 *fb, u32 bytePerPixel, u32 format) {
 }
 
 //Copies the Frame Buffer via the CPU
-void copyFrameBufCPU(u8 * dest, bool isTop, u32 size) {
+void copyFrameBufCPU(u8 * dest, bool isTop, u32 size)
+{
     u32 pa = Draw_GetCurrentFramebufferAddress(isTop, true);
     u32 *addr = (u32 *)PA_PTR(pa);
     memcpy(dest, addr, size);
 }
 
-void sendFrameBufferTCP(struct sock_ctx *ctx, bool isTop, u8 *framebufferCache,
-                        u32 bytePerPixel, GSPGPU_FramebufferFormat format, u32 fbsize) {
+void sendFrameBufferTCP(struct sock_ctx *ctx, bool isTop, u8 *framebufferCache, u32 bytePerPixel, GSPGPU_FramebufferFormat format, u32 fbsize)
+{
     (void)bytePerPixel;
     char buf[9] = { 0x13, 0x37, isTop, (u8)currentBlockSize, (char)format,
                     (char)(fbsize >> 24), (char)(fbsize >> 16),
@@ -229,8 +257,8 @@ void sendFrameBufferTCP(struct sock_ctx *ctx, bool isTop, u8 *framebufferCache,
 }
 
 //Just playing around with something
-int compressFrame( u8 *framebufferCache, u8 *lastFramebufferCache,
-                    u8 *sendBuffer, u32 blockSize, u32 bytePerPixel) {
+int compressFrame( u8 *framebufferCache, u8 *lastFramebufferCache, u8 *sendBuffer, u32 blockSize, u32 bytePerPixel)
+{
 
     u32 size = isTop ? TOPSIZE*bytePerPixel : BOTSIZE*bytePerPixel;
     u32 dataSize = 0;
@@ -266,20 +294,23 @@ u32 rpGameFCRAMBase = 0;
 
 
 //Handle functions
-void closeRPHandle() {
+void closeRPHandle(void)
+{
     svcCloseHandle(rpHandleGame);
     rpHandleGame = 0;
     rpGameFCRAMBase = 0;
 }
 
 //Prevent system from locking up when switching processes (NTR hanging at the 3DS logo)
-void closeHandleIfProcessHangs() {
+void closeHandleIfProcessHangs(void)
+{
     if(svcWaitSynchronization(rpHandleGame, 0) == 0) {
         closeRPHandle();
     }
 }
 
-Handle rpGetGameHandle() {
+Handle rpGetGameHandle() 
+{
 	Handle hProcess;
     s32 processCount;
     u32 processIDs[50];
@@ -312,7 +343,8 @@ Handle rpGetGameHandle() {
 }
 
 //Find buffer
-int isInVRAM(u32 phys) {
+int isInVRAM(u32 phys)
+{
 	if (phys >= 0x18000000) {
 		if (phys < 0x18000000 + 0x00600000) {
 			return 1;
@@ -321,7 +353,8 @@ int isInVRAM(u32 phys) {
 	return 0;
 }
 
-int isInFCRAM(u32 phys) {
+int isInFCRAM(u32 phys)
+{
 	if (phys >= 0x20000000) {
 		if (phys < 0x20000000 + 0x10000000) {
 			return 1;
@@ -330,7 +363,8 @@ int isInFCRAM(u32 phys) {
 	return 0;
 }
 
-void sendDebug(bool isTop, struct sock_ctx *ctx) {
+void sendDebug(bool isTop, struct sock_ctx *ctx)
+{
     GSPGPU_CaptureInfo displays;
     GSPGPU_ImportDisplayCaptureInfo(&displays);
     
@@ -349,7 +383,8 @@ void sendDebug(bool isTop, struct sock_ctx *ctx) {
 }
 
 //Copies the Frame Buffer via DMA
-void copyFrameBufDMA(u8 * dest, bool isTop, u32 size) { 
+void copyFrameBufDMA(u8 * dest, bool isTop, u32 size)
+{ 
     DmaDeviceConfig subcfg;
     subcfg.deviceId = 0xFF;                // Don't care copy from ram
     subcfg.allowedAlignments = 1 | 2 | 4 | 8; // allow all
@@ -389,7 +424,8 @@ void copyFrameBufDMA(u8 * dest, bool isTop, u32 size) {
 }
 
 //To skip blank pixels in the Framebuffer (e.g. Mario Kart)
-void skipBytes(u32 screenWidth, u8 *src, u8 *dest, u32 bytesInColumn, u32 blankInColumn) {
+void skipBytes(u32 screenWidth, u8 *src, u8 *dest, u32 bytesInColumn, u32 blankInColumn)
+{
     for(u32 i = 0; i < screenWidth; i++) {
         for(u32 j = 0; j < bytesInColumn/4; j++) {
             ((u32*)dest)[j] = ((u32*)src)[j];
@@ -400,7 +436,8 @@ void skipBytes(u32 screenWidth, u8 *src, u8 *dest, u32 bytesInColumn, u32 blankI
 }
 
 //Main Remoteplay Function
-void remotePlay(struct sock_ctx *ctx, bool isTop) {
+void remotePlay(struct sock_ctx *ctx, bool isTop)
+{
     u8 *fbref = isSecondFrameBuffer ? frameBufferCacheSecond : frameBufferCacheFirst;
     u8 *lastFrame = isSecondFrameBuffer ? frameBufferCacheFirst : frameBufferCacheSecond;
 
@@ -456,14 +493,16 @@ void remotePlay(struct sock_ctx *ctx, bool isTop) {
 }
 
 //Networking functions
-int acceptClient(struct sock_ctx *ctx) {
+int acceptClient(struct sock_ctx *ctx)
+{
     char welcome[] = "Connection was accepted!";
     socSend(ctx->sockfd, welcome, sizeof(welcome), 0);
     return 0;
 }
 
 //Get the current client connection
-struct sock_ctx *allocClient(struct sock_server *server, u16 port) {
+struct sock_ctx *allocClient(struct sock_server *server, u16 port)
+{
     if(port < PORT || port >= PORT + sizeof(server->serv_ctxs) / sizeof(sock_ctx)){
         return NULL;
     }
@@ -471,19 +510,22 @@ struct sock_ctx *allocClient(struct sock_server *server, u16 port) {
     return ctx;
 }
 
-int closeConnection(struct sock_ctx *ctx) {
+int closeConnection(struct sock_ctx *ctx)
+{
     (void)ctx;
     return 0;
 }
 
-void releaseClient(struct sock_server *server, struct sock_ctx *ctx) {
+void releaseClient(struct sock_server *server, struct sock_ctx *ctx)
+{
     server->running = false;
     ctx->should_close = true;
     shouldStop = true;
 }
 
 //Process incoming data
-int handleData(struct sock_ctx *ctx) {
+int handleData(struct sock_ctx *ctx)
+{
     char buf[4] = {0, 0, 0, 0};
 
     int r = socRecv(ctx->sockfd, buf, sizeof(buf), 0);
@@ -501,7 +543,8 @@ int handleData(struct sock_ctx *ctx) {
 }
 
 //Main Entrypoint
-void commandThreadMain(void) {
+void commandThreadMain(void)
+{
     run = true;
         Result ret = 0;
         ret = server_init(&serv);

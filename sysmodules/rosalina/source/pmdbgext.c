@@ -9,6 +9,7 @@
 #include <3ds/synchronization.h>
 #include <3ds/services/pmdbg.h>
 #include <3ds/ipc.h>
+#include "pmdbgext.h"
 
 Result PMDBG_GetCurrentAppInfo(FS_ProgramInfo *outProgramInfo, u32 *outPid, u32 *outLaunchFlags)
 {

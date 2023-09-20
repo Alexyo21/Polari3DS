@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "plugin.h"
 #include "ifile.h"
+#include "plugin/3gx.h"
 #include "utils.h"
 
 u32  g_loadExeArgs[0x4];

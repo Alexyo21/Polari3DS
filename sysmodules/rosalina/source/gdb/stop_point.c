@@ -9,6 +9,7 @@
 #include "gdb/net.h"
 #include "gdb/watchpoints.h"
 #include "gdb/breakpoints.h"
+#include "gdb/stop_point.h"
 
 GDB_DECLARE_HANDLER(ToggleStopPoint)
 {
