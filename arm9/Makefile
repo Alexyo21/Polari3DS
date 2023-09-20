@@ -9,7 +9,7 @@ endif
 TOPDIR ?= $(CURDIR)
 include $(DEVKITARM)/base_rules
 
-export REVISION			:=	1.0.0
+export REVISION			:=	v1.0.0
 export VERSION_MAJOR	:=	1
 export VERSION_MINOR	:=	0
 export VERSION_BUILD	:=	0

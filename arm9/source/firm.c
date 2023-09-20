@@ -648,8 +648,6 @@ u32 patchTwlFirm(u32 firmVersion, FirmwareSource nandType, bool loadFromStorage,
 
     ret += patchLgyK11(section1, section1Size, section2, section2Size);
 
-    ret += patchLgyK11(section1, section1Size, section2, section2Size);
-
     // Also patch TwlBg here
     mergeSection0(TWL_FIRM, 0, loadFromStorage);
     firm->section[0].size = 0;
