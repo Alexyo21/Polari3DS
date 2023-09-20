@@ -4,7 +4,7 @@
 // general memory areas
 
 #define __ITCM_ADDR     0x01FF8000
-#define __ITCM_LEN      0x00005000
+#define __ITCM_LEN      0x00008000
 
 #define __DTCM_ADDR     0x30008000
 #define __DTCM_LEN      0x00004000
