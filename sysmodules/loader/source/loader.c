@@ -5,6 +5,7 @@
 #include "ifile.h"
 #include "util.h"
 #include "hbldr.h"
+#include "loader.h"
 
 #define SYSMODULE_CXI_COOKIE_MASK 0xEEEE000000000000ull
 
