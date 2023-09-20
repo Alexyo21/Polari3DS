@@ -31,8 +31,10 @@ DEFINES :=	-DARM11 -D__3DS__
 
 ifeq ($(BUILD_FOR_GDB),1)
 	OPTFLAGS := -Og -fno-fast-math
+	UFLAGS := 
 else
 	OPTFLAGS := -O2 -fomit-frame-pointer -ffast-math
+	UFLAGS := -fno-rtti -fno-exceptions
 endif
 
 FALSEPOSITIVES := -Wno-array-bounds -Wno-stringop-overflow -Wno-stringop-overread
@@ -43,12 +45,6 @@ CFLAGS	:=	  -g -std=gnu11 -Wall -Wextra -Werror -mword-relocations \
 CFLAGS	+=	$(INCLUDE)
 
 CXXFLAGS	:= $(CFLAGS) -std=gnu++11
-
-ifeq ($(BUILD_FOR_GDB),1)
-	UFLAGS := 
-else
-	UFLAGS := -fno-rtti -fno-exceptions
-endif
 
 CXXFLAGS        += $(UFLAGS)
 

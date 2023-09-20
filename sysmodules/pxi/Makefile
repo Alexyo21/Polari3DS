@@ -30,9 +30,11 @@ DEFINES :=	-D__3DS__
 
 ifeq ($(BUILD_FOR_GDB),1)
 	OPTFLAGS := -Og -fno-fast-math
+	UFLAGS := 
 	LIBS := -lctrud -lm
 else
 	OPTFLAGS := -O2 -fomit-frame-pointer -ffast-math
+	UFLAGS := -fno-rtti -fno-exceptions
 	LIBS := -lctru -lm
 endif
 
@@ -53,12 +55,6 @@ CFLAGS	:=\
 CFLAGS	+=	$(INCLUDE)
 
 CXXFLAGS	:= $(CFLAGS) -std=gnu++11
-
-ifeq ($(BUILD_FOR_GDB),1)
-	UFLAGS := 
-else
-	UFLAGS := -fno-rtti -fno-exceptions
-endif
 
 CXXFLAGS        += $(UFLAGS)
 

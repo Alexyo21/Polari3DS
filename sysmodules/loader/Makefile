@@ -43,9 +43,11 @@ DEFINES += 	$(EXTRA_DEFINES)
 
 ifeq ($(BUILD_FOR_GDB),1)
 	OPTFLAGS := -Og -fno-fast-math
+	UFLAGS := 
 	LIBS := -lctrud -lm
 else
 	OPTFLAGS := -O2 -fomit-frame-pointer -ffast-math
+	UFLAGS := -fno-rtti -fno-exceptions
 	LIBS := -lctru -lm
 endif
 
@@ -65,12 +67,6 @@ COMMON_FLAGS =\
 CFLAGS		:= -std=gnu11 $(COMMON_FLAGS)
 
 CXXFLAGS	:= -std=gnu++17 $(COMMON_FLAGS)
-
-ifeq ($(BUILD_FOR_GDB),1)
-	UFLAGS := 
-else
-	UFLAGS := -fno-rtti -fno-exceptions
-endif
 
 CXXFLAGS        += $(UFLAGS)
 
