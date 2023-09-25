@@ -68,7 +68,7 @@ Some of the code is inspired by NTR but most of it is a complete reimplementatio
 
 ## Usage of the streaming capability
 
-1. Go to the rosalina menu->streaming->start strea
+1. Go to the rosalina menu->streaming->start streaming
 2. Type the IP of your 3DS into the python script
 3. Install the dependencies with `pip3 install pygame pillow numpy`
 4. Start the script with `python3 streaming.py 4`
