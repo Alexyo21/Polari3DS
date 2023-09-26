@@ -2,7 +2,7 @@
 *Noob-proof (N)3DS "Custom Firmware"*
 
 discord group in case of needing:
-https://discord.gg/3dq8d2nb
+https://discord.gg/ZpMxx8cJ
 
 ## next update 
 next build probably will better fix volume software control, custom cid patch for process9(help me😰) and nighshift remake;
