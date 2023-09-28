@@ -31,4 +31,4 @@ jobs:
       with:
         name: CustomLuma3DS-nightly
         path: boot.firm
-              boot.3dsx
+        path: boot.3dsx
