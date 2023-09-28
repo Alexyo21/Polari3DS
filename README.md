@@ -102,6 +102,7 @@ Since v8.0, Luma3DS has its own in-game menu, triggerable by <kbd>L+Up</kbd> (se
     4. Up-to-date devkitARM+libctru
 1. Clone the repository with `git clone https://github.com/LumaTeam/Luma3DS.git`
 2. Run `make`.
+3. or grab the artifact on build ci(nightly).
 
     The produced `boot.firm` is meant to be copied to the root of your SD card for usage with Boot9Strap/fastboot3ds/godmode9.
 
