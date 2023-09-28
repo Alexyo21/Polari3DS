@@ -29,5 +29,5 @@ jobs:
       run: make -j$(nproc --all)
     - uses: actions/upload-artifact@v3
       with:
-        name: CustomLuma3DS
+        name: CustomLuma3DS-nightly
         path: boot.firm
