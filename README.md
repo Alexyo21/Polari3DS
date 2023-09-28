@@ -110,6 +110,7 @@ Since v8.0, Luma3DS has its own in-game menu, triggerable by <kbd>L+Up</kbd> (se
 ### Setup / Usage / Features
 See https://github.com/LumaTeam/Luma3DS/wiki
 
+https://gbatemp.net/threads/remake-unofficial-luma3ds.637949/
 #
 ### Credits
 See https://github.com/LumaTeam/Luma3DS/wiki/Credits
