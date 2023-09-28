@@ -26,7 +26,7 @@ jobs:
     - name: safedir
       run: git config --system --add safe.directory /__w/Luma3DS/Luma3DS
     - name: Build
-      run: make -j$(nproc --all)
+      run: make release -j$(nproc --all)
     - uses: actions/upload-artifact@v3
       with:
         name: CustomLuma3DS-nightly
