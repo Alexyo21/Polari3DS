@@ -803,7 +803,7 @@ void writeConfig(bool isConfigOptions)
     bool updateMcu, updateIni;
 
     if (needConfig == CREATE_CONFIGURATION)
-
+    {
         updateMcu = !isConfigOptions; // We've already committed it once (if it wasn't initialized)
         updateIni = isConfigOptions;
         needConfig = MODIFY_CONFIGURATION;
