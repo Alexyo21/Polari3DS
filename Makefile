@@ -13,7 +13,7 @@ export LOADER_ENABLE_PASLR ?= 1
 export NO_COPYING_TO_NAND ?= 0
 
 # Build with O0 & frame pointer information for use with GDB
-export BUILD_FOR_GDB ?= 0
+export BUILD_FOR_GDB ?= 1
 
 # Default 3DSX TitleID for hb:ldr
 export HBLDR_DEFAULT_3DSX_TID ?= 000400000D921E00
@@ -22,7 +22,7 @@ export HBLDR_DEFAULT_3DSX_TID ?= 000400000D921E00
 export HBLDR_DEFAULT_3DSX_TITLE_NAME ?= "hblauncher_loader"
 
 NAME		:=	$(notdir $(CURDIR))
-REVISION	:=	1.0.0
+REVISION	:=	v1.0.1
 
 SUBFOLDERS	:=	sysmodules arm11 arm9 k11_extension
 
