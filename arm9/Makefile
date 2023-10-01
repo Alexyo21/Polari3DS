@@ -9,10 +9,10 @@ endif
 TOPDIR ?= $(CURDIR)
 include $(DEVKITARM)/base_rules
 
-export REVISION			:=	v1.0.0
+export REVISION			:=	v1.0.1
 export VERSION_MAJOR	:=	1
 export VERSION_MINOR	:=	0
-export VERSION_BUILD	:=	0
+export VERSION_BUILD	:=	1
 export COMMIT			:=	$(shell git rev-parse --short=8 HEAD)
 export IS_RELEASE		:=	1
 
