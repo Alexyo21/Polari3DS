@@ -84,25 +84,82 @@ typedef struct _Arm9ItcmRsaPrivateKey {
 STATIC_ASSERT(sizeof(Arm9ItcmRsaPrivateKey) == 512);
 
 typedef struct _NandInfo {
-  // nand magic
-    u32 magic;
-  // nand cid info  
+  // nand initialialization
+    bool initialized;
+  // General SD card flag (including SDHC/SDXC). Set when OP_COND APP CMDs succeed.  
+    bool isMmc;
+  // General SD card flag (including SDHC/SDXC). Set when OP_COND APP CMDs succeed. 
+    bool isSd;
+  // CCS bit from OCR. Set for SDHC and SDXC. 
+    bool isSdhc;
+  // nand cid info, In TMIO response format.  
     u32 nandCid[4];
-  // middleoffset generic stiil to identify  
-    u8 middleOffset[48];
-  // total nand sectors
-    u32 totalNandSectors;
-  // final offset to identify yet
-    u8 finalOffset[28];
+  // In TMIO response format.  
+    u32 csd[4];
+  // ???
+    u32 ocr;
+  // ???
+    u64 scr;
+  // ???
+    u16 rca;
+  // ???
+    u8 rsvd[2];
+  // Last driver result/error code.
+    u32 result;
+  // Last R1 card status.
+    u32 cardStatus;
+  // something regarding sd/emmc clock??? 
+    u16 sd_clk_ctrl;
+  // some sd option clock maybe or readonly??? 
+    u16 sd_option;
+  // (SD) Set when CSD v2.0 (NOT v3.0) or (MMC) when the capacity from CSD is higher than 2 GiB.  
+    bool highCapacity;
+  // ??? 
+    u8 rsvd2[3];
+  // Capacity in sectors.
+    u32 sectors;
+  // Capacity in sectors of SD protected area from 512 bit SD status. 0 for (e)MMC.
+    u32 sdProtSectors;
+  
+  // Failed init attempts?
+    u32 initFails;
+  // Init fail result? Same format as result?
+    u32 initFailResult;
+  // Failed read/write attempts?
+    u32 rwFails;
+  // Read/write fail result? Same format as result?  
+    u32 rwFailResult;
+    
+  // TMIO controller number (1-based).
+    u32 controller;
+  // TMIO port number. 
+    u32 portNum;
 } __attribute__((__packed__)) NandInfo;
 
-#define NANDINFO_MAGIC 0x01010000
-
-STATIC_ASSERT(offsetof(NandInfo, magic) == 0x00);
+STATIC_ASSERT(offsetof(NandInfo, initialized) == 0x00);
+STATIC_ASSERT(offsetof(NandInfo, isMmc) == 0x01);
+STATIC_ASSERT(offsetof(NandInfo, isSd) == 0x02);
+STATIC_ASSERT(offsetof(NandInfo, isSdhc) == 0x03);
 STATIC_ASSERT(offsetof(NandInfo, nandCid) == 0x04);
-STATIC_ASSERT(offsetof(NandInfo, middleOffset) == 0x14);
-STATIC_ASSERT(offsetof(NandInfo, totalNandSectors) == 0x44);
-STATIC_ASSERT(offsetof(NandInfo, finalOffset) == 0x48);
+STATIC_ASSERT(offsetof(NandInfo, csd) == 0x14);
+STATIC_ASSERT(offsetof(NandInfo, ocr) == 0x24);
+STATIC_ASSERT(offsetof(NandInfo, scr) == 0x28);
+STATIC_ASSERT(offsetof(NandInfo, rca) == 0x30);
+STATIC_ASSERT(offsetof(NandInfo, rsvd) == 0x32);
+STATIC_ASSERT(offsetof(NandInfo, result) == 0x34);
+STATIC_ASSERT(offsetof(NandInfo, cardStatus) == 0x38);
+STATIC_ASSERT(offsetof(NandInfo, sd_clk_ctrl) == 0x3C);
+STATIC_ASSERT(offsetof(NandInfo, sd_option) == 0x3E);
+STATIC_ASSERT(offsetof(NandInfo, highCapacity) == 0x40);
+STATIC_ASSERT(offsetof(NandInfo, rsvd2) == 0x41);
+STATIC_ASSERT(offsetof(NandInfo, sectors) == 0x44);
+STATIC_ASSERT(offsetof(NandInfo, sdProtSectors) == 0x48);
+STATIC_ASSERT(offsetof(NandInfo, initFails) == 0x4C);
+STATIC_ASSERT(offsetof(NandInfo, initFailResult) == 0x50);
+STATIC_ASSERT(offsetof(NandInfo, rwFails) == 0x54);
+STATIC_ASSERT(offsetof(NandInfo, rwFailResult) == 0x58);
+STATIC_ASSERT(offsetof(NandInfo, controller) == 0x5C);
+STATIC_ASSERT(offsetof(NandInfo, portNum) == 0x60);
 STATIC_ASSERT(sizeof(NandInfo) == 100);
 
 // Structure of the data in ARM9 ITCM, filled in by boot9.
