@@ -2,7 +2,7 @@
 *Noob-proof (N)3DS "Custom Firmware"*
 
  here the nightly build:
-https://nightly.link/Alexyo21/CustomLuma3DS/actions/artifacts/959688150.zip
+https://nightly.link/Alexyo21/CustomLuma3DS/workflows/build/master/CustomLuma3DS-nightly.zip
 
 discord group in case of needing:
 https://discord.gg/ZpMxx8cJ
