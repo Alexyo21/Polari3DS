@@ -69,6 +69,7 @@ endif
 DEFINES += 	$(EXTRA_DEFINES)
 
 ifeq ($(BUILD_FOR_GDB),1)
+ EXTRA_DEFINES += -DBUILD_FOR_GDB
 	OPTFLAGS := -Og -fno-fast-math
 	UFLAGS := 
 else
