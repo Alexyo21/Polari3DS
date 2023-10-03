@@ -60,7 +60,7 @@ Some of the code is inspired by NTR but most of it is a complete reimplementatio
 
 - also added single screen backlight regulation
 
-- changed rosalina combo defsult is L+Up (Dpad), you can change it after in the config menu.(less buttons to be pressed, useful for broken buttons)
+- changed rosalina combo defsult is L+Up (Dpad),instead release L+Down+Select you can change it after in the config menu.(less buttons to be pressed, useful for broken buttons)
 
 - added logo.bin abilities to replace default 3ds app launch logo try it if you want.
 
