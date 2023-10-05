@@ -7,7 +7,7 @@ here the nightly build:
 https://nightly.link/Alexyo21/CustomLuma3DS/workflows/build/master/CustomLuma3DS-nightly.zip
 
 discord group in case of needing:
-https://discord.gg/ZpMxx8cJ
+https://discord.gg/STWXV7jz
 
 ## next update 
 next build probably will better fix volume software control, custom cid patch for process9(help me😰) and emunand fix and also screenshot improving... and
