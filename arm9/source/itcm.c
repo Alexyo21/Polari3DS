@@ -11,7 +11,6 @@ void patchITCM(void)
 {
     Otp otp;    
     u32 otpSize = fileRead(&otp, OTP_PATH, sizeof(Otp));
-    // u32 otpSize = fvx_qread(&otp, OTP_PATH, sizeof(Otp), &fsize);
 
     // Error checking
     if (otpSize != sizeof(Otp))
