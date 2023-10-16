@@ -66,16 +66,16 @@ ifeq ($(NO_COPYING_TO_NAND),1)
         EXTRA_DEFINES +=  	-DNO_COPYING_TO_NAND=1
 endif
 
-DEFINES += 	$(EXTRA_DEFINES)
-
 ifeq ($(BUILD_FOR_GDB),1)
- EXTRA_DEFINES += -DBUILD_FOR_GDB=1
+        EXTRA_DEFINES += -DBUILD_FOR_GDB=1
 	OPTFLAGS := -Og -fno-fast-math
 	UFLAGS := 
 else
 	OPTFLAGS := -O2 -fomit-frame-pointer -ffast-math
 	UFLAGS := -fno-rtti -fno-exceptions
 endif
+
+DEFINES += 	$(EXTRA_DEFINES)
 
 FALSEPOSITIVES := -Wno-array-bounds -Wno-stringop-overflow -Wno-stringop-overread
 CFLAGS	:=	-g -std=gnu11 -Wall -Wextra -Werror -mword-relocations \
