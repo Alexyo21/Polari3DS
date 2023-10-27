@@ -73,7 +73,7 @@ Some of the code is inspired by NTR but most of it is a complete reimplementatio
 
 - added debug capabilities like Seledreams fork, thanks to you.
 
-- Also added streaming in it juts cause why not, thanks to Byebyesky.
+- Also added streaming in it just cause why not, thanks to Byebyesky.
 
 - autoboot in dsi mode will boot directly twilightmenu++
 
