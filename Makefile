@@ -6,12 +6,6 @@ endif
 # Dangerous. Don't enable this unless you know what you're doing!
 export BUILD_FOR_EXPLOIT_DEV ?= 0
 
-# Build with PASLR enabled, i think you should not enable this...
-export LOADER_ENABLE_PASLR ?= 1
-
-# Disable copying firm to ctrnand useful for dev but for end-user
-export NO_COPYING_TO_NAND ?= 0
-
 # Build with O0 & frame pointer information for use with GDB
 export BUILD_FOR_GDB ?= 0
 
@@ -22,7 +16,7 @@ export HBLDR_DEFAULT_3DSX_TID ?= 000400000D921E00
 export HBLDR_DEFAULT_3DSX_TITLE_NAME ?= "hblauncher_loader"
 
 NAME		:=	$(notdir $(CURDIR))
-REVISION	:=	v1.0.1
+REVISION	:=	$(shell git describe --tags --match v[0-9]* --abbrev=8 | sed 's/-[0-9]*-g/-/')
 
 SUBFOLDERS	:=	sysmodules arm11 arm9 k11_extension
 
@@ -46,7 +40,7 @@ boot.firm:	$(SUBFOLDERS)
 	@echo built... $(notdir $@)
 
 boot.3dsx:
-	@curl -sSfLO "https://github.com/Alexyo21/the-pirate-launcher/releases/latest/download/$@"
+	@curl -sSfLO "https://github.com/fincs/new-hbmenu/releases/latest/download/$@"
 	@echo downloaded... $(notdir $@)
 
 $(SUBFOLDERS):
