@@ -54,8 +54,8 @@ struct sock_ctx *cli;
 u16 PORT = 4957;
 static MyThread testThread;
 static MyThread testSendThread;
-static u8 ALIGN(8) testThreadStack[0x4000];
-static u8 ALIGN(8) testSendThreadStack[0x4000];
+static u8 CTR_ALIGN(8) testThreadStack[0x4000];
+static u8 CTR_ALIGN(8) testSendThreadStack[0x4000];
 
 Handle sendUDPStarted;
 bool isStarted = false;
