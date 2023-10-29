@@ -5,7 +5,7 @@
 
 #define _3GX_MAGIC (0x3230303024584733) /* "3GX$0002" */
 
-typedef struct PACKED
+typedef struct CTR_PACKED
 {
     u32             authorLen;
     const char*     authorMsg;
@@ -29,20 +29,20 @@ typedef struct PACKED
     u32             builtInSwapSaveLoadArgs[4];
 } _3gx_Infos;
 
-typedef struct PACKED
+typedef struct CTR_PACKED
 {
     u32             count;
     u32           * titles;
 }   _3gx_Targets;
 
-typedef struct PACKED
+typedef struct CTR_PACKED
 {
     u32             nbSymbols;
     u32             symbolsOffset;
     u32             nameTableOffset;
 }   _3gx_Symtable;
 
-typedef struct PACKED
+typedef struct CTR_PACKED
 {
     u32             codeOffset;
     u32             rodataOffset;
@@ -56,7 +56,7 @@ typedef struct PACKED
     u32             swapLoadFuncOffset; // NOP terminated
 } _3gx_Executable;
 
-typedef struct PACKED
+typedef struct CTR_PACKED
 {
     u64             magic;
     u32             version;
