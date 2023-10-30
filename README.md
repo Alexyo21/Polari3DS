@@ -20,6 +20,8 @@ and
 
 twl patch redirection aside
 
+https://github.com/Alexyo21/twl_firm_patcher
+
 the release build are not synced with the latest commit so if you want to see the latest changes you know how to do it
 
 ## What is this fork
