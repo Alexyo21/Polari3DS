@@ -13,7 +13,7 @@ https://discord.com/invite/P5rA2MrB
 next build probably will:
 * better fix volume software control;
 * custom cid patch for process9(help me😰);
-* emunand fix;
+* emunand fix(maybe);
 * and also screenshot improving... 
 and
 * next time again... nighshift remake;
