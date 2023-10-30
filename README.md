@@ -11,7 +11,7 @@ https://discord.com/invite/P5rA2MrB
 
 ## next update 
 next build probably will:
-* better fix volume software control;
+* better fix volume software control, need more codec docs.
 * custom cid patch for process9(testing)
 * emunand fix(maybe done);
 * and also screenshot improving... 
