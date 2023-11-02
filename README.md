@@ -11,11 +11,12 @@ https://discord.com/invite/P5rA2MrB
 
 ## next update 
 next build probably will:
-* better fix volume software control, need more codec docs.
+
 * custom cid patch for process9(testing)
-* emunand fix(maybe done);
+* emunand fix(maybe done) and testing(may take a while...);
 * and also screenshot improving... 
 and
+* rewrite volume software control using codec, need more codec docs.
 * next time again... nighshift remake;
 * gateway sysnand support🤔
 
