@@ -36,6 +36,7 @@
 #include "sleep.h"
 #include "luma_config.h"
 #include "luma_shared_config.h"
+#include "menus/chainloader.h"
 
 #define HID_PAD           (REG32(0x10146000) ^ 0xFFF)
 
