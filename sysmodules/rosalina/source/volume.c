@@ -156,7 +156,7 @@ void Volume_ControlVolume(void)
         if (pressed & KEY_B)
             return;
     }
-    while (!menuShouldExit);
+    while (!(waitInput() & KEY_B) && !menuShouldExit);
 
     svcCloseHandle(*mcuHwcHandlePtr);
 }

@@ -50,6 +50,7 @@
 #include "pmdbgext.h"
 #include "menus/quick_switchers.h"
 #include "menus/streaming.h"
+#include "menus/chainloader.h"
 #include "config_template_ini.h"
 #include "configExtra_ini.h"
 
