@@ -57,6 +57,8 @@ Some of the code is inspired by NTR but most of it is a complete reimplementatio
     and new3ds title configurator so you can chose which game
     extra config menu also changeable from godmode9 if you need to deactivate a feature.
 - twl patch for emunand
+
+- max money (3ds coins) from rosalina thanks to gruetzig
   
 - update feature disable using /luma/noupdate.txt at least one byte.
   
