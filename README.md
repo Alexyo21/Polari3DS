@@ -16,8 +16,9 @@ next build probably will:
 * emunand fix(maybe done) and testing(may take a while...);
 * and also screenshot improving... 
 and
+Next time again...
 * rewrite volume software control using codec, need more codec docs.
-* next time again... nighshift remake;
+*  nighshift remake;
 * gateway sysnand support🤔
 
 twl patch redirection aside
