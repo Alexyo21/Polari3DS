@@ -1,6 +1,7 @@
 @ Patch by delebile
 
 .section .data.romfsRedirPatch, "aw", %progbits
+.arm
 .align 4
 
 .global romfsRedirPatch
