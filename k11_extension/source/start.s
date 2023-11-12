@@ -24,6 +24,7 @@
 
 .section .text.start, "ax", %progbits
 .balign 4
+.arm
 .global _start
 _start:
     b start
