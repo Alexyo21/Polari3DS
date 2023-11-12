@@ -24,10 +24,11 @@
 
 .section .text.start, "ax", %progbits
 .align 4
+.arm
 .global _start
 _start:
     @ Disable interrupts and switch to supervisor mode (also clear flags)
-    msr cpsr_cxsf, #0xD3
+    msr cpsr_cxsf, #0xDF
 
     @ Check if r0-r2 are 0 (r0-sp are supposed to be 0), and for regions 0, 5 and 7 of the MPU config
     @ This is not foolproof but should work well enough
