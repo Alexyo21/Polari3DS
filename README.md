@@ -13,7 +13,7 @@ https://discord.com/invite/eCJQGuHr
 next build probably will:
 
 * custom cid patch for process9(testing)
-* emunand fix(maybe done) and testing(may take a while...);
+
 * and also screenshot improving... 
 and
 Next time again...
