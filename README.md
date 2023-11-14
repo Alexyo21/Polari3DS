@@ -30,7 +30,7 @@ the release build are not synced with the latest commit so if you want to see th
 
 ## What is this fork
 for debug build please remember to change also the sysmodule rsf to true forcedebug and false disable debug.
-also set "build_gdb" to 1 and "no_nandcopy" to 1 so the boot ferm won't be transfered to the nand ctr and compile with "make all", not "release".
+also set "build_gdb" to 1 and "no_nandcopy" to 1 so the boot firm won't be transfered to the nand ctr and compile with "make all", not "release".
 if you choose to download the one in release section, remember to put the noupdate.txt in luma folder.
 Many of you probably know the NTR CFW that enabled streaming the 3DS' screen to the computer over the debugger.  
 This fork implements this functionality into rosalina.  
