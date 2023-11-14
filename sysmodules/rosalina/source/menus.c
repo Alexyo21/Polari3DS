@@ -201,9 +201,13 @@ void RosalinaMenu_ShowCredits(void)
                 "  Luma3DS contributors, libctru contributors,\n"
                 "  and other people.\n\n"
                 "  Credits for this fork:\n"
-                "  DullPointer, Cooolgamer, PabloMK7,\n"
+                "  DullPointer, Cooolgamer, PabloMK7, D0k3,\n"
                 "  ByebyeSky, Sono, Nutez, Core2Extreme\n"
-                "  and other people"
+                "  Peach, Nikki, truedread, Aspargas2, Peppe,\n"
+                "  Simo, Manuele and all the people in his\n"
+                "  Homebrew Galaxy group and all the people\n"
+                "  in godmode9 group for their guidance\n"
+                "  and a lot of others people more"
             ));
 
         Draw_FlushFramebuffer();
