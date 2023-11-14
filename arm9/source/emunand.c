@@ -196,7 +196,8 @@ u32 patchEmuNand(u8 *process9Offset, u32 process9Size, u32 firmVersion, bool twl
     if(!ret) emunandPatchSdmmcStructPtr = sdmmc;
 
     //Add EmuNAND hooks
-    ret += patchNandRw(process9Offset, process9Size, (u32)emunandPatch);
+    u32 offsetAllign = (u32)(emunandPatch) | 1;
+    ret += patchNandRw(process9Offset, process9Size, offsetAllign);
 
     return ret;
 }

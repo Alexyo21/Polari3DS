@@ -1008,3 +1008,22 @@ u32 patchNandInit(u8 *pos, u32 size)
     
     return 0;
 }
+
+u32 patchCidInit(u8 *pos, u32 size)
+{
+    static const u8 pattern[] = {0x31, 0x00, 0x38, 0x00, 0x02, 0xAA};
+    
+    u16 *off = (u16 *)memsearch(pos, pattern, size, sizeof(pattern));
+    
+    if (off == NULL) return 1;
+    
+    // off[5] = 0x0039; //mov ro, r4
+   // off[7] = 0xe7e6; //mov ro, r4
+  //  off[7] = 0xb570; // movs r0, #0
+   // off[8] = 0x2001; // movs r0, #0
+    off[9] = 0x2700; // movs r0, #0
+    off[10] = 0xe7e3; // b -54 ; return
+   // off[11] = 0xe001; // b -54 ; return
+     
+    return 0;
+}

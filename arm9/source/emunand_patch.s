@@ -1,5 +1,5 @@
 .section .emunand_patch, "aw", %progbits
-.thumb
+.arm
 .align 4
 
 @ Code originally by Normmatt
@@ -14,44 +14,40 @@ emunandPatch:
     @ End
 
     @ If we're already trying to access the SD, return
-    ldr r2, [r4, #4]
-    ldr r0, emunandPatchSdmmcStructPtr
-    cmp r2, r0
+    ldr r2, [r0, #4]
+    ldr r1, emunandPatchSdmmcStructPtr
+    cmp r2, r1
     beq out
 
-    ldr r2, [r4, #8] @ Get sector to read
-    str r0, [r4, #4] @ Set object to be SD
+    str r1, [r0, #4] @ Set object to be SD
+    ldr r2, [r0, #8] @ Get sector to read
+    cmp r2, #0 @ For GW compatibility, see if we're trying to read the ncsd header (sector 0)
 
     ldr r3, emunandPatchNandOffset
     add r2, r3 @ Add the offset to the NAND in the SD
 
-    cmp r2, r3 @ For GW compatibility, see if we're trying to read the ncsd header (sector 0)
-    bne skip_add
+    ldreq r3, emunandPatchNcsdHeaderOffset
+    addeq r2, r3 @ If we're reading the ncsd header, add the offset of that sector
 
-    ldr r3, emunandPatchNcsdHeaderOffset
-    add r2, r3 @ If we're reading the ncsd header, add the offset of that sector
+    str r2, [r0, #8] @ Store sector to read
 
-    skip_add:
-        str r2, [r4, #8] @ Store sector to read
-        
     out:
+        @ Restore registers.
+        mov r1, r5
+        mov r2, r7
+        mov r3, r6
 
         @ Return 4 bytes behind where we got called,
         @ due to the offset of this function being stored there
-        mov r2, lr
-        add r2, #4
-
-        @ More original code that might have been skipped depending on alignment;
-        @ needs to be done at the end so CPSR is preserved
-        lsl r0, r1, #0x17
-        bx r2
+        mov r0, lr
+        add r0, #4
+        bx r0
 
 .pool
 
 .global emunandPatchSdmmcStructPtr
 .global emunandPatchNandOffset
 .global emunandPatchNcsdHeaderOffset
-.balign 4
 
 emunandPatchSdmmcStructPtr:     .word   0 @ Pointer to sdmmc struct
 emunandPatchNandOffset:         .word   0 @ For rednand this should be 1

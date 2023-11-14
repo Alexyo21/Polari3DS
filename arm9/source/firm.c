@@ -485,7 +485,7 @@ static void mergeSection0(FirmwareType firmType, u32 firmVersion, bool loadFromS
         CopyKipResult copyRes = copyKip(dst, moduleList[i].src, maxModuleSize, isStockTwlBg);
 
         if (isStockTwlBg)
-            patchTwlBg(copyRes.codeDstAddr, copyRes.codeSize);
+           patchTwlBg(copyRes.codeDstAddr, copyRes.codeSize);
 
         dst += copyRes.cxiSize;
         maxModuleSize -= copyRes.cxiSize;
@@ -546,17 +546,20 @@ u32 patchNativeFirm(u32 firmVersion, FirmwareSource nandType, bool loadFromStora
     (void)needToInitSd;
 #endif
 
-    //Apply signature patches
+    // Apply signature patches
     ret += patchSignatureChecks(process9Offset, process9Size);
     
-    //Apply nand init patches
-    if(nandType != FIRMWARE_SYSNAND) ret += patchNandInit(process9Offset, process9Size);
-
-    //Apply EmuNAND patches
+    // Apply EmuNAND patches
     if(nandType != FIRMWARE_SYSNAND) ret += patchEmuNand(process9Offset, process9Size, firmVersion, false);
-
-    //Apply FIRM0/1 writes patches on SysNAND to protect A9LH
+    
+    // Apply FIRM0/1 writes patches on SysNAND to protect A9LH
     else if(isFirmProtEnabled) ret += patchFirmWrites(process9Offset, process9Size);
+    
+    // Apply nand init patches on emunand 
+    if(nandType != FIRMWARE_SYSNAND) ret += patchNandInit(process9Offset, process9Size);
+    
+    // Apply cid patch on sysnand
+    else ret += patchCidInit(process9Offset, process9Size);
 
 #ifndef BUILD_FOR_EXPLOIT_DEV
     //Apply firmlaunch patches
