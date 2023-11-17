@@ -104,6 +104,7 @@ void Volume_ControlVolume(void)
             out);
         posY = Draw_DrawString(10, posY, COLOR_GREEN, "Controls:\n");
         posY = Draw_DrawString(10, posY, COLOR_WHITE, "Up/Down for +-1, Right/Left for +-10.\n\n");
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, "Press B to confirm.\n\n");
 
         if(!volumeSlider[0] || volumeSlider[0] == 0xFF)
         {
