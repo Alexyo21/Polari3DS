@@ -12,7 +12,7 @@ https://discord.com/invite/eCJQGuHr
 ## next update 
 next build probably will:
 
-* custom cid patch for process9(testing)
+* custom cid patch for process9(new testing)
 
 * and also screenshot improving... 
 and
