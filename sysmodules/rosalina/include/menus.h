@@ -33,6 +33,7 @@
 #include "menu.h"
 #include "debugger.h"
 #include "menus/debugger_menu.h"
+#include "pmdbgext.h"
 #include "utils.h"
 
 extern Menu rosalinaMenu;
