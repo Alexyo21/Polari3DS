@@ -12,6 +12,9 @@ https://discord.com/invite/eCJQGuHr
 ## next update 
 next build probably will:
 
+for a traslated fork in italian here you go (thanks to Simo):
+https://github.com/Simo3ds/CustomLuma3DS-ITA
+
 * custom cid patch for process9(new testing)
 * still looking for cfg:nor so you can also boot 3ds without nvram, wifi also will not work
 
