@@ -30,7 +30,7 @@
 #include "fmt.h"
 #include "bootdiag.h"
 
-//#define BOOTDIAG_ENABLED
+// #define BOOTDIAG_ENABLED
 #ifdef  BOOTDIAG_ENABLED
 
 static MyThread bootdiagThread;

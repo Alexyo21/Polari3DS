@@ -265,7 +265,7 @@ Result LumaConfig_SaveSettings(void)
     size_t n = LumaConfig_SaveLumaIniConfigToStr(inibuf, &configData);
     FS_ArchiveID archiveId = isSdMode ? ARCHIVE_SDMC : ARCHIVE_NAND_RW;
     if (n > 0)
-        res = IFile_Open(&file, archiveId, fsMakePath(PATH_EMPTY, ""), fsMakePath(PATH_ASCII, "/luma/config.ini"), FS_OPEN_CREATE | FS_OPEN_WRITE);
+        res = IFile_Open(&file, archiveId, fsMakePath(PATH_EMPTY, ""), fsMakePath(PATH_ASCII, "/luma/lumae.ini"), FS_OPEN_CREATE | FS_OPEN_WRITE);
     else
         res = -1;
 
