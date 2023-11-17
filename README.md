@@ -13,6 +13,7 @@ https://discord.com/invite/eCJQGuHr
 next build probably will:
 
 * custom cid patch for process9(new testing)
+* still looking for cfg:nor so you can also boot 3ds without nvram, wifi also will not work
 
 * and also screenshot improving... 
 and
