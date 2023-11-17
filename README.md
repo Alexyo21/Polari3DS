@@ -13,6 +13,7 @@ https://discord.com/invite/eCJQGuHr
 next build probably will:
 
 for a traslated fork in italian here you go (thanks to Simo):
+(per una fork tradotta in italiano, ecco il link (grazie a Simo):
 https://github.com/Simo3ds/CustomLuma3DS-ITA
 
 * custom cid patch for process9(new testing)
