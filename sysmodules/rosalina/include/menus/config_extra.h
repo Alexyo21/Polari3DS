@@ -12,6 +12,8 @@
 #include "luma_config.h"
 #include "luma_shared_config.h"
 #include "utils.h"
+#include "config_template_ini.h"
+#include "configExtra_ini.h"
 
 #define CONFIG_FILE         "configExtra.ini"
 
