@@ -27,6 +27,8 @@
 #pragma once
 
 #include "types.h"
+#include "config_template_ini.h"
+#include "configExtra_ini.h"
 
 #define AUTOBOOT_DEFAULT_TWL_TID    0x0003000453524C41ull
 
