@@ -328,7 +328,7 @@ void menuThreadMain(void)
         N3DSMenu_UpdateStatus();
     
     QuickSwitchers_UpdateStatuses();
-    SysConfigMenu_UpdateRehidFolderStatus;
+    SysConfigMenu_UpdateRehidFolderStatus();
     ConfigExtra_UpdateAllMenuItems();
 
     while (!isServiceUsable("ac:u") || !isServiceUsable("hid:USER") || !isServiceUsable("gsp::Gpu") || !isServiceUsable("cdc:CHK"))
