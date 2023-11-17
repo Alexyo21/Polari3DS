@@ -1,6 +1,6 @@
 .section .emunand_patch, "aw", %progbits
 .thumb
-.align 4
+.align 2
 
 @ Code originally by Normmatt
 
