@@ -684,7 +684,7 @@ static char tmpIniBuffer[0x2000];
 
 static bool readLumaIniConfig(void)
 {
-    u32 rd = fileRead(tmpIniBuffer, "config.ini", sizeof(tmpIniBuffer) - 1);
+    u32 rd = fileRead(tmpIniBuffer, "lumae.ini", sizeof(tmpIniBuffer) - 1);
     if (rd == 0) return false;
 
     tmpIniBuffer[rd] = '\0';
@@ -695,7 +695,7 @@ static bool readLumaIniConfig(void)
 static bool writeLumaIniConfig(void)
 {
     size_t n = saveLumaIniConfigToStr(tmpIniBuffer);
-    return n != 0 && fileWrite(tmpIniBuffer, "config.ini", n);
+    return n != 0 && fileWrite(tmpIniBuffer, "lumae.ini", n);
 }
 
 // ===========================================================
@@ -866,7 +866,7 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
                                                  "button hints).\n\n"
                                                  "\t* 'After payloads' displays it\n"
                                                  "afterwards.\n\n"
-                                                 "Edit the duration in config.ini (3s\n"
+                                                 "Edit the duration in lumae.ini (3s\n"
                                                  "default).",
 
                                                  "Activate a PIN lock.\n\n"

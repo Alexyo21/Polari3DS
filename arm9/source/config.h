@@ -34,7 +34,7 @@
 #define MULTICONFIG(a)   ((configData.multiConfig >> (2 * (a))) & 3)
 #define BOOTCONFIG(a, b) ((configData.bootConfig >> (a)) & (b))
 
-#define CONFIG_FILE         "config.ini"
+#define CONFIG_FILE         "lumae.ini"
 #define CONFIG_VERSIONMAJOR 4
 #define CONFIG_VERSIONMINOR 3
 

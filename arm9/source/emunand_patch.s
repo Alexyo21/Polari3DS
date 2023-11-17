@@ -25,7 +25,7 @@ emunandPatch:
     ldr r3, emunandPatchNandOffset
     add r2, r3 @ Add the offset to the NAND in the SD
 
-    cmp r2, #0 @ For GW compatibility, see if we're trying to read the ncsd header (sector 0)
+    cmp r2, r3 @ For GW compatibility, see if we're trying to read the ncsd header (sector 0)
     bne skip_add
 
     ldr r3, emunandPatchNcsdHeaderOffset
@@ -35,14 +35,15 @@ emunandPatch:
         str r2, [r4, #8] @ Store sector to read
         
     out:
+        @ Restore register/s
+        mov r3, r6
 
         @ Return 4 bytes behind where we got called,
         @ due to the offset of this function being stored there
-        mov r3, r6
         mov r2, lr
         add r2, #4
 
-        @ More original code that might have been skipped depending on alignment;
+        @ More original code that might have been skipped depending on alignment (maybe not?);
         @ needs to be done at the end so CPSR is preserved
         lsl r0, r1, #0x17
         bx r2

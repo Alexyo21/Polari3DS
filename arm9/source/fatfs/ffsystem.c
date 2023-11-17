@@ -5,8 +5,8 @@
 #include "ff.h"
 
 
-#if FF_USE_LFN == 3	/* Use dynamic memory allocation */
-
+// #if FF_USE_LFN == 3	/* Use dynamic memory allocation */
+#if 0
 /*------------------------------------------------------------------------*/
 /* Allocate/Free a Memory Block                                           */
 /*------------------------------------------------------------------------*/
