@@ -36,7 +36,7 @@ operation:
 
 start:
     @ Disable interrupts and switch to supervisor mode
-    cpsid aif, #0x1F
+    cpsid aif, #0x13
 
     @ Set the control register to reset default: everything disabled
     ldr r0, =0x54078
