@@ -22,7 +22,7 @@ Next time again...
 * gateway sysnand support🤔
 
 twl patch redirection aside
-there are two  standalone version one stable with more feature, including the one to sd card, and one for now that has one feature which the redirection to sd this only,choose the you want, these can be used alone or alongside the with the emunand patch itself, for theoretically not use the nand at all, that would be the goal(still needs more test,soon I will release the code, if you want to help join the group or if you need support with some error). thanks for the attention 
+there are two  standalone version one stable with more feature, including the one to sd card, and one for now that has one feature which the redirection to sd this only,choose the you want, these can be used alone or alongside the with the emunand patch itself, for theoretically not use the nand at all, if you want to help join the group or if you need support with some error). thanks for the attention 
 
 https://github.com/Alexyo21/twl_firm_patcher
 
