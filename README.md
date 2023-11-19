@@ -24,7 +24,6 @@ https://github.com/Simo3ds/CustomLuma3DS-ITA
 * and also screenshot improving... 
 and
 Next time again...
-* rewrite volume software control using codec, need more codec docs.
 *  nighshift remake;
 * gateway sysnand support🤔
 
