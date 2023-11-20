@@ -1,7 +1,8 @@
 # CustomLuma3DS
 *Noob-proof (N)3DS "Custom Firmware"*
 
- 
+Rosalina with streams capabilities here:
+ https://github.com/Alexyo21/Streaming-Rosalina/tree/streams
 
 here the nightly build:
 https://nightly.link/Alexyo21/CustomLuma3DS/workflows/build/master/CustomLuma3DS-nightly.zip
@@ -17,7 +18,6 @@ for a traslated fork in italian here you go (thanks to Simo):
 (per una fork tradotta in italiano, ecco il link (grazie a Simo):
 https://github.com/Simo3ds/CustomLuma3DS-ITA
 
-* bug on old/og version console
 * custom cid patch for process9(new testing)
 * still looking for cfg:nor so you can also boot 3ds without nvram, wifi also will not work
 
