@@ -52,6 +52,7 @@
 #include "shell.h"
 #include "task_runner.h"
 #include "plugin.h"
+#include "volume.h"
 #include "config_template_ini.h"
 #include "configExtra_ini.h"
 

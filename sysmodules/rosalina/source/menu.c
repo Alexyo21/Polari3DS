@@ -453,7 +453,7 @@ static void menuDraw(Menu *menu, u32 selected)
 
     Result mcuInfoRes = menuUpdateMcuInfo();
 
-    svcGetSystemInfo(&out, 0x10000, 0);
+    svcGetSystemInfo(&out, 0x10000, 8);
     version = (u32)out;
 
     svcGetSystemInfo(&out, 0x10000, 1);
@@ -462,10 +462,10 @@ static void menuDraw(Menu *menu, u32 selected)
     svcGetSystemInfo(&out, 0x10000, 0x200);
     isRelease = (bool)out;
 
-    if(GET_VERSION_REVISION(version) == 0)
-        sprintf(versionString, "v%lu.%lu", GET_VERSION_MAJOR(version), GET_VERSION_MINOR(version));
+    if(GET_VERSION_REVISION1(version) == 0)
+        sprintf(versionString, "v%lu.%lu", GET_VERSION_MAJOR1(version), GET_VERSION_MINOR1(version));
     else
-        sprintf(versionString, "v%lu.%lu.%lu", GET_VERSION_MAJOR(version), GET_VERSION_MINOR(version), GET_VERSION_REVISION(version));
+        sprintf(versionString, "v%lu.%lu.%lu", GET_VERSION_MAJOR1(version), GET_VERSION_MINOR1(version), GET_VERSION_REVISION1(version));
 
     Draw_DrawString(10, 10, COLOR_TITLE, menu->title);
     u32 numItems = menuCountItems(menu);
