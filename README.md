@@ -78,6 +78,8 @@ Some of the code is inspired by NTR but most of it is a complete reimplementatio
 
 - emunand bug fix  
 
+- it can boot modern homebrew even if the version is lower.
+
 - also abilty to set lareyedfs path for game patching using a txt file in luma/titles/titleid directory of the sd card with specied path.
 
 - also added single screen backlight regulation
