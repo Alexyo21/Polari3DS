@@ -163,7 +163,16 @@ typedef struct CfwInfo
     u8 autobootCtrAppmemtype;
 
     u16 launchedPath[80+1];
+    
+    u8 FversionMajor;
+    u8 FversionMinor;
+    u8 FversionBuild;
 } CfwInfo;
+
+typedef struct FakeInfo
+{
+    
+} FakeInfo;
 
 extern CfwInfo cfwInfo;
 extern u32 kextBasePa;
