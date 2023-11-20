@@ -48,6 +48,10 @@
 
 #define FLOAT_CONV_MULT 1e8 // for screen filters
 
+#define GET_VERSION_MAJOR1(version1) ((version1)>>24)
+#define GET_VERSION_MINOR1(version1) (((version1)>>16)&0xFF)
+#define GET_VERSION_REVISION1(version1) (((version1)>>8)&0xFF)
+
 typedef enum MenuItemAction {
     MENU_END = 0,
     METHOD = 1,
