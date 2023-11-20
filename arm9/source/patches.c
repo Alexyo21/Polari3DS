@@ -145,7 +145,11 @@ u32 installK11Extension(u8 *pos, u32 size, bool needToInitSd, u32 baseK11VA, u32
             u8 autobootCtrAppmemtype;
 
             u16 launchedPath[80+1];
-        } info;
+            
+            u8 FversionMajor;
+            u8 FversionMinor;
+            u8 FversionBuild;
+        } info;     
     };
 
     static const u8 patternHook1[] = {0x02, 0xC2, 0xA0, 0xE3, 0xFF}; //MMU setup hook
@@ -228,6 +232,10 @@ u32 installK11Extension(u8 *pos, u32 size, bool needToInitSd, u32 baseK11VA, u32
     info->versionMajor = VERSION_MAJOR;
     info->versionMinor = VERSION_MINOR;
     info->versionBuild = VERSION_BUILD;
+    info->FversionMajor = 13;
+    info->FversionMinor = 0;
+    info->FversionBuild = 2;
+
 
     if(ISRELEASE) info->flags = 1;
     if(ISN3DS) info->flags |= 1 << 4;
