@@ -32,7 +32,7 @@
 Result GetSystemInfoHook(s64 *out, s32 type, s32 param)
 {
     Result res = 0;
-
+    
     switch(type)
     {
         case 0x10000:
@@ -49,7 +49,7 @@ Result GetSystemInfoHook(s64 *out, s32 type, s32 param)
                 // Please do not use these, except 0, 1, and 0x200
                 // Other types may get removed or reordered without notice
                 case 0:
-                    *out = SYSTEM_VERSION(cfwInfo.versionMajor, cfwInfo.versionMinor, cfwInfo.versionBuild);
+                    *out = SYSTEM_VERSION(cfwInfo.FversionMajor, cfwInfo.FversionMinor, cfwInfo.FversionBuild);
                     break;
                 case 1:
                     *out = cfwInfo.commitHash;
@@ -71,6 +71,9 @@ Result GetSystemInfoHook(s64 *out, s32 type, s32 param)
                     break;
                 case 7:
                     *out = (s64)cfwInfo.volumeSliderOverride;
+                    break;
+                case 8:
+                    *out = SYSTEM_VERSION1(cfwInfo.versionMajor, cfwInfo.versionMinor, cfwInfo.versionBuild);
                     break;               
                 case 0x10:
                     *out = (s64)cfwInfo.autobootTwlTitleId;
