@@ -151,10 +151,6 @@ Result ServiceManager_Run(const ServiceManagerServiceEntry *services, const Serv
                 services[handlerIds[off]].handler(ctxs[off]);
                 replyTarget = waitHandles[id];
             }
-           if (configExtra.suppressLeds && configExtra.turnLedsOffStandby)
-            {
-               ledOffStandby();
-            }
         }
     }
 
