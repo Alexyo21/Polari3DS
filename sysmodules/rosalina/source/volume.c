@@ -3,6 +3,8 @@
 #include "menus.h"
 #include "volume.h"
 
+s8 currVolumeSliderOverride = -1;
+
 float Volume_ExtractVolume(int nul, int one, int slider)
 {
     if(slider <= nul || one < nul)
@@ -50,114 +52,106 @@ void Volume_AdjustVolume(u8* out, int slider, float value)
     out[1] = smax & 0xFF;
 }
 
-void Volume_ControlVolume(void)
+static Result ApplyVolumeOverride(void)
 {
-    u8 volumeSlider[2], dspVolumeSlider[2], disableVolumeSlider[2];
-    int target = 0, targetMin = 0, targetMax = 64;
-    disableVolumeSlider[0] = 0xFF;
-    disableVolumeSlider[1] = 0x00;
-    Result res = 0;
+    // Thanks profi200!
+    u8 tmp;
+    Result res = cdcChkInit();
 
+    if (R_SUCCEEDED(res)) res = CDCCHK_ReadRegisters2(0, 116, &tmp, 1); // CDC_REG_VOL_MICDET_PIN_SAR_ADC
+    if (currVolumeSliderOverride >= 0)
+        tmp &= ~0x80;
+    else
+        tmp |= 0x80;
+    if (R_SUCCEEDED(res)) res = CDCCHK_WriteRegisters2(0, 116, &tmp, 1);
+
+    if (currVolumeSliderOverride >= 0) {
+        s8 calculated = -128 + (((float)currVolumeSliderOverride/100.f) * 108);
+        if (calculated > -20)
+            return -1; // Just in case
+        s8 volumes[2] = {calculated, calculated}; // Volume in 0.5 dB steps. -128 (muted) to 48. Do not go above -20 (100%).
+        if (R_SUCCEEDED(res)) res = CDCCHK_WriteRegisters2(0, 65, volumes, 2); // CDC_REG_DAC_L_VOLUME_CTRL, CDC_REG_DAC_R_VOLUME_CTRL
+    }
+
+    cdcChkExit();
+    return res;
+}
+
+void LoadConfig(void)
+{
+    s64 out = -1;
+    svcGetSystemInfo(&out, 0x10000, 7);
+    currVolumeSliderOverride = (s8)out;
+    if (currVolumeSliderOverride >= 0)
+        ApplyVolumeOverride();
+}
+
+void AdjustVolume(void)
+{
     Draw_Lock();
     Draw_ClearFramebuffer();
     Draw_FlushFramebuffer();
     Draw_Unlock();
 
-    Handle *mcuHwcHandlePtr = mcuHwcGetSessionHandle();
-    *mcuHwcHandlePtr = 0;
-
-    res = srvGetServiceHandle(mcuHwcHandlePtr, "mcu::HWC");
-    // Try to steal the handle if some other process is using the service (custom SVC)
-    if (R_FAILED(res))
-        svcControlService(SERVICEOP_STEAL_CLIENT_SESSION, mcuHwcHandlePtr, "mcu::HWC");
-    // mute and disable volume slider
-    MCUHWC_WriteRegister(0x58, disableVolumeSlider, 2);
+    s8 tempVolumeOverride = currVolumeSliderOverride;
+    static s8 backupVolumeOverride = -1;
+    if (backupVolumeOverride == -1)
+        backupVolumeOverride = tempVolumeOverride >= 0 ? tempVolumeOverride : 85;
 
     do
     {
-        // https://www.3dbrew.org/wiki/I2C_Registers#Device_3
-        MCUHWC_ReadRegister(0x58, dspVolumeSlider, 2); // Register-mapped ADC register
-        MCUHWC_ReadRegister(0x27, volumeSlider + 0, 1); // Raw volume slider state
-        MCUHWC_ReadRegister(0x09, volumeSlider + 1, 1); // Volume slider state
-
-        float coe = Volume_ExtractVolume(dspVolumeSlider[0], dspVolumeSlider[1], volumeSlider[0]);
-
-        u32 out = (u32)((coe * 100.0F) + (1 / 256.0F));
-        u32 in = (u32)(target * 1.5625F);
-
         Draw_Lock();
-        Draw_ClearFramebuffer();
-        Draw_DrawString(10, 10, COLOR_TITLE, "Volume Control by Sono, integration Nutez");
-        u32 posY = 30;
-        posY = Draw_DrawFormattedString(
-            10,
-            posY,
-            COLOR_WHITE,
-            "To set: %02X (%lu%%)\n",
-            target, in
-        );
-        posY = Draw_DrawFormattedString(
-            10,
-            posY,
-            COLOR_WHITE,
-            "Current volume: %lu%%\n\n",
-            out);
-        posY = Draw_DrawString(10, posY, COLOR_GREEN, "Controls:\n");
-        posY = Draw_DrawString(10, posY, COLOR_WHITE, "Up/Down for +-1, Right/Left for +-10.\n\n");
-        posY = Draw_DrawString(10, posY, COLOR_WHITE, "Press B to confirm.\n\n");
-
-        if(!volumeSlider[0] || volumeSlider[0] == 0xFF)
-        {
-            posY = Draw_DrawString(10, posY, COLOR_RED, "Note:\n");
-            posY = Draw_DrawString(10, posY, COLOR_WHITE, "Your volume slider is right at the edge,\n");
-            posY = Draw_DrawString(10, posY, COLOR_WHITE, "so it can't be adjusted by software.\n");
-            posY = Draw_DrawString(10, posY, COLOR_WHITE, "If it is physically stuck there then you \n");
-            posY = Draw_DrawString(10, posY, COLOR_WHITE, "may need to solder to fix the volume :(\n");
+        Draw_DrawString(10, 10, COLOR_TITLE, "System configuration menu");
+        u32 posY = Draw_DrawString(10, 30, COLOR_WHITE, "Y: Toggle volume slider override.\nDPAD: Adjust the volume level.\nA: Apply\nB: Go back\n\n");
+        Draw_DrawString(10, posY, COLOR_WHITE, "Current status:");
+        posY = Draw_DrawString(100, posY, (tempVolumeOverride == -1) ? COLOR_RED : COLOR_GREEN, (tempVolumeOverride == -1) ? " DISABLED" : " ENABLED ");
+        if (tempVolumeOverride != -1) {
+            posY = Draw_DrawFormattedString(30, posY, COLOR_WHITE, "\nValue: [%d%%]", tempVolumeOverride);
+        } else {
+            posY = Draw_DrawString(30, posY, COLOR_WHITE, "\n                 ");
         }
-        else if(volumeSlider[0] < 0x10 || volumeSlider[0] >= 0xF0)
-        {
-            posY = Draw_DrawString(10, posY, COLOR_RED, "Note:\n");
-            posY = Draw_DrawString(10, posY, COLOR_WHITE, "Your volume slider is too close to the\n");
-            posY = Draw_DrawString(10, posY, COLOR_WHITE, "edge, so output range is limited.\n");
-            posY = Draw_DrawString(10, posY, COLOR_WHITE, "If you can, do move the slider to the\n");
-            posY = Draw_DrawString(10, posY, COLOR_WHITE, "center to get better software range.\n");
-        }
-
-        Draw_FlushFramebuffer();
-        Draw_Unlock();
 
         u32 pressed = waitInputWithTimeout(1000);
 
-        if (pressed & DIRECTIONAL_KEYS)
+        if(pressed & KEY_A)
         {
-            if (pressed & KEY_UP)
-            {
-                target += 1;
+            currVolumeSliderOverride = tempVolumeOverride;
+            Result res = ApplyVolumeOverride();
+            LumaConfig_SaveSettings();
+            if (R_SUCCEEDED(res))
+                Draw_DrawString(10, posY, COLOR_GREEN, "\nSuccess!");
+            else
+                Draw_DrawFormattedString(10, posY, COLOR_RED, "\nFailed: 0x%08lX", res);
+        }
+        else if(pressed & KEY_B)
+            return;
+        else if(pressed & KEY_Y)
+        {
+            Draw_DrawString(10, posY, COLOR_WHITE, "\n                 ");
+            if (tempVolumeOverride == -1) {
+                tempVolumeOverride = backupVolumeOverride;
+            } else {
+                backupVolumeOverride = tempVolumeOverride;
+                tempVolumeOverride = -1;
             }
-            else if (pressed & KEY_DOWN)
-            {
-                target -= 1;
-            }
-            else if (pressed & KEY_RIGHT)
-            {
-                target += 10;
-            }
-            else if (pressed & KEY_LEFT)
-            {
-                target -= 10;
-            }
+        }
+        else if ((pressed & (KEY_DUP | KEY_DDOWN | KEY_DLEFT | KEY_DRIGHT)) && tempVolumeOverride != -1)
+        {
+            Draw_DrawString(10, posY, COLOR_WHITE, "\n                 ");
+            if (pressed & KEY_DUP)
+                tempVolumeOverride++;
+            else if (pressed & KEY_DDOWN)
+                tempVolumeOverride--;
+            else if (pressed & KEY_DRIGHT)
+                tempVolumeOverride+=10;
+            else if (pressed & KEY_DLEFT)
+                tempVolumeOverride-=10;
 
-            target = target > targetMax ? targetMax : target;
-            target = target < targetMin ? targetMin : target;
-
-            Volume_AdjustVolume(dspVolumeSlider, volumeSlider[0], target / 64.0F);
-            MCUHWC_WriteRegister(0x58, dspVolumeSlider, 2);
+            if (tempVolumeOverride < 0)
+                tempVolumeOverride = 0;
+            if (tempVolumeOverride > 100)
+                tempVolumeOverride = 100;
         }
 
-        if (pressed & KEY_B)
-            return;
-    }
-    while (!(waitInput() & KEY_B) && !menuShouldExit);
-
-    svcCloseHandle(*mcuHwcHandlePtr);
+    } while(!menuShouldExit);
 }

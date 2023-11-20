@@ -40,12 +40,14 @@
 #include "menus.h"
 #include "menus/sysconfig.h"
 #include "menus/config_extra.h"
+#include "volume.h"
 
 typedef struct CfgData {
     u16 formatVersionMajor, formatVersionMinor;
 
     u32 config, multiConfig, bootConfig;
     u32 splashDurationMsec;
+    s8 volumeSliderOverride;
 
     u64 hbldr3dsxTitleId;
     u32 rosalinaMenuCombo;
@@ -196,6 +198,8 @@ static size_t LumaConfig_SaveLumaIniConfigToStr(char *out, const CfgData *cfg)
 
         cfg->autobootTwlTitleId, (int)cfg->autobootCtrAppmemtype,
         
+        cfg->volumeSliderOverride,
+        
         (int)CONFIG(SHOWADVANCEDSETTINGS),
         (int)CONFIG(HARDWAREPATCHING)
     );
@@ -253,6 +257,7 @@ Result LumaConfig_SaveSettings(void)
     configData.multiConfig = multiConfig;
     configData.bootConfig = bootConfig;
     configData.splashDurationMsec = splashDurationMsec;
+    configData.volumeSliderOverride = currVolumeSliderOverride;
     configData.hbldr3dsxTitleId = Luma_SharedConfig->selected_hbldr_3dsx_tid;
     configData.rosalinaMenuCombo = menuCombo;
     configData.pluginLoaderFlags = PluginLoader__IsEnabled();

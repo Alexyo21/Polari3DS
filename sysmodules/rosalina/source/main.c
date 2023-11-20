@@ -52,7 +52,6 @@
 #include "shell.h"
 #include "task_runner.h"
 #include "plugin.h"
-#include "menus/streaming.h"
 #include "config_template_ini.h"
 #include "configExtra_ini.h"
 
@@ -335,13 +334,14 @@ int main(void)
     CFGU_GetSystemModel(&sysModel);
     cfguExit();
     hasTopScreen = (sysModel != 3); // 3 = o2DS
-
+    
     if (R_FAILED(svcCreateEvent(&preTerminationEvent, RESET_STICKY)))
         svcBreak(USERBREAK_ASSERT);
 
     Draw_Init();
     Cheat_SeedRng(svcGetSystemTick());
     ScreenFiltersMenu_LoadConfig();
+    LoadConfig();
 
     MyThread *menuThread = menuCreateThread();
     MyThread *taskRunnerThread = taskRunnerCreateThread();

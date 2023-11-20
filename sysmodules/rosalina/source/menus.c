@@ -49,7 +49,6 @@
 #include "luminance.h"
 #include "pmdbgext.h"
 #include "menus/quick_switchers.h"
-#include "menus/streaming.h"
 #include "menus/chainloader.h"
 #include "config_template_ini.h"
 #include "configExtra_ini.h"
@@ -66,7 +65,6 @@ Menu rosalinaMenu = {
         { "System configuration...", MENU, .menu = &sysconfigMenu },
         { "Screen filters...", MENU, .menu = &screenFiltersMenu },
         { "New 3DS settings...", MENU, .menu = &N3DSMenu, .visibility = &menuCheckN3ds },
-        { "Streaming", MENU, .menu = &streamingMenu },
         { "Quick-Switchers...", MENU, .menu = &quickSwitchersMenu },
         { "Miscellaneous options...", MENU, .menu = &miscellaneousMenu },
         { "Save settings", METHOD, .method = &RosalinaMenu_SaveSettings },
@@ -77,7 +75,7 @@ Menu rosalinaMenu = {
         {},
     }
 };
-
+    
 bool rosalinaMenuShouldShowDebugInfo(void)
 {
     // Don't show on release builds
