@@ -535,7 +535,6 @@ bool doLumaUpgradeProcess(void)
     ok2 = backupEssentialFiles();
 
     // Clean up some of the old files
-
     fileDelete("sdmc:/luma/lumae.ini");
     fileDelete("nand:/rw/luma/lumae.ini");
     fileDelete("sdmc:/luma/config.bin");

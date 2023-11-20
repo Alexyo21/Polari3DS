@@ -569,7 +569,15 @@ static int configIniHandler(void* user, const char* section, const char* name, c
                 return 1;
             }
         }
-        CHECK_PARSE_OPTION(-1);
+        
+        if (strcmp(name, "volume_slider_override") == 0) {
+            s64 opt;
+            CHECK_PARSE_OPTION(parseDecIntOption(&opt, value, -1, 100));
+            cfg->volumeSliderOverride = (s8)opt;
+            return 1;
+        } else {
+              CHECK_PARSE_OPTION(-1);
+        }
     } else {
         CHECK_PARSE_OPTION(-1);
     }
@@ -672,6 +680,8 @@ static size_t saveLumaIniConfigToStr(char *out)
         (int)cfg->topScreenFilter.invert, (int)cfg->bottomScreenFilter.invert,
 
         cfg->autobootTwlTitleId, (int)cfg->autobootCtrAppmemtype,
+        
+        cfg->volumeSliderOverride,
         
         (int)CONFIG(SHOWADVANCEDSETTINGS),
         (int)CONFIG(HARDWAREPATCHING)
@@ -776,6 +786,7 @@ bool readConfig(void)
         configData.formatVersionMinor = CONFIG_VERSIONMINOR;
         configData.config |= 1u << PATCHVERSTRING;
         configData.splashDurationMsec = 2000;
+        configData.volumeSliderOverride = -1;
         configData.hbldr3dsxTitleId = HBLDR_DEFAULT_3DSX_TID;
 #ifdef BUILD_FOR_GDB      
         configData.rosalinaMenuCombo = 1u << 9 | 1u << 6; // L+Up
