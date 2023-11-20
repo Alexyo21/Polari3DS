@@ -30,5 +30,7 @@
 #include "kernel.h"
 #include "svc.h"
 
+#define SYSTEM_VERSION1(major1, minor1, revision1) (((major1)<<24)|((minor1)<<16)|((revision1)<<8))
+
 Result GetSystemInfoHookWrapper(u32 dummy, s32 type, s32 param);
 Result GetSystemInfoHook(s64 *out, s32 type, s32 param);
