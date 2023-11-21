@@ -232,9 +232,9 @@ u32 installK11Extension(u8 *pos, u32 size, bool needToInitSd, u32 baseK11VA, u32
     info->versionMajor = VERSION_MAJOR;
     info->versionMinor = VERSION_MINOR;
     info->versionBuild = VERSION_BUILD;
-    info->FversionMajor = 13;
-    info->FversionMinor = 0;
-    info->FversionBuild = 2;
+    info->FversionMajor = FVERSION_MAJOR; // version spoofing
+    info->FversionMinor = FVERSION_MINOR;
+    info->FversionBuild = FVERSION_BUILD;
 
 
     if(ISRELEASE) info->flags = 1;

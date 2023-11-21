@@ -45,6 +45,10 @@
 #define BOOTCFG_NOFORCEFLAG  BOOTCONFIG(3, 1)
 #define BOOTCFG_NTRCARDBOOT  BOOTCONFIG(4, 1)
 
+#define FVERSION_MAJOR 13 // fake version spoofing
+#define FVERSION_MINOR 0
+#define FVERSION_BUILD 2
+
 enum multiOptions
 {
     DEFAULTEMU = 0,
