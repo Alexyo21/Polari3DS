@@ -2,7 +2,7 @@
 *Noob-proof (N)3DS "Custom Firmware"*
 
 Rosalina with streams capabilities here addon for my fork:
- https://github.com/Alexyo21/Streaming-Rosalina/tree/streams
+ https://github.com/Alexyo21/Streaming-Rosalina
 
 here the nightly build:
 https://nightly.link/Alexyo21/CustomLuma3DS/workflows/build/master/CustomLuma3DS-nightly.zip
