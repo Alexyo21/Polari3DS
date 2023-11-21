@@ -8,7 +8,7 @@ here the nightly build:
 https://nightly.link/Alexyo21/CustomLuma3DS/workflows/build/master/CustomLuma3DS-nightly.zip
 
 discord group in case of needing:
-https://discord.com/invite/eCJQGuHr
+https://discord.com/invite/qR2D3dq43b
 
 ## next update 
 next build probably will:
