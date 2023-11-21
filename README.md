@@ -139,7 +139,7 @@ Since v8.0, Luma3DS has its own in-game menu, triggerable by <kbd>L+Up</kbd> for
 2. Run `make`.
 3. or grab the artifact on build ci(nightly). (thanks to minionguyjpro)
 
-    The produced `boot.firm` is meant to be copied to the root of your SD card for usage with Boot9Strap/fastboot3ds/godmode9.
+    The produced `boot.firm` is meant to be copied to the root of your SD card for usage with Boot9Strap/fastboot3ds/godmode9. or if you're brave firm0...
 
 # 
  #### Docker Image 
