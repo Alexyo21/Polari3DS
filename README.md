@@ -29,7 +29,7 @@ and Next time again:
 *  nighshift remake;
 * gateway sysnand support🤔
 
-(little feature)/(imporvements):
+(little feature)/(improvements):
 * make config menu work also on nand;
 * add cool patch like mcu bricker for notification led;
 
