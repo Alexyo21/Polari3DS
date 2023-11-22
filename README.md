@@ -36,7 +36,6 @@ and Next time again:
 * gateway sysnand support🤔
 
 (little feature)/(improvements):
-* make extra config menu work also on nand;
 * add cool patch like mcu bricker for notification led;
 
 #
