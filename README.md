@@ -43,6 +43,8 @@ and Next time again:
 twl patch redirection aside
 there are two  standalone version one stable with more feature, including the one to sd card, and one for now that has one feature which the redirection to sd this only,choose the you want, these can be used alone or alongside the with the emunand patch itself, for theoretically not use the nand at all, if you want to help join the group or if you need support with some error). thanks for the attention 
 
+PS. if you have broken nand you need to use it with ntrboot, and put the firm files on sd, /luma folder, and have an emunand, obviously.
+
 #
 
 the release build are not synced with the latest commit so if you want to see the latest changes you know how to do it
