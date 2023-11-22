@@ -115,7 +115,7 @@ void ConfigExtra_ReadConfigExtra(void)
     IFile file;
     Result res = 0;
 
-    res = IFile_Open(&file, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""),
+    res = IFile_Open(&file, ARCHIVE_SDMC | ARCHIVE_NAND_RW, fsMakePath(PATH_EMPTY, ""),
             fsMakePath(PATH_ASCII, "/luma/configExtra.ini"), FS_OPEN_READ);
         
     if(R_SUCCEEDED(res))
@@ -135,7 +135,7 @@ void ConfigExtra_WriteConfigExtra(void)
     IFile file;
     Result res = 0;
 
-    res = IFile_Open(&file, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""),
+    res = IFile_Open(&file, ARCHIVE_SDMC | ARCHIVE_NAND_RW, fsMakePath(PATH_EMPTY, ""),
             fsMakePath(PATH_ASCII, "/luma/configExtra.ini"), FS_OPEN_CREATE | FS_OPEN_WRITE);
         
     if(R_SUCCEEDED(res))
