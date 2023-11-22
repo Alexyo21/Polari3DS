@@ -537,10 +537,10 @@ bool doLumaUpgradeProcess(void)
     // Clean up some of the old files
     fileDelete("sdmc:/luma/lumae.ini");
     fileDelete("nand:/rw/luma/lumae.ini");
-    fileDelete("sdmc:/luma/config.bin");
-    fileDelete("nand:/rw/luma/config.bin");
     fileDelete("sdmc:/luma/configExtra.ini");
     fileDelete("nand:/rw/luma/configExtra.ini");
+  //  fileDelete("sdmc:/luma/config.bin");
+  //  fileDelete("nand:/rw/luma/config.bin");
 
 #if 0
     if (isSdMode)
