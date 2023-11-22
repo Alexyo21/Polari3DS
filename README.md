@@ -1,6 +1,8 @@
 # CustomLuma3DS
 *Noob-proof (N)3DS "Custom Firmware"*
 
+# 
+
 Rosalina with streams capabilities here addon for my fork:
  https://github.com/Alexyo21/Streaming-Rosalina
 
@@ -10,13 +12,14 @@ https://nightly.link/Alexyo21/CustomLuma3DS/workflows/build/master/CustomLuma3DS
 discord group in case of needing:
 https://discord.com/invite/qR2D3dq43b
 
-## next update 
-next build probably will:
-
 for a traslated fork in italian here you go (thanks to Simo):
 
 (per una fork tradotta in italiano, ecco il link (grazie a Simo):
 https://github.com/Simo3ds/CustomLuma3DS-ITA
+
+#
+
+## next update
 
 * custom cid patch for process9(new testing)
 
