@@ -155,7 +155,7 @@ void ConfigExtra_WriteConfigExtra(void)
     
     archiveId = isSdMode ? ARCHIVE_SDMC : ARCHIVE_NAND_RW;
 
-    res = IFile_Open(&file, archiveId , fsMakePath(PATH_EMPTY, ""),
+    res = IFile_Open(&file, archiveId, fsMakePath(PATH_EMPTY, ""),
             fsMakePath(PATH_ASCII, "/luma/configExtra.ini"), FS_OPEN_CREATE | FS_OPEN_WRITE);
         
     if(R_SUCCEEDED(res))
