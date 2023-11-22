@@ -113,9 +113,19 @@ void ConfigExtra_UpdateAllMenuItems(void)
 void ConfigExtra_ReadConfigExtra(void)
 {
     IFile file;
+    FS_ArchiveID archiveId;
+    s64 out;
+    bool isSdMode;
     Result res = 0;
+    
+    if (R_FAILED(svcGetSystemInfo(&out, 0x10000, 0x203)))
+        svcBreak(USERBREAK_ASSERT);
+        
+    isSdMode = (bool)out;
+    
+    archiveId = isSdMode ? ARCHIVE_SDMC : ARCHIVE_NAND_RW;
 
-    res = IFile_Open(&file, ARCHIVE_SDMC | ARCHIVE_NAND_RW, fsMakePath(PATH_EMPTY, ""),
+    res = IFile_Open(&file, archiveId, fsMakePath(PATH_EMPTY, ""),
             fsMakePath(PATH_ASCII, "/luma/configExtra.ini"), FS_OPEN_READ);
         
     if(R_SUCCEEDED(res))
@@ -133,9 +143,19 @@ void ConfigExtra_ReadConfigExtra(void)
 void ConfigExtra_WriteConfigExtra(void)
 {
     IFile file;
+    FS_ArchiveID archiveId;
+    s64 out;
+    bool isSdMode;
     Result res = 0;
+    
+    if (R_FAILED(svcGetSystemInfo(&out, 0x10000, 0x203)))
+        svcBreak(USERBREAK_ASSERT);
 
-    res = IFile_Open(&file, ARCHIVE_SDMC | ARCHIVE_NAND_RW, fsMakePath(PATH_EMPTY, ""),
+    isSdMode = (bool)out;
+    
+    archiveId = isSdMode ? ARCHIVE_SDMC : ARCHIVE_NAND_RW;
+
+    res = IFile_Open(&file, archiveId , fsMakePath(PATH_EMPTY, ""),
             fsMakePath(PATH_ASCII, "/luma/configExtra.ini"), FS_OPEN_CREATE | FS_OPEN_WRITE);
         
     if(R_SUCCEEDED(res))
