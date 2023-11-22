@@ -3,7 +3,7 @@
 
 # 
 
-twl redirection to sd patch...
+twl redirection to sd patch:
 https://github.com/Alexyo21/twl_firm_patcher
 
 Rosalina with streams capabilities here addon for my fork:
