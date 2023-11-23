@@ -65,7 +65,7 @@ Some of the code is inspired by NTR but most of it is a complete reimplementatio
     Added shortcuts:
         Press start + select to toggle bottom screen (nice when you watch videos) inspired by This, limit on o2ds
         , cause hardware register for up and down lcd are the same looking for new test though... 
-        Press A + B + X + Y + Start to instantly reboot the console. Useful in case of freeze, but don't complain if your sdcard get corrupted because of this. also this needs to be activated in the hidden conf.(lumae.ini) also enabling ignore err disp will make your console ignore some hardware error be careful your hardware is still damaged...
+        Press A + B + X + Y + Start to instantly reboot the console. Useful in case of freeze, but don't complain if your sdcard get corrupted because of this. also this needs to be activated in the hidden conf.(lumae.ini) also enabling ignore err disp will make your console ignore some hardware error be careful your hardware is still damaged... also for new3ds you should enable the rosalina susmodule in safe firm in hidden conf menu.
         Press Start on Rosalina menu to toggle wifi -> From here
         Press Select on Rosalina menu to toggle LEDs -> From this (and press Y to force blue led as a workaround when the battery is low)
     Added n3ds clock + L2 status in rosalina menu -> From here
