@@ -258,6 +258,14 @@ bool doErrfThrowHook(u32 *cmdbuf)
             and you need to enable the qtm error bypass below:
         */
         { "qtm", 0xF96183FEu, CONFIG(ENABLESAFEFIRMROSALINA)},
+        { "cam", 0xF96183FEu, CONFIG(NOERRDISPINSTANTREBOOT)},
+        { "cam", 0xF9605002u, CONFIG(NOERRDISPINSTANTREBOOT)},
+        { "mcu", 0xD8606408u, CONFIG(NOERRDISPINSTANTREBOOT)},
+        { "mcu", 0xF9602FEFu, CONFIG(NOERRDISPINSTANTREBOOT)},
+        { "nfc", 0xF9617590u, CONFIG(NOERRDISPINSTANTREBOOT)},
+        { "nwm", 0xF9606C02u, CONFIG(NOERRDISPINSTANTREBOOT)},
+        { "i2c", 0xF9602FEFu, CONFIG(NOERRDISPINSTANTREBOOT)},
+        { "ptm", 0xF960D407u, CONFIG(NOERRDISPINSTANTREBOOT)},
         {   "",             0,                         false}, // impossible case to ensure the array has at least 1 element
     };
 
