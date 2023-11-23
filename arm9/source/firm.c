@@ -556,10 +556,10 @@ u32 patchNativeFirm(u32 firmVersion, FirmwareSource nandType, bool loadFromStora
     else if(isFirmProtEnabled) ret += patchFirmWrites(process9Offset, process9Size);
     
     // Apply nand init patches on emunand 
-    if(nandType != FIRMWARE_SYSNAND) ret += patchNandInit(process9Offset, process9Size);
+    if((nandType != FIRMWARE_SYSNAND) && (CONFIG(HARDWAREPATCHING))) ret += patchNandInit(process9Offset, process9Size);
     
     // Apply cid patch on sysnand
-    else ret += patchCidInit(process9Offset, process9Size);
+    else if(CONFIG(HARDWAREPATCHING)) ret += patchCidInit(process9Offset, process9Size);
 
 #ifndef BUILD_FOR_EXPLOIT_DEV
     //Apply firmlaunch patches

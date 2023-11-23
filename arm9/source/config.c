@@ -1068,7 +1068,7 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
         { .visible = true },
         { .visible = CONFIG(SHOWADVANCEDSETTINGS) },
         { .visible = CONFIG(SHOWADVANCEDSETTINGS) },
-        { .visible = CONFIG(SHOWADVANCEDSETTINGS) },
+        { .visible = (CONFIG(SHOWADVANCEDSETTINGS) && ISN3DS)},
         { .visible = CONFIG(SHOWADVANCEDSETTINGS) },
         { .visible = false },
         { .visible = false },
