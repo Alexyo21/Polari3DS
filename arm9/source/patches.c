@@ -285,7 +285,7 @@ u32 patchKernel11(u8 *pos, u32 size, u32 baseK11VA, u32 *arm11SvcTable, u32 *arm
     if(off == NULL)
         return 1;
 
-    off[-6] = 0xE12FFF7E;
+    off[-6] = 0xE12FFF7E; // bkpt #0xffe
 
     //Redirect enableUserExceptionHandlersForCPUExc (= true)
     for(off = arm11ExceptionsPage; *off != 0x96007F9; off++);
