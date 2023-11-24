@@ -26,9 +26,6 @@ https://github.com/Simo3ds/CustomLuma3DS-ITA
 
 * custom cid patch for process9(new testing)
 
-* still looking for cfg:nor so you can also boot 3ds
- 
-
 and Next time again:
 
 *  nighshift remake;
