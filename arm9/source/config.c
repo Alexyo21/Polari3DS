@@ -1006,7 +1006,9 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
                                                  "SDcard so be careful with this.\n"
                                                  "The combo is A + B + X + Y + Start.\n\n"
                                                  "Only select this if you know what you\n"
-                                                 "are doing!",
+                                                 "are doing!\n\n"
+                                                 "Also added hardware error bypass and\n"
+                                                 "bypass broken nvram."
                                                  
                                                  "Disabling this will hide extra\n"
                                                  "settings from the luma configuration\n"
