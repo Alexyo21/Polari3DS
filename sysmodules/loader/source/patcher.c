@@ -995,6 +995,23 @@ void patchCode(u64 progId, u16 progVer, u8 *code, u32 size, u32 textSize, u32 ro
                 sizeof(patch), 1
             )) goto error;
     }
+    
+    else if (progId == 0x0004003000008802LL) // JP internet browser
+    {
+        static const u8 pattern[] = {
+            0x01, 0xD0, 0x00, 0x20, 0x10, 0xBD, 0x00, 0x20
+        },
+                        patch[] = {
+            0x00, 0x20 // mov r0, #0x0
+        };
+
+        if (!patchMemory(code, textSize,
+                pattern,
+                sizeof(pattern), 0,
+                patch,
+                sizeof(patch), 1
+            )) goto error;
+    }
 
     if (isSysmodule && CONFIG(LOADEXTFIRMSANDMODULES))
     {
