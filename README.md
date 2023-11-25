@@ -74,7 +74,9 @@ Some of the code is inspired by NTR but most of it is a complete reimplementatio
     Added permanent brightness calibration by Nutez -> From here
     Changed colors on config menu because why not
     Continue running after a errdisp error happens (you can press the instant reboot combo to reboot if nothing works needs to be activated in adavnced menu config.
-    and new3ds title configurator so you can chose which game
+    
+-and new3ds title configurator so you can chose which game
+
     extra config menu also changeable from godmode9 if you need to deactivate a feature.
 - twl patch for emunand
 
