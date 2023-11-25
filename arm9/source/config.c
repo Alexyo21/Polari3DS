@@ -1008,7 +1008,7 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
                                                  "Only select this if you know what you\n"
                                                  "are doing!\n\n"
                                                  "Also added hardware error bypass and\n"
-                                                 "bypass broken nvram."
+                                                 "bypass broken nvram.",
                                                  
                                                  "Disabling this will hide extra\n"
                                                  "settings from the luma configuration\n"
