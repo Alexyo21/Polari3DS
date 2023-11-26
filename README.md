@@ -7,15 +7,15 @@ twl redirection to sd patch:
 https://github.com/Alexyo21/twl_firm_patcher
 
 Rosalina with streams capabilities here addon for my fork:
- https://github.com/Alexyo21/Streaming-Rosalina
+https://github.com/Alexyo21/Streaming-Rosalina
 
-here the nightly build:
+Here is the nightly builds:
 https://nightly.link/Alexyo21/CustomLuma3DS/workflows/build/master/CustomLuma3DS-nightly.zip
 
-discord group in case of needing:
+discord server in case of needing:
 https://discord.com/invite/qR2D3dq43b
 
-for a traslated fork in italian here you go (thanks to Simo):
+for a translated fork in italian, here you go (thanks to Simo):
 
 (per una fork tradotta in italiano, ecco il link (grazie a Simo):
 https://github.com/Simo3ds/CustomLuma3DS-ITA
@@ -28,7 +28,7 @@ https://github.com/Simo3ds/CustomLuma3DS-ITA
 
 and Next time again:
 
-*  nighshift remake;
+* nighshift remake;
 * gateway sysnand support🤔
 * also screenshot improving...
 
@@ -58,55 +58,37 @@ Some of the code is inspired by NTR but most of it is a complete reimplementatio
 
 ### What's in here also  different from official luma3DS?
 
-    Restored UNITINFO and enable rosalina on safe_firm and disable arm11exceptions  and alos cut down wifi options on the luma config menu
-    Added shortcuts:
-        Press start + select to toggle bottom screen (nice when you watch videos) inspired by This, limit on o2ds
-        , cause hardware register for up and down lcd are the same looking for new test though... 
-        Press A + B + X + Y + Start to instantly reboot the console. Useful in case of freeze, but don't complain if your sdcard get corrupted because of this. also this needs to be activated in the hidden conf.(lumae.ini) also enabling ignore err disp will make your console ignore some hardware error be careful your hardware is still damaged... also for new3ds you should enable the rosalina susmodule in safe firm in hidden conf menu.
-        Press Start on Rosalina menu to toggle wifi -> From here
-        Press Select on Rosalina menu to toggle LEDs -> From this (and press Y to force blue led as a workaround when the battery is low)
-    Added n3ds clock + L2 status in rosalina menu -> From here
-    Added Software Volume Control -> From here
-    Added extended brightness presets -> From this
-    separate brightness for both screen
-    you can open the rosalina menu with home button remember to disable it if you don't use it(extra config), for who has some button broken
-    rosalina emulate also home button you can come the home menu without pressing it...
-    Added permanent brightness calibration by Nutez -> From here
-    Changed colors on config menu because why not
-    Continue running after a errdisp error happens (you can press the instant reboot combo to reboot if nothing works needs to be activated in adavnced menu config.
-    
--and new3ds title configurator so you can chose which game
-
-    extra config menu also changeable from godmode9 if you need to deactivate a feature.
-- twl patch for emunand
-
-- max money (3ds coins) from rosalina thanks to gruetzig
-  
-- update feature disable using /luma/noupdate.txt at least one byte.
-  
-- cid and otp(mainly for antiban) custom loading (/luma/otp.bin and /luma/nand_cid.bin) and also option to use another nand backup and also for using only emunand without sysnand(option hidden inside luma lumae.ini)
-
-- standby light turning off if you want
-
-- emunand bug fix  
-
-- it can boot modern homebrew even if the version is lower.
-
-- also abilty to set lareyedfs path for game patching using a txt file in luma/titles/titleid directory of the sd card with specied path.
-
-- also added single screen backlight regulation
-
-- changed rosalina combo default is L+Up (Dpad) in debug version ,instead release L+Down+Select you can change it after in the config menu.(less buttons to be pressed, useful for broken buttons)
-
-- added logo.bin abilities to replace default 3ds app launch logo try it if you want.
-
-- rehid folder disable option 
-
-- added debug capabilities like Seledreams fork, thanks to you.
-
+Restored UNITINFO and enable rosalina on safe_firm and disable arm11exceptions  and alos cut down wifi options on the luma config menu
+- Added shortcuts:
+  - Press start + select to toggle bottom screen (nice when you watch videos) inspired by [This](https://github.com/DullPointer/Luma3DS/commit/9fea831656446cbaa2b5b4f6364407bb1b35dee7), limit on o2ds, cause hardware register for up and down lcd are the same looking for new test though... 
+  - Press A + B + X + Y + Start to instantly reboot the console. Useful in case of freeze, but don't complain if your sdcard get corrupted because of this. also this needs to be activated in the hidden conf.(lumae.ini) also enabling ignore err disp will make your console ignore some hardware error be careful your hardware is still damaged... also for new3ds you should enable the rosalina susmodule in safe firm in hidden conf menu.
+  - Press Start on Rosalina menu to toggle wifi -> [Original](https://github.com/DullPointer/Luma3DS/commit/c1a20558bed3d792d54069719a898006af20ba85)
+  - Press Select on Rosalina menu to toggle LEDs -> [Original](https://github.com/DullPointer/Luma3DS/commit/fa70d374c00e39dee8b9ef54f60deb1da35a0c51) (and press Y to force blue led as a workaround when the battery is low)
+- Added n3ds clock + L2 status in rosalina menu -> [Original](https://github.com/DullPointer/Luma3DS/commit/2dbfa8b5c9b719b7f3056691f54332f42da6de8d)
+- Added Software Volume Control -> [Original](https://github.com/DullPointer/Luma3DS/commit/dc636d82492d1e87eb51785fa7f2a98617e7ece9)
+- Added extended brightness presets -> [Original](https://github.com/DullPointer/Luma3DS/commit/83e8d471a377bc6960fae00d6694f5fe86dcca42)
+- Separated brightness for both screen
+- Opening Rosalina menu with the home button (you can disable it on the extra config menu if you don't use it), in case you have some buttons broken
+- Emulated home button press on Rosalina in case the home button is broken
+- Added permanent brightness calibration by Nutez -> [Original](https://github.com/DullPointer/Luma3DS/commit/0e67a667077f601680f74ddc10ef88a799a5a7ad)
+- Changed colors on config menu because why not
+- Continue running after a errdisp error happens (you can press the instant reboot combo to reboot if nothing works needs to be activated in adavnced menu config.
+- New3ds title configurator so you can choose which game to enable New 3DS performances on
+- Extra config menu changeable from godmode9 if you need to deactivate a feature.
+- Twl patch for emunand
+- Set play coins to 300 from rosalina thanks to gruetzig
+- Disable update feature by creating a /luma/noupdate.txt file with at least one byte.
+- cid and otp(mainly for antiban) custom loading (/luma/otp.bin and /luma/nand_cid.bin), option to use another nand backup and for using only emunand without sysnand (option hidden inside config.ini)
+- Standby light turning off if enabled
+- Emunand bug fix
+- Boot modern homebrews on old versions
+- Added the ability to redirect layeredFS path -> [Original](https://github.com/DeathChaos25/Luma3DS/commit/8f68d0a19d2ed80fb41bbe8499cb2b7b027e8a8c)
+- Changed rosalina combo: default is L+Up (Dpad) in debug version, and L+Down+Select for release. You can change it in the Rosalina menu. (less buttons have to be pressed, useful for broken buttons)
+- Added loading of custom logo while launching a app from luma/logo.bin
+- Rehid folder disable option 
+- Added debug capabilities like Seledreams fork, thanks to you.
 - Also added streaming in it just cause why not, thanks to Byebyesky.
-
-- autoboot in dsi mode will boot directly twilightmenu++
+- Autoboot in dsi mode will boot directly twilightmenu++
 
 ## Usage of the streaming capability
 
