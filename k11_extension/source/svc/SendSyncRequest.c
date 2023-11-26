@@ -66,7 +66,7 @@ Result SendSyncRequestHook(Handle handle)
                 if(isNdmuWorkaround(info, pid))
                 {
                     cmdbuf[0] = 0x10040;
-                    cmdbuf[1] = 1;
+                    cmdbuf[1] = 0;
                     skip = true;
                 }
 
