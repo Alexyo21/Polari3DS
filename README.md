@@ -23,8 +23,7 @@ https://github.com/Simo3ds/CustomLuma3DS-ITA
 #
 
 ## next update
-
-* custom cid patch for process9(new testing)
+soon...
 
 and Next time again:
 
@@ -75,10 +74,10 @@ Restored UNITINFO and enable rosalina on safe_firm and disable arm11exceptions  
 - Continue running after a errdisp error happens (you can press the instant reboot combo to reboot if nothing works needs to be activated in adavnced menu config.
 - New3ds title configurator so you can choose which game to enable New 3DS performances on
 - Extra config menu changeable from godmode9 if you need to deactivate a feature.
-- Twl patch for emunand
+- Twl patch for emunand(not tested though🤔)
 - Set play coins to 300 from rosalina thanks to gruetzig
 - Disable update feature by creating a /luma/noupdate.txt file with at least one byte.
-- cid and otp(mainly for antiban) custom loading (/luma/otp.bin and /luma/nand_cid.bin), option to use another nand backup and for using only emunand without sysnand (option hidden inside config.ini)
+- cid and otp(mainly for antiban) custom loading (/luma/otp.bin and /luma/nand_cid.bin), option to use another nand backup and for using only emunand without sysnand (option hidden inside config.ini)(partially broken using another backup, useful for bit flipped otp or corrupted cid)
 - Standby light turning off if enabled
 - Emunand bug fix
 - Boot modern homebrews on old versions
