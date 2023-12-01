@@ -33,7 +33,7 @@ and Next time again:
 
 (little feature)/(improvements):
 * add cool patch like mcu bricker for notification led;
-
+* fix quick debugger in loader(missing process and data...
 #
 
 twl patch redirection aside
