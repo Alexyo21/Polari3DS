@@ -29,14 +29,14 @@ void __wrap_exit(int rc)
 }
 
 Result __sync_init(void);
-void __libc_init_array(void);
+// void __libc_init_array(void);
 
 // Called before main
 void initSystem()
 {
     __sync_init();
     readLumaConfig();
-    __libc_init_array();
+  // __libc_init_array();
 
     // Wait for sm
     for(Result res = 0xD88007FA; res == (Result)0xD88007FA; svcSleepThread(500 * 1000LL)) {
