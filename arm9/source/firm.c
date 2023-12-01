@@ -422,7 +422,7 @@ static void mergeSection0(FirmwareType firmType, u32 firmVersion, bool loadFromS
     }
 
     // SAFE_FIRM only for N3DS and only if ENABLESAFEFIRMROSALINA is on
-    if((firmType == NATIVE_FIRM || firmType == SAFE_FIRM) && (ISN3DS || firmVersion >= 0x25))
+    if((firmType == NATIVE_FIRM || firmType == SAFE_FIRM) && (ISN3DS || firmVersion >= 0x1D))
     {
         //2) Merge that info with our own modules'
         for(u8 *src = (u8 *)0x18180000; memcmp(((Cxi *)src)->ncch.magic, "NCCH", 4) == 0; src += srcModuleSize)
@@ -528,8 +528,8 @@ u32 patchNativeFirm(u32 firmVersion, FirmwareSource nandType, bool loadFromStora
         ret = 0;
 
 #ifndef BUILD_FOR_EXPLOIT_DEV
-    //Skip on FIRMs < 5.0
-    if(ISN3DS || firmVersion >= 0x25)
+    //Skip on FIRMs < 4.0
+    if(ISN3DS || firmVersion >= 0x1D)
     {
         //Find the Kernel11 SVC table and handler, exceptions page and free space locations
         u8 *arm11Section1 = (u8 *)firm + firm->section[1].offset;
