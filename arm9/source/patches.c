@@ -1054,7 +1054,6 @@ u32 patchCidInit(u8 *pos, u32 size)
     
     if (off == NULL) return 1;
     
-   // off[5] = 0x6861; // mov r0, r4 
     off[5] = 0x2100; // mov r1, #0
     off[6] = 0x2001; // mov r0, #1 ...needs future testing...
     off[7] = 0xe7e6; // b -50; return
