@@ -115,7 +115,7 @@ void initSystem(void)
 
     assertSuccess(pxiPmInit());
 
-    __libc_init_array();
+    // __libc_init_array();
 }
 
 static const ServiceManagerServiceEntry services[] = {
