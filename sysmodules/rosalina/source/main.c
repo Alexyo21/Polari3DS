@@ -77,14 +77,15 @@ void __wrap_exit(int rc)
     __libc_fini_array();
 
     // Kernel will take care of it all
+    /*
        
     pmDbgExit();
     acExit();
     fsExit();
     svcCloseHandle(*fsRegGetSessionHandle());
     srvExit();
-    __sync_fini();
-
+    __sync_fini();*/
+    
     svcExitProcess();
 }
 
