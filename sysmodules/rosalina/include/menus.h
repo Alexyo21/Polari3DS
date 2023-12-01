@@ -33,6 +33,8 @@
 #include "menu.h"
 #include "debugger.h"
 #include "menus/debugger_menu.h"
+#include "luma_config.h"
+#include "luma_shared_config.h"
 #include "pmdbgext.h"
 #include "utils.h"
 
@@ -44,8 +46,7 @@ void RosalinaMenu_ShowCredits(void);
 void RosalinaMenu_ProcessList(void);
 void RosalinaMenu_SaveSettings(void);
 void RosalinaMenu_HomeMenu(void);
-void RosalinaMenu_PowerOptions(void);
-void RosalinaMenu_Reboot(void);
+void RosalinaMenu_PowerPerformanceOptions(void);
 void RosalinaMenu_Cheats(void);
 
 bool rosalinaMenuShouldShowDebugInfo(void);

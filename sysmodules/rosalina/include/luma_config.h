@@ -69,5 +69,6 @@ enum multiOptions
 void LumaConfig_ConvertComboToString(char *out, u32 combo);
 Result LumaConfig_SaveSettings(void);
 void LumaConfig_RequestSaveSettings(void);
+Result LumaConfig_SavePerformanceSettings(bool homeBrew, bool maxAppMem, bool core2);
 
 #endif
