@@ -69,7 +69,7 @@ Menu rosalinaMenu = {
         { "Miscellaneous options...", MENU, .menu = &miscellaneousMenu },
         { "Save settings", METHOD, .method = &RosalinaMenu_SaveSettings },
         { "Go to Home", METHOD, .method = &RosalinaMenu_HomeMenu },
-        { "Power options...", METHOD, .method = &RosalinaMenu_PowerOptions },
+        { "Power & performance options", METHOD, .method = &RosalinaMenu_PowerPerformanceOptions },
         { "Credits", METHOD, .method = &RosalinaMenu_ShowCredits },
         { "Debug info", METHOD, .method = &RosalinaMenu_ShowDebugInfo, .visibility = &rosalinaMenuShouldShowDebugInfo },
         {},
@@ -419,7 +419,7 @@ void RosalinaMenu_ChangeScreenBrightness(void)
     Draw_Unlock();
 }
 
-void RosalinaMenu_PowerOptions(void) 
+void RosalinaMenu_PowerPerformanceOptions(void) 
 {
     Draw_Lock();
     Draw_ClearFramebuffer();
@@ -429,10 +429,17 @@ void RosalinaMenu_PowerOptions(void)
     do
     {
         Draw_Lock();
-        Draw_DrawString(10, 10, COLOR_TITLE, "Power options");
-        Draw_DrawString(10, 30, COLOR_WHITE, "Press X to power off, press A to reboot,");
-        Draw_DrawString(10, 50, COLOR_RED, "Press Y to force reboot");
-        Draw_DrawString(10, 40, COLOR_WHITE, "Press B to go back.");
+        Draw_DrawString(10, 10, COLOR_TITLE, "Power & performance options");
+        Draw_DrawString(10, 30, COLOR_WHITE, "Press X to power off, press A to reboot.");
+        Draw_DrawString(10, 40, COLOR_RED, "Press Y to force reboot");
+        Draw_DrawString(10, 50, COLOR_WHITE, "Press Up: boot Homebrew with max app memory*.");
+        Draw_DrawString(10, 60, COLOR_RED, "*pressing home or power button will cause crash!");
+        if (isN3DS) {
+            Draw_DrawString(10, 70, COLOR_WHITE, "Press Left: reboot with core2 redirect.");
+            Draw_DrawString(10, 80, COLOR_WHITE, "Press Right: boot Homebrew with max mem* & core2.");
+        }
+        Draw_DrawString(10, 90, COLOR_WHITE, "Press Down: clear performance settings and reboot.");
+        Draw_DrawString(10, 110, COLOR_WHITE, "Press B to go back.");
         Draw_FlushFramebuffer();
         Draw_Unlock();
 
@@ -456,8 +463,41 @@ void RosalinaMenu_PowerOptions(void)
             __builtin_unreachable();
             return;
         }
-        else if (pressed & KEY_B)
-            return;
+        else if(pressed & KEY_B)
+        {
+           return;
+        }
+        else if (pressed & DIRECTIONAL_KEYS)
+        {
+            if (pressed & KEY_UP)
+            {
+                menuLeave();
+                LumaConfig_SavePerformanceSettings(true, true, false);
+                svcKernelSetState(7);
+                return;
+            }
+            else if ((pressed & KEY_LEFT) && isN3DS)
+            {    
+                menuLeave();            
+                LumaConfig_SavePerformanceSettings(false, false, true);
+                svcKernelSetState(7);
+                return;
+            }
+            else if ((pressed & KEY_RIGHT) && isN3DS)
+            {
+                menuLeave();
+                LumaConfig_SavePerformanceSettings(true, true, true);
+                svcKernelSetState(7);
+                return;
+            }
+            else if (pressed & KEY_DOWN)
+            {
+                menuLeave();
+                LumaConfig_SavePerformanceSettings(false, false, false);
+                svcKernelSetState(7);
+                return;
+            }
+        }
     }
     while (!menuShouldExit);
 }

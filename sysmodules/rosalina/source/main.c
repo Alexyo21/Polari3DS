@@ -188,17 +188,17 @@ static void handleShellNotification(u32 notificationId)
     
     if (notificationId == 0x213)
     {
+        if (configExtra.suppressLeds)
+        {
+            ScreenFilter_SuppressLeds();
+        }
+        
         // Shell opened
         // Note that this notification is also fired on system init.
         // Sequence goes like this: MCU fires notif. 0x200 on shell open
         // and shell close, then NS demuxes it and fires 0x213 and 0x214.
         handleShellOpened();
-        menuShouldExit = false;
-                
-        if (configExtra.suppressLeds)
-        {
-            ScreenFilter_SuppressLeds();
-        }
+        menuShouldExit = false;  
 
         if (wifiOnBeforeSleep && cutWifiInSleep && configExtra.cutSleepWifi && isServiceUsable("nwm::EXT"))
         {
@@ -209,19 +209,16 @@ static void handleShellNotification(u32 notificationId)
     }  
     else
     {
+        ledOffStandby();
+        
         // Shell closed
         menuShouldExit = true;
         
-        if (configExtra.suppressLeds && configExtra.turnLedsOffStandby)
-        {
-           ledOffStandby();
-        }
-       
         if (cutWifiInSleep && configExtra.cutSleepWifi)
         {      
             u8 wireless = (*(vu8 *)((0x10140000 | (1u << 31)) + 0x180));
 
-            if (isServiceUsable("nwm::EXT") && wireless)
+            if (wireless && isServiceUsable("nwm::EXT"))
             {
                 wifiOnBeforeSleep = true;
                 nwmExtInit();
@@ -234,7 +231,6 @@ static void handleShellNotification(u32 notificationId)
             }
         }
     }
-
 }
 
 static void handlePreTermNotification(u32 notificationId)
@@ -314,7 +310,9 @@ static void cutPowerToCardSlotWhenTWLCard(void)
 {
     FS_CardType card;
     bool status;
-    if (R_SUCCEEDED(FSUSER_GetCardType(&card)) && card == 1){
+    
+    if (R_SUCCEEDED(FSUSER_GetCardType(&card)) && card == 1)
+    {
         FSUSER_CardSlotPowerOff(&status);
     }
 }
@@ -324,6 +322,7 @@ int main(void)
 {
     Sleep__Init();
     PluginLoader__Init();
+    
     ConfigExtra_ReadConfigExtra();
     if (configExtra.cutSlotPower)
     {

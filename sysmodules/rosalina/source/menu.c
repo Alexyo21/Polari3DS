@@ -58,8 +58,8 @@
 
 u32 menuCombo = 0;
 bool isHidInitialized = false;
-bool rosalinaOpen = false;
 u32 mcuFwVersion = 0;
+bool rosalinaOpen = false;
 
 void menuToggleLeds(void)
 {         
@@ -84,15 +84,15 @@ void menuMakeLedDabadeedabada(void)
 
 void ledOffStandby(void)
 {
-    mcuHwcInit();
-    u8 off = 0;
-    u8 Off = 3;
-    MCUHWC_WriteRegister(0x28, &off, 1);
-    MCUHWC_WriteRegister(0x2A, &off, 1);
-    MCUHWC_WriteRegister(0x2B, &off, 1);
-    MCUHWC_WriteRegister(0x2C, &off, 1);
-    MCUHWC_WriteRegister(0x29, &Off, 1);
-    mcuHwcExit();
+     if (configExtra.turnLedsOffStandby)
+     {
+        mcuHwcInit();
+        u8 off = 0;
+        u8 Off = 3;
+        MCUHWC_WriteRegister(0x28, &off, 1);
+        MCUHWC_WriteRegister(0x29, &Off, 1);
+        mcuHwcExit();
+     }
 }
 
 // libctru redefinition:
@@ -353,7 +353,7 @@ void menuThreadMain(void)
 
         if(((scanHeldKeys() & menuCombo) == menuCombo) && !rosalinaOpen && !g_blockMenuOpen)
         {
-            openRosalina();      
+            openRosalina();
         }
         
         // instant reboot combo key
@@ -372,6 +372,7 @@ void menuThreadMain(void)
             mcuHwcExit();  
             botStatus = (result >> 5) & 1; // right shift result to bit 5 ("Bottom screen backlight on") and perform bitwise AND with 1
 
+            svcKernelSetState(0x10000, 2); // unblock gsp
             gspLcdInit();
             if(botStatus)
             {
@@ -382,6 +383,7 @@ void menuThreadMain(void)
                 GSPLCD_PowerOnBacklight(BIT(GSP_SCREEN_BOTTOM));
             }
             gspLcdExit();
+            svcKernelSetState(0x10000, 2); // block gsp again
             while (scanHeldKeys() & (KEY_SELECT | KEY_START));
         }
         

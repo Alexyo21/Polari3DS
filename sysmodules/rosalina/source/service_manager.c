@@ -128,6 +128,7 @@ Result ServiceManager_Run(const ServiceManagerServiceEntry *services, const Serv
                         break;
                     }
                 }
+                ledOffStandby();
             } else if ((u32)id < 1 + numServices) {
                 // New session
                 Handle session;
