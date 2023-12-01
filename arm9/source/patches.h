@@ -73,3 +73,4 @@ u32 patchLgyK11(u8 *section1, u32 section1Size, u8 *section2, u32 section2Size);
 u32 patchReadFileSHA256Vtab11(u8 *pos, u32 size, u32 process9MemAddr);
 u32 patchNandInit(u8 *pos, u32 size);
 u32 patchCidInit(u8 *pos, u32 size);
+u32 nandTypoFix(u8 *pos, u32 size);
