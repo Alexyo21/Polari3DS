@@ -29,11 +29,12 @@ and Next time again:
 
 * nighshift remake;
 * gateway sysnand support🤔
-* also screenshot improving...
 
 (little feature)/(improvements):
 * add cool patch like mcu bricker for notification led;
 * fix quick debugger in loader(missing process and data...
+* also screenshot improving...
+
 #
 
 twl patch redirection aside
