@@ -35,14 +35,14 @@ void __wrap_exit(int rc)
 }
 
 void __sync_init();
-void __libc_init_array(void);
+// void __libc_init_array(void);
 
 // Called before main
 void initSystem(void)
 {
     __sync_init();
 
-    __libc_init_array();
+    // __libc_init_array();
 
     s64 out;
     u32 *staticBuffers = getThreadStaticBuffers();
