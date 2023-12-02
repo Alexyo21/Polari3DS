@@ -23,9 +23,6 @@ https://github.com/Simo3ds/CustomLuma3DS-ITA
 #
 
 ## next update
-soon...
-
-and Next time again:
 
 * nighshift remake;
 * gateway sysnand support🤔
