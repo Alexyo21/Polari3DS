@@ -210,7 +210,10 @@ static void handleShellNotification(u32 notificationId)
     }  
     else
     {
-        ledOffStandby();
+        if (configExtra.turnLedsOffStandby)
+        {
+            ledOffStandby();
+        }
         
         // Shell closed
         menuShouldExit = true;

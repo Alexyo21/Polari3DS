@@ -83,16 +83,13 @@ void menuMakeLedDabadeedabada(void)
 }
 
 void ledOffStandby(void)
-{
-     if (configExtra.turnLedsOffStandby)
-     {
-        mcuHwcInit();
-        u8 off = 0;
-        u8 Off = 3;
-        MCUHWC_WriteRegister(0x28, &off, 1);
-        MCUHWC_WriteRegister(0x29, &Off, 1);
-        mcuHwcExit();
-     }
+{  
+    mcuHwcInit();
+    u8 off = 0;
+    u8 Off = 3;
+    MCUHWC_WriteRegister(0x28, &off, 1);
+    MCUHWC_WriteRegister(0x29, &Off, 1);
+    mcuHwcExit();
 }
 
 // libctru redefinition:
