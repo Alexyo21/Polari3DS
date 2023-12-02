@@ -26,7 +26,7 @@ https://github.com/Simo3ds/CustomLuma3DS-ITA
 
 * nighshift remake;
 * gateway sysnand support🤔
-* * fix quick debugger in loader(missing process and data...
+* fix quick debugger in loader(missing process and data...
 
 (little feature)/(improvements):
 * add cool patch like mcu bricker for notification led;
