@@ -83,7 +83,8 @@ Restored UNITINFO and enable rosalina on safe_firm and disable arm11exceptions  
 - cid and otp(mainly for antiban) custom loading (/luma/otp.bin and /luma/nand_cid.bin), option to use another nand backup and for using only emunand without sysnand (option hidden inside config.ini)(partially broken using another backup, useful for bit flipped otp or corrupted cid)
 - Standby light turning off if enabled
 - Emunand bug fix
-- Boot modern homebrews on old versions
+- Boot modern homebrews on old versions, also cfw version spoofing.
+- powermenu options thanks to dullpointer
 - Added the ability to redirect layeredFS path -> [Original](https://github.com/DeathChaos25/Luma3DS/commit/8f68d0a19d2ed80fb41bbe8499cb2b7b027e8a8c)
 - Changed rosalina combo: default is L+Up (Dpad) in debug version, and L+Down+Select for release. You can change it in the Rosalina menu. (less buttons have to be pressed, useful for broken buttons)
 - Added loading of custom logo while launching a app from luma/logo.bin
