@@ -20,6 +20,10 @@ for a translated fork in italian, here you go (thanks to Simo):
 (per una fork tradotta in italiano, ecco il link (grazie a Simo):
 https://github.com/Simo3ds/CustomLuma3DS-ITA
 
+This version comes bundled with pirate-laucher, twlpatches, rosalina streaming module aside only for new3ds...
+
+https://github.com/cooolgamer/the-pirate-launcher
+
 #
 
 ## next update
