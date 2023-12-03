@@ -1,5 +1,5 @@
 # CustomLuma3DS
-*Noob-proof (N)3DS "Custom Firmware"*
+*Noob/Advanced-proof (N)3DS "Custom Firmware"*
 
 # 
 
