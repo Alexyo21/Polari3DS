@@ -27,6 +27,7 @@
 #pragma once
 
 #include "types.h"
+#include "firm.h"
 #include "config_template_ini.h"
 #include "configExtra_ini.h"
 
