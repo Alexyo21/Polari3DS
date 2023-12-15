@@ -67,7 +67,9 @@ Restored UNITINFO and enable rosalina on safe_firm and disable arm11exceptions  
   - Press Start on Rosalina menu to toggle wifi -> [Original](https://github.com/DullPointer/Luma3DS/commit/c1a20558bed3d792d54069719a898006af20ba85)
   - Press Select on Rosalina menu to toggle LEDs -> [Original](https://github.com/DullPointer/Luma3DS/commit/fa70d374c00e39dee8b9ef54f60deb1da35a0c51) (and press Y to force blue led as a workaround when the battery is low)
 - Added n3ds clock + L2 status in rosalina menu -> [Original](https://github.com/DullPointer/Luma3DS/commit/2dbfa8b5c9b719b7f3056691f54332f42da6de8d)
+also selectable per title
 - Added Software Volume Control -> [Original](https://github.com/DullPointer/Luma3DS/commit/dc636d82492d1e87eb51785fa7f2a98617e7ece9)
+now updated through codec thanks to Pablomk7 and profi200
 - Added extended brightness presets -> [Original](https://github.com/DullPointer/Luma3DS/commit/83e8d471a377bc6960fae00d6694f5fe86dcca42)
 - Separated brightness for both screen
 - Opening Rosalina menu with the home button (you can disable it on the extra config menu if you don't use it), in case you have some buttons broken
@@ -82,8 +84,7 @@ Restored UNITINFO and enable rosalina on safe_firm and disable arm11exceptions  
 - Disable update feature by creating a /luma/noupdate.txt file with at least one byte.
 - cid and otp(mainly for antiban) custom loading (/luma/otp.bin and /luma/nand_cid.bin), option to use another nand backup and for using only emunand without sysnand (option hidden inside config.ini)(partially broken using another backup, useful for bit flipped otp or corrupted cid)
 - Standby light turning off if enabled
-- Emunand bug fix
-- Boot modern homebrews on old versions, also cfw version spoofing.
+- Boot modern homebrews on old versions, also cfw version spoofing(though you have to recompile it).
 - powermenu options thanks to dullpointer
 - Added the ability to redirect layeredFS path -> [Original](https://github.com/DeathChaos25/Luma3DS/commit/8f68d0a19d2ed80fb41bbe8499cb2b7b027e8a8c)
 - Changed rosalina combo: default is L+Up (Dpad) in debug version, and L+Down+Select for release. You can change it in the Rosalina menu. (less buttons have to be pressed, useful for broken buttons)
