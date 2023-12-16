@@ -46,7 +46,7 @@ PS. if you have broken nand you need to use it with ntrboot, and put the officia
 (not tested yet)
 #
 
-the release build are not synced with the latest commit so if you want to see the latest changes you know how to do it
+the release build are not synced with the latest commit so if you want to see the latest changes you know how to do it also I only make new tag but destroy old released version i know I know but it'll keep less chaotic this repo, I you need an old release you can always grab old nightly...
 
 ## What is this fork
 for debug build please remember to change also the sysmodule rsf to true forcedebug and false disable debug.
