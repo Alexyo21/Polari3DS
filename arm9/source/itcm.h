@@ -257,10 +257,10 @@ STATIC_ASSERT(sizeof(Arm9Itcm) == 0x8000);
 #define ARM9_ITCM ((Arm9Itcm*) __ITCM_ADDR)
 
 // Default path for the OTP is in the luma directory of SDCARD.
-#define OTP_PATH "otp.bin"
+#define OTP_PATH "sdmc:/luma/otp.bin"
 
 void patchITCM(void);
 
-#define CID_PATH "nand_cid.bin"
+#define CID_PATH "sdmc:/luma/nand_cid.bin"
 
 void PatchITCMCid(void);

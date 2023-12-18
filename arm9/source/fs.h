@@ -46,4 +46,4 @@ void findDumpFile(const char *folderPath, char *fileName);
 
 bool doLumaUpgradeProcess(void);
 
-#define NOUPD_PATH "noupdate.txt"
+#define NOUPD_PATH "sdmc:/luma/noupdate.txt"
