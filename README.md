@@ -34,7 +34,6 @@ https://github.com/cooolgamer/the-pirate-launcher
 
 (little feature)/(improvements):
 * add cool patch like mcu bricker for notification led;
-* fix quick debugger in loader(missing process and data...
 * also screenshot improving...
 
 #
