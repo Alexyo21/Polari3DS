@@ -1,6 +1,6 @@
 # CustomLuma3DS
 *Noob/Advanced-proof (N)3DS "Custom Firmware"*
-"READ BELOW!!!!"
+*READ BELOW!!!!*
 # 
 
 twl redirection to sd patch:
