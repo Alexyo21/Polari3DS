@@ -18,7 +18,7 @@ https://discord.com/invite/qR2D3dq43b
 for a translated fork in italian, here you go (thanks to Simo):
 
 (per una fork tradotta in italiano, ecco il link (grazie a Simo):
-https://github.com/Simo3ds/CustomLuma3DS-ITA
+https://github.com/Simo2ds/CustomLuma3DS-ITA
 
 This version comes bundled with pirate-laucher, twlpatches, rosalina streaming module aside only for new3ds...
 
