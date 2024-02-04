@@ -1,4 +1,4 @@
-.section .emunand_patch, "aw", %progbits
+.section .emunand_patch, "awx", %progbits
 .thumb
 .align 2
 

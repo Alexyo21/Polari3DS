@@ -82,7 +82,7 @@ CFLAGS	:=	-g -std=gnu11 -Wall -Wextra -Werror -mword-relocations \
 	        -ffunction-sections -fdata-sections \
                 -Wno-main $(OPTFLAGS) $(FALSEPOSITIVES) $(ARCH) $(DEFINES)
 
-CFLAGS	+=	$(INCLUDE)
+CFLAGS	+=	$(INCLUDE) -fno-builtin-memcpy
 
 CXXFLAGS	:= $(CFLAGS) -std=gnu++11
 

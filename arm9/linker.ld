@@ -47,7 +47,9 @@ SECTIONS
         i2c.o(.text*)
         arm9_exception_handlers.o(.text*)
         *(.large_patch.readFileSHA256Vtab11)
-        KEEP (*(.emunand_patch))
+        KEEP (*(.emunand_patch))   
+        KEEP (*(.patchITCM))
+        KEEP (*(.PatchITCMCid))
 
         *(.arm9_exception_handlers.rodata*)
         chainloader.o(.rodata*)

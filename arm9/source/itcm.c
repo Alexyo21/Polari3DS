@@ -7,9 +7,9 @@
 /* Patches the ITCM with the OTP provided,
  * functionally bypassing error 022-2812.
  */
-void patchITCM(void)
+__attribute__((section(".patchITCM"), target("arm"), aligned(16))) void patchITCM(void)
 {
-    Otp otp;    
+    Otp otp;
     u32 otpSize = fileRead(&otp, OTP_PATH, sizeof(Otp));
 
     // Error checking
@@ -17,18 +17,18 @@ void patchITCM(void)
       {
          error("OTP is not the correct size.");
       }
-    
+
       else
-      
+
       {
     
       if (otp.magic != OTP_MAGIC)
          {
             error("Unable to parse OTP. Is it decrypted properly?");
          }
-         
+
          else
-         
+
          {
            
            if (CONFIG(HARDWAREPATCHING))
@@ -52,9 +52,9 @@ void patchITCM(void)
                 memcpy(ARM9_ITCM->otp.random, otp.random, sizeof(otp.random));
                 memcpy(ARM9_ITCM->otp.hash, otp.hash, sizeof(otp.hash));
             }
-            
+
             else
-            
+
             {
                 // Setting relevant values in memory to struct parsed from file
                 ARM9_ITCM->otp.deviceId = otp.deviceId;
@@ -72,9 +72,9 @@ void patchITCM(void)
       }
 }
 
-void PatchITCMCid(void)
+__attribute__((section(".PatchITCMCid"), target("arm"), aligned(16))) void PatchITCMCid(void)
 {
-    NandInfo nandinfo;   
+    NandInfo nandinfo;
     u32 cidSize = fileRead((&nandinfo.nandCid), CID_PATH, sizeof(nandinfo.nandCid));
     
     // Error checking
@@ -82,9 +82,9 @@ void PatchITCMCid(void)
     {
         error("NandCid is not the correct size.");
     }
-    
+
     else
-    
+
     {
         memcpy(ARM9_ITCM->nandinfo.nandCid, nandinfo.nandCid, sizeof(nandinfo.nandCid));
     }
