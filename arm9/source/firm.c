@@ -528,7 +528,7 @@ u32 patchNativeFirm(u32 firmVersion, FirmwareSource nandType, bool loadFromStora
         ret = 0;
 
 #ifndef BUILD_FOR_EXPLOIT_DEV
-    //Skip on FIRMs < 5.0
+    //Skip on FIRMs < 4.0
     if(ISN3DS || firmVersion >= 0x1D)
     {
         //Find the Kernel11 SVC table and handler, exceptions page and free space locations
