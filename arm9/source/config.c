@@ -39,6 +39,7 @@
 #include "pin.h"
 #include "i2c.h"
 #include "ini.h"
+#include "firm.h"
 
 #include "config_template_ini.h" // note that it has an extra NUL byte inserted
 
@@ -991,7 +992,7 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
                                                  "will disqualify you from submitting\n"
                                                  "issues or bug reports to the Luma3DS\n"
                                                  "GitHub repository!",
-                                                
+
                                                  "Enables Rosalina, the kernel ext.\n"
                                                  "and sysmodule reimplementations on\n"
                                                  "SAFE_FIRM (New 3DS only).\n\n"
