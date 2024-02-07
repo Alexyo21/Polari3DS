@@ -2,7 +2,7 @@
 
 @ Code originally from delebile and mid-kid
 
-.section .large_patch.reboot, "aw", %progbits
+.section .large_patch.reboot, "awx", %progbits
 .arm
 .align 4
 
@@ -228,7 +228,7 @@ rebootPatchSize:
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-.section .large_patch.readFileSHA256Vtab11, "aw", %progbits
+.section .large_patch.readFileSHA256Vtab11, "awx", %progbits
 .arm
 .align 4
 
