@@ -152,3 +152,4 @@ also added inside the cfw itself (thinking i have to add someone else, though do
 This software is licensed under the terms of the GPLv3. You can find a copy of the license in the LICENSE.txt file.
 
 Files in the GDB stub are instead triple-licensed as MIT or "GPLv2 or any later version", in which case it's specified in the file header.
+Also consider the copyright updated to 2023 in all files obviously it will retain the og authors, i will manualuy update the one i "play with" 
