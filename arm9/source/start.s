@@ -56,6 +56,7 @@ _start:
     @ Disable caches / MPU
     mrc p15, 0, r4, c1, c0, 0  @ read control register
     bic r4, #(1<<16)           @ - DTCM disable
+    bic r4, #(1<<18)           @ - ITCM disable
     bic r4, #(1<<12)           @ - instruction cache disable
     bic r4, #(1<<2)            @ - data cache disable
     bic r4, #(1<<0)            @ - MPU disable
@@ -96,8 +97,10 @@ _start:
     mcr p15, 0, r8, c2, c0, 1   @ Inst cacheable 0, 3, 5
 
     @ Set DTCM address and size to the default values
-    ldr r1, =0xFFF0000A        @ set DTCM address and size
-    mcr p15, 0, r1, c9, c1, 0  @ set the dtcm Region Register
+    ldr r0, =0xFFF0000A        @ set DTCM address and size
+    ldr r1, =0x00000024        @ set ITCM address and size
+    mcr p15, 0, r0, c9, c1, 0  @ set the dtcm Region Register
+    mcr p15, 0, r1, c9, c1, 1  @ set the itcm Region Register
 
     @ Enable caches / MPU / ITCM
     mrc p15, 0, r0, c1, c0, 0  @ read control register
