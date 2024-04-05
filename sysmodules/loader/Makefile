@@ -28,7 +28,7 @@ INCLUDES	:=	include
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mfpu=vfpv2 -mtp=soft -marm -mthumb-interwork
+ARCH	:=	-march=armv6k -mtune=mpcore -mlittle-endian -mfloat-abi=hard -mfpu=vfpv2 -mtp=soft -marm -mthumb-interwork
 DEFINES :=	-D__3DS__ -DHBLDR_DEFAULT_3DSX_TID="0x$(HBLDR_DEFAULT_3DSX_TID)ULL"
 
 ifeq ($(BUILD_FOR_EXPLOIT_DEV),1)
