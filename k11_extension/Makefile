@@ -26,7 +26,7 @@ INCLUDES	:=	include include/svc
 # options for code generation
 #---------------------------------------------------------------------------------
 # -mgeneral-regs-only so that the C code is guaranteed not to use FPU regs
-ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mfpu=vfpv2 -mtp=soft -mgeneral-regs-only -marm -mthumb-interwork
+ARCH	:=	-march=armv6k -mtune=mpcore -mlittle-endian -mfloat-abi=hard -mfpu=vfpv2 -mtp=soft -mgeneral-regs-only -marm -mthumb-interwork
 DEFINES :=	-DARM11 -D__3DS__
 
 ifeq ($(BUILD_FOR_GDB),1)
