@@ -49,7 +49,9 @@ SECTIONS
         *(.large_patch.readFileSHA256Vtab11)
         KEEP (*(.emunand_patch))   
         KEEP (*(.patchITCM))
+        itcm.o(.patchITCM*)
         KEEP (*(.PatchITCMCid))
+        itcm.o(.PatchITCMCid*)
 
         *(.arm9_exception_handlers.rodata*)
         chainloader.o(.rodata*)

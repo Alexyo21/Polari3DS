@@ -114,6 +114,7 @@
 #define SHA_1_HASH_SIZE     (160 / 8)
 
 extern FirmwareSource ctrNandLocation;
+extern bool nandcid;
 
 void sha(void *res, const void *src, u32 size, u32 mode);
 

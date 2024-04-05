@@ -55,8 +55,8 @@ _start:
 
     @ Disable caches / MPU
     mrc p15, 0, r4, c1, c0, 0  @ read control register
-    bic r4, #(1<<16)           @ - DTCM disable
     bic r4, #(1<<18)           @ - ITCM disable
+    bic r4, #(1<<16)           @ - DTCM disable
     bic r4, #(1<<12)           @ - instruction cache disable
     bic r4, #(1<<2)            @ - data cache disable
     bic r4, #(1<<0)            @ - MPU disable

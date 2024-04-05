@@ -251,7 +251,7 @@ u32 patchKernel11(u8 *pos, u32 size, u32 baseK11VA, u32 *arm11SvcTable, u32 *arm
 {
     static const u8 patternKPanic[] = {0x02, 0x0B, 0x44, 0xE2};
     static const u8 patternKThreadDebugReschedule[] = {0x34, 0x20, 0xD4, 0xE5, 0x00, 0x00, 0x55, 0xE3, 0x80, 0x00, 0xA0, 0x13};
-    static const u8 patternSuspendThread[] = {0xB0, 0x01, 0xD5, 0xE1, 0x01, 0x00, 0x50, 0xE3};
+   // static const u8 patternSuspendThread[] = {0xB0, 0x01, 0xD5, 0xE1, 0x01, 0x00, 0x50, 0xE3};
 
     //Assumption: ControlMemory, DebugActiveProcess and KernelSetState are in the first 0x20000 bytes
     //Patch ControlMemory
@@ -325,13 +325,13 @@ u32 patchKernel11(u8 *pos, u32 size, u32 baseK11VA, u32 *arm11SvcTable, u32 *arm
     // This will cause significant slow down for system modules such as fs, httpc, y2r, mvd etc...
     // This patch disables "suspending system threads" behavior so that if user threads
     // use little CPU time, then system threads can use rest of CPU time.
-    off = (u32 *)memsearch(pos, patternSuspendThread, size, sizeof(patternSuspendThread));
+/*   off = (u32 *)memsearch(pos, patternSuspendThread, size, sizeof(patternSuspendThread));
     if(off)
     {
         //We are replacing if(core_id == 1) with if(core_id == 4) so that it will always be false.
         off[1] = 0x040050E3;//cmp r0, #0x1 -> cmp r0, #0x4
     }
-
+*/
     return 0;
 }
 
@@ -1041,7 +1041,7 @@ u32 patchNandInit(u8 *pos, u32 size)
     if (off == NULL) return 1;
     
     off[9] = 0x2000; // movs r0, #0
-    off[10] = 0xe7e3; // b -54 ; return
+    off[10] = 0xe7e3; // b -54 ;     return 0;return
     
     return 0;
 }
@@ -1055,7 +1055,7 @@ u32 patchCidInit(u8 *pos, u32 size)
     if (off == NULL) return 1;
     
     off[5] = 0x2100; // mov r1, #0
-    off[6] = 0x2001; // mov r0, #1 ...needs future testing...
+    off[6] = 0x2001; // mov r0, #1 cause move r0, #0 cause svcbreak cause well there is cmp r0, #0 after coming back to the calling address with a bl, where a beq if 0 is needed to skip init, it will make it crash, too lazy now next time also well i need to patch better for now it will go( nand_init func and cmp r0, #0 if yes beq to skip init
     off[7] = 0xe7e6; // b -50; return
      
     return 0;

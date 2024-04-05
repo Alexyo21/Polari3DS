@@ -339,7 +339,7 @@ int ctrNandInit(void)
     __attribute__((aligned(4))) u8 cid[AES_BLOCK_SIZE],
                                    shaSum[SHA_256_HASH_SIZE];
                                    
-   if ((getFileSize(CID_PATH) > 0) && (CONFIG(HARDWAREPATCHING)))
+   if ((nandcid) && (CONFIG(HARDWAREPATCHING)))
      
       {
         memcpy(cid, (u32*)__NANDCID_ADDR, sizeof(cid));
