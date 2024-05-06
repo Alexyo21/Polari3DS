@@ -195,6 +195,17 @@ void main(int argc, char **argv, u32 magicWord)
      nandcid = true;
      PatchITCMCid();
     }
+    
+    if(ISN3DS)
+    {
+       if(isSdMode)
+       {
+          if(!getFileSize("sdmc:/luma/n3ds/"))
+          {
+             f_mkdir("sdmc:/luma/n3ds/");
+          }
+       }
+    }
 
     //Attempt to read the configuration file
     needConfig = readConfig() ? MODIFY_CONFIGURATION : CREATE_CONFIGURATION;
@@ -382,25 +393,6 @@ boot:
     u32 firmVersion = loadNintendoFirm(&firmType, nandType, loadFromStorage, isSafeMode);
 
     bool doUnitinfoPatch = CONFIG(PATCHUNITINFO);
-    
-    if(ISN3DS)
-    {
-       if(isSdMode)
-       {
-          if(!getFileSize("sdmc:/luma/n3ds/"))
-          {
-             f_mkdir("sdmc:/luma/n3ds/");
-          }
-       }   
-       else
-       {
-          if(!getFileSize("nand:/rw/luma/n3ds/"))
-          {
-             f_mkdir("nand:/rw/luma/n3ds/");
-          }
-       }
-    }
-    
     u32 res = 0;
     switch(firmType)
     {
