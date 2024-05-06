@@ -31,6 +31,7 @@ https://github.com/cooolgamer/the-pirate-launcher
 * nighshift remake;
 * gateway sysnand support🤔
 * fix quick debugger in loader(missing process and data...
+* port new selective plugin loader by nutez 
 
 (little feature)/(improvements):
 * add cool patch like mcu bricker for notification led;
