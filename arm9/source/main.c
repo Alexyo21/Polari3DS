@@ -41,6 +41,7 @@
 #include "fmt.h"
 #include "fatfs/sdmmc/sdmmc.h"
 #include "itcm.h"
+#include "fatfs/ff.h"
 
 extern u8 __itcm_start__[], __itcm_lma__[], __itcm_bss_start__[], __itcm_end__[];
 
@@ -381,6 +382,25 @@ boot:
     u32 firmVersion = loadNintendoFirm(&firmType, nandType, loadFromStorage, isSafeMode);
 
     bool doUnitinfoPatch = CONFIG(PATCHUNITINFO);
+    
+    if(ISN3DS)
+    {
+       if(isSdMode)
+       {
+          if(!getFileSize("sdmc:/luma/n3ds/"))
+          {
+             f_mkdir("sdmc:/luma/n3ds/");
+          }
+       }   
+       else
+       {
+          if(!getFileSize("nand:/rw/luma/n3ds/"))
+          {
+             f_mkdir("nand:/rw/luma/n3ds/");
+          }
+       }
+    }
+    
     u32 res = 0;
     switch(firmType)
     {

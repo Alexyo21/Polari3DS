@@ -39,7 +39,7 @@
 
 #define CONFIG_FILE         "lumae.ini"
 #define CONFIG_VERSIONMAJOR 5
-#define CONFIG_VERSIONMINOR 0
+#define CONFIG_VERSIONMINOR 1
 
 #define BOOTCFG_NAND         BOOTCONFIG(0, 1)
 #define BOOTCFG_EMUINDEX     BOOTCONFIG(1, 3)
@@ -47,8 +47,8 @@
 #define BOOTCFG_NTRCARDBOOT  BOOTCONFIG(4, 1)
 
 #define FVERSION_MAJOR 13 // fake version spoofing
-#define FVERSION_MINOR 0
-#define FVERSION_BUILD 2
+#define FVERSION_MINOR 1
+#define FVERSION_BUILD 0
 
 enum multiOptions
 {

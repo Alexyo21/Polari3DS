@@ -501,7 +501,7 @@ static int configIniHandler(void* user, const char* section, const char* name, c
             return 1;
         } else if (strcmp(name, "screen_filters_top_gamma") == 0) {
             s64 opt;
-            CHECK_PARSE_OPTION(parseDecFloatOption(&opt, value, 0, 1411 * FLOAT_CONV_MULT));
+            CHECK_PARSE_OPTION(parseDecFloatOption(&opt, value, 0, 8 * FLOAT_CONV_MULT));
             cfg->topScreenFilter.gammaEnc = opt;
             return 1;
         } else if (strcmp(name, "screen_filters_top_contrast") == 0) {
@@ -526,7 +526,7 @@ static int configIniHandler(void* user, const char* section, const char* name, c
             return 1;
         } else if (strcmp(name, "screen_filters_bot_gamma") == 0) {
             s64 opt;
-            CHECK_PARSE_OPTION(parseDecFloatOption(&opt, value, 0, 1411 * FLOAT_CONV_MULT));
+            CHECK_PARSE_OPTION(parseDecFloatOption(&opt, value, 0, 8 * FLOAT_CONV_MULT));
             cfg->bottomScreenFilter.gammaEnc = opt;
             return 1;
         } else if (strcmp(name, "screen_filters_bot_contrast") == 0) {
@@ -1150,13 +1150,13 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
     }
 
     drawString(false, 10, 10, COLOR_WHITE, optionsDescription[selectedOption]);
-    
+
     bool startPressed = false;
     //Boring configuration menu
     while(true)
     {
         u32 pressed = 0;
-        if (!startPressed) 
+        if (!startPressed)
         do
         {
             pressed = waitInput(true) & MENU_BUTTONS;
@@ -1164,7 +1164,7 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
         while(!pressed);
 
         // Force the selection of "save and exit" and trigger it.
-        if(pressed & BUTTON_START) 
+        if(pressed & BUTTON_START)
         {
             startPressed = true;
             // This moves the cursor to the last entry

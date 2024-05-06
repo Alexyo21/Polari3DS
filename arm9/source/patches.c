@@ -1055,7 +1055,7 @@ u32 patchCidInit(u8 *pos, u32 size)
     if (off == NULL) return 1;
     
     off[5] = 0x2100; // mov r1, #0
-    off[6] = 0x2001; // mov r0, #1 cause move r0, #0 cause svcbreak cause well there is cmp r0, #0 after coming back to the calling address with a bl, where a beq if 0 is needed to skip init, it will make it crash, too lazy now next time also well i need to patch better for now it will go( nand_init func and cmp r0, #0 if yes beq to skip init
+    off[6] = 0x2001; // mov r0, #1 
     off[7] = 0xe7e6; // b -50; return
      
     return 0;
