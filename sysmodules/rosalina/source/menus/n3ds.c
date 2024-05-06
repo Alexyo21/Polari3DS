@@ -100,6 +100,17 @@ void N3DSMenu_CheckForConfigFile(void)
     FS_ProgramInfo programInfo;
     u32 pid;
     u32 launchFlags;
+    
+    FS_ArchiveID archiveId;
+    s64 out;
+    bool isSdMode;
+    
+    if (R_FAILED(svcGetSystemInfo(&out, 0x10000, 0x203)))
+        svcBreak(USERBREAK_ASSERT);
+
+    isSdMode = (bool)out;
+    
+    archiveId = isSdMode ? ARCHIVE_SDMC : ARCHIVE_NAND_RW;
 
     if(R_SUCCEEDED(PMDBG_GetCurrentAppInfo(&programInfo, &pid, &launchFlags)))
     {
@@ -108,7 +119,7 @@ void N3DSMenu_CheckForConfigFile(void)
         sprintf(fileNameBuf, "%s%016llX%s", "/luma/n3ds/", programId, ".bin");
         IFile file;
 
-        if(R_SUCCEEDED(IFile_Open(&file, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""),fsMakePath(PATH_ASCII, fileNameBuf), FS_OPEN_READ)))
+        if(R_SUCCEEDED(IFile_Open(&file, archiveId, fsMakePath(PATH_EMPTY, ""),fsMakePath(PATH_ASCII, fileNameBuf), FS_OPEN_READ)))
         {
             IFile_Close(&file);
             currentTitleUseN3DS = true;
@@ -121,19 +132,39 @@ void N3DSMenu_CheckForConfigFile(void)
 void N3DSMenu_CreateConfigFile(void)
 {
     IFile file;
-  
-     if(R_SUCCEEDED(IFile_Open(&file, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""),fsMakePath(PATH_ASCII, fileNameBuf), FS_OPEN_CREATE | FS_OPEN_WRITE)))
-     {
+    FS_ArchiveID archiveId;
+    s64 out;
+    bool isSdMode;
+    
+    if (R_FAILED(svcGetSystemInfo(&out, 0x10000, 0x203)))
+        svcBreak(USERBREAK_ASSERT);
+
+    isSdMode = (bool)out;
+    
+    archiveId = isSdMode ? ARCHIVE_SDMC : ARCHIVE_NAND_RW;
+    
+    if(R_SUCCEEDED(IFile_Open(&file, archiveId, fsMakePath(PATH_EMPTY, ""), fsMakePath(PATH_ASCII, fileNameBuf), FS_OPEN_CREATE | FS_OPEN_WRITE)))
+    {
          IFile_Close(&file);
          currentTitleUseN3DS = true;
-     }
+    }
 }
 
 void N3DSMenu_DeleteConfigFile(void)
 {
     FS_Archive archive;
+    FS_ArchiveID archiveId;
+    s64 out;
+    bool isSdMode;
+    
+    if (R_FAILED(svcGetSystemInfo(&out, 0x10000, 0x203)))
+        svcBreak(USERBREAK_ASSERT);
 
-    if(R_SUCCEEDED(FSUSER_OpenArchive(&archive, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""))))
+    isSdMode = (bool)out;
+    
+    archiveId = isSdMode ? ARCHIVE_SDMC : ARCHIVE_NAND_RW;
+
+    if(R_SUCCEEDED(FSUSER_OpenArchive(&archive, archiveId, fsMakePath(PATH_EMPTY, ""))))
     {
         if(R_SUCCEEDED(FSUSER_DeleteFile(archive, fsMakePath(PATH_ASCII, fileNameBuf))))
         {

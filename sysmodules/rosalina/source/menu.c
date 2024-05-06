@@ -369,7 +369,7 @@ void menuThreadMain(void)
             mcuHwcExit();  
             botStatus = (result >> 5) & 1; // right shift result to bit 5 ("Bottom screen backlight on") and perform bitwise AND with 1
 
-           // svcKernelSetState(0x10000, 2); // unblock gsp
+          //  svcKernelSetState(0x10000, 2); // unblock gsp
             gspLcdInit();
             if(botStatus)
             {
@@ -380,7 +380,7 @@ void menuThreadMain(void)
                 GSPLCD_PowerOnBacklight(BIT(GSP_SCREEN_BOTTOM));
             }
             gspLcdExit();
-           // svcKernelSetState(0x10000, 2); // block gsp again
+          //  svcKernelSetState(0x10000, 2); // block gsp again
             while (scanHeldKeys() & (KEY_SELECT | KEY_START));
         }
         
