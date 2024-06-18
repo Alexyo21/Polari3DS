@@ -139,9 +139,9 @@ static size_t LumaConfig_SaveLumaIniConfigToStr(char *out, const CfgData *cfg)
     }
 
     if (GET_VERSION_REVISION(version) != 0) {
-        sprintf(lumaVerStr, "CustomLuma3DS v%d.%d.%d", (int)GET_VERSION_MAJOR(version), (int)GET_VERSION_MINOR(version), (int)GET_VERSION_REVISION(version));
+        sprintf(lumaVerStr, "Polari3DS v%d.%d.%d", (int)GET_VERSION_MAJOR(version), (int)GET_VERSION_MINOR(version), (int)GET_VERSION_REVISION(version));
     } else {
-        sprintf(lumaVerStr, "CustomLuma3DS v%d.%d",  (int)GET_VERSION_MAJOR(version), (int)GET_VERSION_MINOR(version));
+        sprintf(lumaVerStr, "Polari3DS v%d.%d",  (int)GET_VERSION_MAJOR(version), (int)GET_VERSION_MINOR(version));
     }
 
     if (isRelease) {
@@ -250,9 +250,9 @@ static size_t LumaConfig_SavePerformanceLumaIniConfigToStr(char *out, const CfgD
     }
 
     if (GET_VERSION_REVISION(version) != 0) {
-        sprintf(lumaVerStr, "CustomLuma3DS v%d.%d.%d", (int)GET_VERSION_MAJOR(version), (int)GET_VERSION_MINOR(version), (int)GET_VERSION_REVISION(version));
+        sprintf(lumaVerStr, "Polari3DS v%d.%d.%d", (int)GET_VERSION_MAJOR(version), (int)GET_VERSION_MINOR(version), (int)GET_VERSION_REVISION(version));
     } else {
-        sprintf(lumaVerStr, "CustomLuma3DS v%d.%d",  (int)GET_VERSION_MAJOR(version), (int)GET_VERSION_MINOR(version));
+        sprintf(lumaVerStr, "Polari3DS v%d.%d",  (int)GET_VERSION_MAJOR(version), (int)GET_VERSION_MINOR(version));
     }
 
     if (isRelease) {
