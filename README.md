@@ -1,4 +1,4 @@
-# CustomLuma3DS
+# Polari3DS
 *Noob/Advanced-proof (N)3DS "Custom Firmware"*
 *READ BELOW!!!!*
 # 
@@ -10,7 +10,7 @@ Rosalina with streams capabilities here addon for my fork:
 https://github.com/Alexyo21/Streaming-Rosalina
 
 Here is the nightly builds:
-https://nightly.link/Alexyo21/CustomLuma3DS/workflows/build/master/CustomLuma3DS-nightly.zip
+https://nightly.link/Alexyo21/Polari3DS/workflows/build/master/CustomLuma3DS-nightly.zip
 
 discord server in case of needing:
 https://discord.com/invite/qR2D3dq43b
