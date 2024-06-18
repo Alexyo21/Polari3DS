@@ -623,9 +623,9 @@ static size_t saveLumaIniConfigToStr(char *out)
     }
 
     if (VERSION_BUILD != 0) {
-        sprintf(lumaVerStr, "CustomLuma3DS v%d.%d.%d", (int)VERSION_MAJOR, (int)VERSION_MINOR, (int)VERSION_BUILD);
+        sprintf(lumaVerStr, "Polari3DS v%d.%d.%d", (int)VERSION_MAJOR, (int)VERSION_MINOR, (int)VERSION_BUILD);
     } else {
-        sprintf(lumaVerStr, "CustomLuma3DS v%d.%d", (int)VERSION_MAJOR, (int)VERSION_MINOR);
+        sprintf(lumaVerStr, "Polari3DS v%d.%d", (int)VERSION_MAJOR, (int)VERSION_MINOR);
     }
 
     if (ISRELEASE) {
