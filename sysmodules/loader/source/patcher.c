@@ -521,7 +521,7 @@ static inline bool loadTitleLocaleConfig(u64 progId, u8 *mask, u8 *regionId, u8 
                                       "HK", "MO", "--", "--", "--", "--", "--", "--", "ID", "SG", "TH", "PH",
                                       "MY", "--", "--", "--", "CN", "--", "--", "--", "--", "--", "--", "--",
                                       "AE", "IN", "EG", "OM", "QA", "KW", "SA", "SY", "BH", "JO", "--", "--",
-                                      "--", "--", "--", "--", "SM", "VA"};
+                                      "--", "--", "--", "--", "SM", "VA", "BM"};
 
     u32 i;
     for(i = 0; i < sizeof(regions) / sizeof(char *); i++)
@@ -671,7 +671,7 @@ static inline bool patchLayeredFs(u64 progId, u8 *code, u32 size, u32 textSize, 
     {
         updateRomFsMount = "pat1"; // Isolated to prevent false-positives
     }
-    
+
     else
     {
         u32 updateRomFsIndex;
