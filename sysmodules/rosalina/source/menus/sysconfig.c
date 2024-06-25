@@ -146,7 +146,7 @@ void SysConfigMenu_ToggleWireless(void)
 
 void SysConfigMenu_UpdateStatus(bool control)
 {
-    MenuItem *item = &sysconfigMenu.items[0];
+    MenuItem *item = &sysconfigMenu.items[1];
 
     if(control)
     {
@@ -279,9 +279,10 @@ void SysConfigMenu_ControlWifi(void)
     Result resInit = acInit();
     for (u32 i = 0; i < 3; i++)
     {
-        // ssid[0] = '\0' if result is an error here
-        ACI_LoadNetworkSetting(i);
-        ACI_GetNetworkWirelessEssidSecuritySsid(ssids[i]);
+        if (R_SUCCEEDED(ACI_LoadNetworkSetting(i)))
+            ACI_GetNetworkWirelessEssidSecuritySsid(ssids[i]);
+        else
+            strcpy(ssids[i], "(not configured)");
     }
     if (R_SUCCEEDED(resInit))
         acExit();

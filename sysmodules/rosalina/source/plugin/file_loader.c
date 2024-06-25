@@ -168,9 +168,9 @@ bool     TryToLoadPlugin(Handle process)
     pluginHeader->magic = HeaderMagic;
 
     // Try to open plugin file
-    if (ctx->useUserLoadParameters && (u32)tid == ctx->userLoadParameters.lowTitleId)
+    if (ctx->useUserLoadParameters && (ctx->userLoadParameters.lowTitleId == 0 || (u32)tid == ctx->userLoadParameters.lowTitleId))
     {
-        ctx->useUserLoadParameters = false;
+        if (!ctx->userLoadParameters.persistent) ctx->useUserLoadParameters = false;
         ctx->pluginMemoryStrategy = ctx->userLoadParameters.pluginMemoryStrategy;
         if (OpenFile(&plugin, ctx->userLoadParameters.path))
             return false;
