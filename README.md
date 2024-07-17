@@ -33,7 +33,7 @@ https://github.com/cooolgamer/the-pirate-launcher
  
 (little feature)/(improvements):
 * add cool patch like mcu bricker for notification led;
-* 
+
 Revision
 ...
   
