@@ -40,6 +40,12 @@ void     PLG__SetConfigMemoryStatus(u32 status);
 u32      PLG__GetConfigMemoryStatus(void);
 u32      PLG__GetConfigMemoryEvent(void);
 
+void    PluginLoader__MenuOption(void);
+void    PerGamePluginLoader__CheckForConfigFile(void);
+void    PerGamePluginLoader__CreateConfigFile(void);
+void    PerGamePluginLoader__DeleteConfigFile(void);
+void    PerGamePluginLoader__UpdateConfig(void);
+
 
 typedef enum
 {

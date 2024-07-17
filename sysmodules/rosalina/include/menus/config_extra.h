@@ -24,10 +24,13 @@ typedef struct {
 	bool homeToRosalina;
 	bool toggleBottomLcd;
 	bool turnLedsOffStandby;
+	bool perGamePlugin;
 } config_extra;
 
 extern config_extra configExtra;
 extern Menu configExtraMenu;
+
+bool old2DScheck(void);
 
 void ConfigExtra_SetSuppressLeds(void);
 void ConfigExtra_SetCutSlotPower(void);
@@ -35,6 +38,7 @@ void ConfigExtra_SetCutSleepWifi(void);
 void ConfigExtra_SetHomeToRosalina(void);
 void ConfigExtra_SetToggleBottomLcd(void);
 void ConfigExtra_SetTurnLedsOffStandby(void);
+void ConfigExtra_SetPerGamePlugin(void);
 void ConfigExtra_UpdateMenuItem(int menuIndex, bool value);
 void ConfigExtra_UpdateAllMenuItems(void);
 void ConfigExtra_ReadConfigExtra(void);
