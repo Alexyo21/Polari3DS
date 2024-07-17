@@ -37,7 +37,7 @@ enum singleOptions
     REDIRECTAPPTHREADS,
     PATCHVERSTRING,
     SHOWGBABOOT,
-    ENABLEDSIEXTFILTER,
+    PERFORMANCEMODE,
     ALLOWUPDOWNLEFTRIGHTDSI,
     CUTWIFISLEEP,
     PATCHUNITINFO,
@@ -47,6 +47,16 @@ enum singleOptions
     SHOWADVANCEDSETTINGS,
     HARDWAREPATCHING,
 };
+
+typedef struct {
+	bool suppressLeds;
+	bool cutSlotPower;
+	bool cutSleepWifi;
+	bool homeToRosalina;
+	bool toggleBottomLcd;
+	bool turnLedsOffStandby;
+	bool perGamePlugin;
+} config_extra;
 
 extern u32 config, multiConfig, bootConfig;
 extern bool isN3DS, isSdMode, nextGamePatchDisabled;
@@ -60,3 +70,6 @@ Result openSysmoduleCxi(IFile *outFile, u64 progId);
 bool readSysmoduleCxiNcchHeader(Ncch *outNcchHeader, IFile *file);
 bool readSysmoduleCxiExHeaderInfo(ExHeader_Info *outExhi, const Ncch *ncchHeader, IFile *file);
 bool readSysmoduleCxiCode(u8 *outCode, u32 *outSize, u32 maxSize, IFile *file, const Ncch *ncchHeader);
+
+bool usePerGamePluginSetting(void);
+bool enablePluginForTitle(u64 progId);

@@ -6,6 +6,8 @@
 #include "romfsredir.h"
 #include "util.h"
 
+config_extra configExtra = { .suppressLeds = true, .cutSlotPower = false, .cutSleepWifi = false, .homeToRosalina = false, .toggleBottomLcd = false, .turnLedsOffStandby = false, .perGamePlugin = false };
+
 static u32 patchMemory(u8 *start, u32 size, const void *pattern, u32 patSize, s32 offset, const void *replace, u32 repSize, u32 count)
 {
     u32 i;
@@ -329,15 +331,85 @@ exit:
     return ret;
 }
 
+bool usePerGamePluginSetting(void)
+{
+    IFile file;
+    FS_ArchiveID archiveId;
+    s64 out;
+    bool isSdMode;
+    Result res = 0;
+
+    if (R_FAILED(svcGetSystemInfo(&out, 0x10000, 0x203)))
+        svcBreak(USERBREAK_ASSERT);
+        
+    isSdMode = (bool)out;
+    
+    archiveId = isSdMode ? ARCHIVE_SDMC : ARCHIVE_NAND_RW;
+    
+    res = IFile_Open(&file, archiveId, fsMakePath(PATH_EMPTY, ""),
+            fsMakePath(PATH_ASCII, "/luma/configExtra.bin"), FS_OPEN_READ);
+
+    if(R_SUCCEEDED(res))
+    {
+        u64 total;
+        res = IFile_Read(&file, &total, &configExtra, sizeof(configExtra));
+        if(R_SUCCEEDED(res))
+        {
+            IFile_Close(&file);
+        }
+    }
+
+    return configExtra.perGamePlugin;
+}
+
+bool enablePluginForTitle(u64 progId)
+{
+    IFile file;
+    FS_ArchiveID archiveId;
+    s64 out;
+    bool isSdMode;
+    Result res = 0;
+
+    if (R_FAILED(svcGetSystemInfo(&out, 0x10000, 0x203)))
+        svcBreak(USERBREAK_ASSERT);
+        
+    isSdMode = (bool)out;
+    
+    archiveId = isSdMode ? ARCHIVE_SDMC : ARCHIVE_NAND_RW;
+    
+    char path[] = "/luma/plugins/PerGame/0000000000000000.bin";
+    progIdToStr(path + 26, progId);
+
+    res = IFile_Open(&file, archiveId, fsMakePath(PATH_EMPTY, ""), fsMakePath(PATH_ASCII, path), FS_OPEN_READ);
+
+    if(R_SUCCEEDED(res))
+    {
+        IFile_Close(&file);
+
+        return true;
+    }
+    return false;
+}
+
 bool useN3dsSettings(u64 progId)
 {
     IFile file;
+    FS_ArchiveID archiveId;
+    s64 out;
+    bool isSdMode;
     Result res = 0;
 
+    if (R_FAILED(svcGetSystemInfo(&out, 0x10000, 0x203)))
+        svcBreak(USERBREAK_ASSERT);
+        
+    isSdMode = (bool)out;
+    
+    archiveId = isSdMode ? ARCHIVE_SDMC : ARCHIVE_NAND_RW;
+    
     char path[] = "/luma/n3ds/0000000000000000.bin";
     progIdToStr(path + 26, progId);
 
-    res = IFile_Open(&file, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""), fsMakePath(PATH_ASCII, path), FS_OPEN_READ);
+    res = IFile_Open(&file, archiveId, fsMakePath(PATH_EMPTY, ""), fsMakePath(PATH_ASCII, path), FS_OPEN_READ);
 
     if(R_SUCCEEDED(res))
     {

@@ -272,6 +272,22 @@ Result  PLGLDR__IsPluginLoaderEnabled(bool *isEnabled)
     return res;
 }
 
+Result  PLGLDR__SetPluginLoaderState(bool enabled)
+{
+    Result res = 0;
+
+    u32 *cmdbuf = getThreadCommandBuffer();
+
+    cmdbuf[0] = IPC_MakeHeader(3, 1, 0);
+    cmdbuf[1] = (u32)enabled;
+
+    if (R_SUCCEEDED((res = svcSendSyncRequest(plgldrHandle))))
+    {
+        res = cmdbuf[1];
+    }
+    return res;
+}
+
 // Try to load a plugin for the game
 static Result PLGLDR_LoadPlugin(u32 processID)
 {
@@ -463,6 +479,12 @@ static Result LoadProcessImpl(Handle *outProcessHandle, const ExHeader_Info *exh
                 u32 processID;
                 assertSuccess(svcGetProcessId(&processID, *outProcessHandle));
                 assertSuccess(plgldrInit());
+
+                if(usePerGamePluginSetting() && enablePluginForTitle(titleId)) 
+                {
+                    assertSuccess(PLGLDR__SetPluginLoaderState(true));
+                }
+
                 assertSuccess(PLGLDR_LoadPlugin(processID));
                 plgldrExit();
             }
