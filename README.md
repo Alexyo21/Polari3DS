@@ -30,7 +30,7 @@ https://github.com/cooolgamer/the-pirate-launcher
 
 * nighshift remake;
 * fix quick debugger in loader(missing process and data...
-* 
+ 
 (little feature)/(improvements):
 * add cool patch like mcu bricker for notification led;
 * 
