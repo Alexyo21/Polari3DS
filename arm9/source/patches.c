@@ -251,7 +251,7 @@ u32 patchKernel11(u8 *pos, u32 size, u32 baseK11VA, u32 *arm11SvcTable, u32 *arm
 {
     static const u8 patternKPanic[] = {0x02, 0x0B, 0x44, 0xE2};
     static const u8 patternKThreadDebugReschedule[] = {0x34, 0x20, 0xD4, 0xE5, 0x00, 0x00, 0x55, 0xE3, 0x80, 0x00, 0xA0, 0x13};
-   // static const u8 patternSuspendThread[] = {0xB0, 0x01, 0xD5, 0xE1, 0x01, 0x00, 0x50, 0xE3};
+    static const u8 patternSuspendThread[] = {0xB0, 0x01, 0xD5, 0xE1, 0x01, 0x00, 0x50, 0xE3};
 
     //Assumption: ControlMemory, DebugActiveProcess and KernelSetState are in the first 0x20000 bytes
     //Patch ControlMemory
@@ -325,13 +325,16 @@ u32 patchKernel11(u8 *pos, u32 size, u32 baseK11VA, u32 *arm11SvcTable, u32 *arm
     // This will cause significant slow down for system modules such as fs, httpc, y2r, mvd etc...
     // This patch disables "suspending system threads" behavior so that if user threads
     // use little CPU time, then system threads can use rest of CPU time.
-/*   off = (u32 *)memsearch(pos, patternSuspendThread, size, sizeof(patternSuspendThread));
-    if(off)
+    if (CONFIG(PERFORMANCEMODE))
     {
-        //We are replacing if(core_id == 1) with if(core_id == 4) so that it will always be false.
-        off[1] = 0x040050E3;//cmp r0, #0x1 -> cmp r0, #0x4
+       off = (u32 *)memsearch(pos, patternSuspendThread, size, sizeof(patternSuspendThread));
+       if(off)
+       {
+          //We are replacing if(core_id == 1) with if(core_id == 4) so that it will always be false.
+          off[1] = 0x040050E3;//cmp r0, #0x1 -> cmp r0, #0x4
+       }
     }
-*/
+
     return 0;
 }
 
@@ -868,7 +871,7 @@ void patchTwlBg(u8 *pos, u32 size)
     };
 
     // "error" func doesn't seem to work here
-    if (CONFIG(ENABLEDSIEXTFILTER))
+    if (CONFIG(ALLOWUPDOWNLEFTRIGHTDSI))
     {
         u16 filter[5*6] = { 0 };
         u32 rd = fileRead(filter, "twl_upscaling_filter.bin", sizeof(filter));
@@ -880,10 +883,7 @@ void patchTwlBg(u8 *pos, u32 size)
                 memcpy(off, filter, sizeof(filter));
             // else error("Failed to apply enable_dsi_external_filter.");
         }
-    }
 
-    if (CONFIG(ALLOWUPDOWNLEFTRIGHTDSI))
-    {
         u16 *off2;
         for (off2 = (u16 *)pos; (u8 *)off2 < pos + size && (off2[0] != 0x2040 || off2[1] != 0x4020); off2++);
 
@@ -893,7 +893,9 @@ void patchTwlBg(u8 *pos, u32 size)
             for (u32 i = 0; i < 8; i++)
                 off2[i] = 0x46C0;
         }
-    }       
+    }
+
+    return;
 }
 
 u32 patchLgyK11(u8 *section1, u32 section1Size, u8 *section2, u32 section2Size)

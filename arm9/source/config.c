@@ -65,7 +65,7 @@ static const char *singleOptionIniNamesBoot[] = {
     "app_syscore_threads_on_core_2",
     "show_system_settings_string",
     "show_gba_boot_screen",
-    "enable_dsi_external_filter",
+    "enable_perf_scheduler",
     "allow_updown_leftright_dsi",
     "cut_wifi_sleep_mode",
     "use_dev_unitinfo",
@@ -661,7 +661,7 @@ static size_t saveLumaIniConfigToStr(char *out)
         (int)CONFIG(AUTOBOOTEMU), (int)CONFIG(LOADEXTFIRMSANDMODULES),
         (int)CONFIG(PATCHGAMES), (int)CONFIG(REDIRECTAPPTHREADS),
         (int)CONFIG(PATCHVERSTRING), (int)CONFIG(SHOWGBABOOT),
-        (int)CONFIG(ENABLEDSIEXTFILTER), (int)CONFIG(ALLOWUPDOWNLEFTRIGHTDSI),
+        (int)CONFIG(PERFORMANCEMODE), (int)CONFIG(ALLOWUPDOWNLEFTRIGHTDSI),
         (int)CONFIG(CUTWIFISLEEP), (int)CONFIG(PATCHUNITINFO),
         (int)CONFIG(DISABLEARM11EXCHANDLERS), (int)CONFIG(ENABLESAFEFIRMROSALINA),
         (int)CONFIG(NOERRDISPINSTANTREBOOT),
@@ -850,7 +850,7 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
                                                "( ) Redirect app. syscore threads to core2",
                                                "( ) Show NAND or user string in System Settings",
                                                "( ) Show GBA boot screen in patched AGB_FIRM",
-                                               "( ) Enable custom upscaling filters for DSi",
+                                               "( ) Patch scheduler cpu to perf mode",
                                                "( ) Allow Left+Right / Up+Down combos for DSi",
                                                "( ) Cut 3DS Wifi in sleep mode",
                                                "( ) Set developer UNITINFO",
@@ -959,17 +959,25 @@ void configMenu(bool oldPinStatus, u32 oldPinMode)
                                                  "Enable showing the GBA boot screen\n"
                                                  "when booting GBA games.",
 
-                                                 "Enable replacing the default upscaling\n"
-                                                 "filter used for DS(i) software by the\n"
-                                                 "contents of:\n\n"
-                                                 "/luma/twl_upscaling_filter.bin\n\n"
-                                                 "Refer to the wiki for further details.",
+                                                 "Enable patching the default scheduler\n"
+                                                 "for cpu arm11 used in 3DS software by\n"
+                                                 "its contents, like games, apps, ecc.\n\n"
+                                                 "It may happen deadlock if some apps,\n"
+                                                 "take to many resources, so use this\n"
+                                                 "when needed not all times, like:\n"
+                                                 "in games where latency is essential,\n"
+                                                 "or apps that perform heavy tasks.",
 
                                                  "Allow Left+Right and Up+Down button\n"
                                                  "combos (using DPAD and CPAD\n"
                                                  "simultaneously) in DS(i) software.\n\n"
                                                  "Commercial software filter these\n"
-                                                 "combos on their own too, though.",
+                                                 "combos on their own too, though.\n\n"
+                                                 "Enable replacing the default upscaling\n"
+                                                 "filter used for DS(i) software by the\n"
+                                                 "contents of:\n\n"
+                                                 "/luma/twl_upscaling_filter.bin\n\n"
+                                                 "Refer to the wiki for further details.",
                                                  
                                                  "Cut the 3DS wifi in sleep mode.\n\n"
                                                  "Useful to save battery but prevent\n"
