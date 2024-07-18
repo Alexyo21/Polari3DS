@@ -82,7 +82,7 @@ Menu miscellaneousMenu = {
         { "Update time and date via NTP", METHOD, .method = &MiscellaneousMenu_UpdateTimeDateNtp },
         { "Nullify user time offset", METHOD, .method = &MiscellaneousMenu_NullifyUserTimeOffset },
         { "Dump DSP firmware", METHOD, .method = &MiscellaneousMenu_DumpDspFirm },
-        { "Chainloader", METHOD, .method = &chainloader },
+       // { "Chainloader", METHOD, .method = &chainloader },
         { "Set Play Coins to 300", METHOD, .method = &MiscellaneousMenu_MaxPlayCoins },
         {},
     }
