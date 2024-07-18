@@ -10,6 +10,9 @@
 #include "sleep.h"
 #include "task_runner.h"
 #include "plugin/plgloader.h"
+#include "pmdbgext.h"
+#include "draw.h"
+#include "menus/config_extra.h"
 
 #define PLGLDR_VERSION (SYSTEM_VERSION(1, 0, 2))
 
@@ -18,6 +21,16 @@
 #define PERS_USER_FILE_MAGIC 0x53524550 // PERS
 
 static const char *g_title = "Plugin loader";
+static char menuBuf[64], fileNameBuf[64];
+
+static u64 programId = 0;
+static bool currentTitleUsesPlugin = false;
+
+static bool currentTitleAvailable(void)
+{
+    return programId > 0;
+}
+
 PluginLoaderContext PluginLoaderCtx;
 extern u32 g_blockMenuOpen;
 
@@ -76,6 +89,71 @@ bool        PluginLoader__IsEnabled(void)
     return PluginLoaderCtx.isEnabled;
 }
 
+void        PluginLoader__MenuOption(void)
+{
+    if(configExtra.perGamePlugin)
+    {
+        PerGamePluginLoader__CheckForConfigFile();
+
+        if (currentTitleAvailable())
+        {
+            Draw_Lock();
+            Draw_ClearFramebuffer();
+            Draw_FlushFramebuffer();
+            Draw_Unlock();
+
+            do
+            {
+                Draw_Lock();
+                Draw_DrawString(10, 10, COLOR_TITLE, "Per game plugin config");
+                Draw_DrawString(10, 30, COLOR_WHITE, "Press Y to manually toggle plugin loader.");
+
+                if(currentTitleUsesPlugin)
+                {
+                    Draw_DrawString(10, 50, COLOR_GREEN, "Plugin loader auotmatically enabled for this title.");
+                    Draw_DrawString(10, 60, COLOR_WHITE, "Press X to disable auto plugin loader for this title.");
+                }
+                else
+                {
+                    Draw_DrawString(10, 50, COLOR_RED, "Automatic plugin loader disabled for this title.");
+                    Draw_DrawString(10, 60, COLOR_WHITE, "Press X to enable auto plugin loader for this title.");
+                }
+
+                Draw_DrawString(10, 80, COLOR_WHITE, "Relaunch current title to apply changes.");
+                Draw_DrawString(10, 100, COLOR_WHITE, "Press B to go back.");
+                Draw_FlushFramebuffer();
+                Draw_Unlock();
+
+                u32 pressed = waitInputWithTimeout(1000);
+
+                if(pressed & KEY_X) 
+                {
+                    PerGamePluginLoader__UpdateConfig();
+                    return;
+                }
+                else if(pressed & KEY_Y)
+                {
+                    PluginLoader__MenuCallback();
+                    return;
+                }
+                else if(pressed & KEY_B)
+                {
+                    return;
+                }
+            }
+            while(!menuShouldExit);
+        }
+        else 
+        {
+            PluginLoader__MenuCallback();
+        }
+    }
+    else 
+    {
+        PluginLoader__MenuCallback();
+    }
+}
+
 void        PluginLoader__MenuCallback(void)
 {
     PluginLoaderCtx.isEnabled = !PluginLoaderCtx.isEnabled;
@@ -87,11 +165,13 @@ void        PluginLoader__UpdateMenu(void)
 {
     static const char *status[2] =
     {
-        "Plugin Loader: [Disabled]",
-        "Plugin Loader: [Enabled]"
+        "Plugin Loader: [Disabled]%s",
+        "Plugin Loader: [Enabled]%s"
     };
 
-    rosalinaMenu.items[3].title = status[PluginLoaderCtx.isEnabled];
+    sprintf(menuBuf, status[PluginLoaderCtx.isEnabled], " [Per Game]");
+
+    rosalinaMenu.items[3].title = configExtra.perGamePlugin ? menuBuf : status[PluginLoaderCtx.isEnabled];
 }
 
 static ControlApplicationMemoryModeOverrideConfig g_memorymodeoverridebackup = { 0 };
@@ -651,4 +731,89 @@ void    PluginLoader__HandleKernelEvent(u32 notifId)
         
     }
     srvPublishToSubscriber(0x1002, 0);
+}
+
+void PerGamePluginLoader__CheckForConfigFile(void)
+{
+    programId = 0;
+    currentTitleUsesPlugin = false;
+
+    FS_ProgramInfo programInfo;
+    u32 pid;
+    u32 launchFlags;
+
+    if(R_SUCCEEDED(PMDBG_GetCurrentAppInfo(&programInfo, &pid, &launchFlags)))
+    {
+        programId = programInfo.programId;
+
+        sprintf(fileNameBuf, "%s%016llX%s", "/luma/plugins/PerGame/", programId, ".bin");
+        IFile file;
+        FS_ArchiveID archiveId;
+        s64 out;
+        bool isSdMode;
+        
+        if (R_FAILED(svcGetSystemInfo(&out, 0x10000, 0x203)))
+            svcBreak(USERBREAK_ASSERT);
+        
+        isSdMode = (bool)out;
+    
+        archiveId = isSdMode ? ARCHIVE_SDMC : ARCHIVE_NAND_RW;
+        
+        if(R_SUCCEEDED(IFile_Open(&file, archiveId, fsMakePath(PATH_EMPTY, ""),fsMakePath(PATH_ASCII, fileNameBuf), FS_OPEN_READ)))
+        {
+            IFile_Close(&file);
+            currentTitleUsesPlugin = true;
+        }
+    }
+}
+
+void PerGamePluginLoader__CreateConfigFile(void)
+{
+    IFile file;
+    FS_ArchiveID archiveId;
+    s64 out;
+    bool isSdMode;
+    
+    if (R_FAILED(svcGetSystemInfo(&out, 0x10000, 0x203)))
+        svcBreak(USERBREAK_ASSERT);
+        
+    isSdMode = (bool)out;
+    
+    archiveId = isSdMode ? ARCHIVE_SDMC : ARCHIVE_NAND_RW;
+
+    if(R_SUCCEEDED(IFile_Open(&file, archiveId, fsMakePath(PATH_EMPTY, ""),fsMakePath(PATH_ASCII, fileNameBuf), FS_OPEN_CREATE | FS_OPEN_WRITE)))
+    {
+        IFile_Close(&file);
+        currentTitleUsesPlugin = true;
+    }
+}
+
+void PerGamePluginLoader__DeleteConfigFile(void)
+{
+    FS_Archive archive;
+    FS_ArchiveID archiveId;
+    s64 out;
+    bool isSdMode;
+    
+    if (R_FAILED(svcGetSystemInfo(&out, 0x10000, 0x203)))
+        svcBreak(USERBREAK_ASSERT);
+        
+    isSdMode = (bool)out;
+    
+    archiveId = isSdMode ? ARCHIVE_SDMC : ARCHIVE_NAND_RW;
+
+    if(R_SUCCEEDED(FSUSER_OpenArchive(&archive, archiveId, fsMakePath(PATH_EMPTY, ""))))
+    {
+        if(R_SUCCEEDED(FSUSER_DeleteFile(archive, fsMakePath(PATH_ASCII, fileNameBuf))))
+        {
+            currentTitleUsesPlugin = false;
+        }
+
+        FSUSER_CloseArchive(archive);
+    }
+}
+
+void PerGamePluginLoader__UpdateConfig(void)
+{
+    currentTitleUsesPlugin ? PerGamePluginLoader__CreateConfigFile() : PerGamePluginLoader__DeleteConfigFile();
 }

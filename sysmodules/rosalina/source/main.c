@@ -56,9 +56,9 @@
 #include "config_template_ini.h"
 #include "configExtra_ini.h"
 
-bool isN3DS;
-bool wifiOnBeforeSleep;
-bool hasTopScreen;
+bool isN3DS = false;
+bool wifiOnBeforeSleep = false;
+bool hasTopScreen = false;
 
 extern config_extra configExtra;
 
@@ -277,6 +277,16 @@ static void handleRestartHbAppNotification(u32 notificationId)
 }
 #endif
 
+static void handleApplicationExitNotification(u32 notificationId)
+{
+    if (notificationId == 0x110) {
+        if(configExtra.perGamePlugin && PluginLoader__IsEnabled())
+        {
+            PluginLoader__MenuCallback();
+        }
+    } 
+}
+
 static void handleHomeButtonNotification(u32 notificationId)
 {
     (void)notificationId;
@@ -294,6 +304,7 @@ static const ServiceManagerServiceEntry services[] = {
 
 static const ServiceManagerNotificationEntry notifications[] = {
     { 0x100 ,                       handleTermNotification                  },
+    { 0x110 ,                       handleApplicationExitNotification       },
     { PTMNOTIFID_SLEEP_REQUESTED,   handleSleepNotification                 },
     { PTMNOTIFID_SLEEP_DENIED,      handleSleepNotification                 },
     { PTMNOTIFID_SLEEP_ALLOWED,     handleSleepNotification                 },
