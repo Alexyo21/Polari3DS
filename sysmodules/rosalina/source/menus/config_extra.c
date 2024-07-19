@@ -49,8 +49,7 @@ Menu configExtraMenu = {
 
 bool old2DScheck(void)
 {
-    if(!(hasTopScreen == true)) return false;
-    else return true;
+    return hasTopScreen;
 }
 
 void ConfigExtra_SetSuppressLeds(void) 
