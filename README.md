@@ -29,7 +29,7 @@ https://github.com/cooolgamer/the-pirate-launcher
 ## next update
 
 * nighshift remake;
-* fix quick debugger in loader(missing process and data...
+* fix quick debugger in loader (missing process and data...)
  
 (little feature)/(improvements):
 * add cool patch like mcu bricker for notification led;
