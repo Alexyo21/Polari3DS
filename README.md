@@ -35,7 +35,7 @@ https://github.com/cooolgamer/the-pirate-launcher
 * add cool patch like mcu bricker for notification led;
 
 Revision
-...
+fix and reformat chainloader
   
 NOT AT THE MOMENT
 * gateway sysnand support🤔 (gateway3ds can still cause many problems so for now i'm not adding it)
