@@ -35,6 +35,7 @@ extern Menu screenFiltersMenu;
 typedef struct ScreenFilter {
     u16 cct;
     bool invert;
+    u8 colorCurveCorrection;
     float gamma;
     float contrast;
     float brightness;
@@ -57,6 +58,9 @@ void ScreenFiltersMenu_SetIncandescent(void);       // 2700K
 void ScreenFiltersMenu_SetWarmIncandescent(void);   // 2300K
 void ScreenFiltersMenu_SetCandle(void);             // 1900K
 void ScreenFiltersMenu_SetEmber(void);              // 1200K
+
+void ScreenFiltersMenu_SetSrgbColorCurves(void);
+void ScreenFiltersMenu_RestoreColorCurves(void);
 
 void ScreenFiltersMenu_AdvancedConfiguration(void);
 
