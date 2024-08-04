@@ -59,6 +59,8 @@
 u32 menuCombo = 0;
 bool isHidInitialized = false;
 u32 mcuFwVersion = 0;
+u8 mcuInfoTable[9] = {0};
+bool mcuInfoTableRead = false;
 bool rosalinaOpen = false;
 
 void menuToggleLeds(void)
@@ -281,6 +283,9 @@ static Result menuUpdateMcuInfo(void)
     MCUHWC_ReadRegister(0x58, dspVolumeSlider, 2); // Register-mapped ADC register
     MCUHWC_ReadRegister(0x27, volumeSlider + 0, 1); // Raw volume slider state
     MCUHWC_ReadRegister(0x09, volumeSlider + 1, 1); // Volume slider state
+
+    if (!mcuInfoTableRead)
+        mcuInfoTableRead = R_SUCCEEDED(MCUHWC_ReadRegister(0x7F, mcuInfoTable, sizeof(mcuInfoTable)));
 
     svcCloseHandle(*mcuHwcHandlePtr);
     return res;
