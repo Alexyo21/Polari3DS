@@ -83,6 +83,9 @@ extern u8 mcuInfoTable[9];
 extern bool mcuInfoTableRead;
 extern u32 g_blockMenuOpen;
 extern bool rosalinaOpen;
+extern const char *topScreenType;
+extern const char *bottomScreenType;
+extern bool areScreenTypesInitialized;
 
 // From main.c
 extern bool isN3DS;
