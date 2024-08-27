@@ -509,6 +509,11 @@ bool doLumaUpgradeProcess(void)
 
     createDir("sdmc:/luma/payloads");
     createDir("nand:/rw/luma/payloads");
+    if(ISN3DS)
+    {
+      createDir("sdmc:/luma/n3ds");
+      createDir("nand:/rw/luma/n3ds");
+    }
 
     return ok && ok2;
 }

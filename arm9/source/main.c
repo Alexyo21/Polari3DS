@@ -195,17 +195,6 @@ void main(int argc, char **argv, u32 magicWord)
      nandcid = true;
      PatchITCMCid();
     }
-    
-    if(ISN3DS)
-    {
-       if(isSdMode)
-       {
-          if(!getFileSize("sdmc:/luma/n3ds/"))
-          {
-             f_mkdir("sdmc:/luma/n3ds/");
-          }
-       }
-    }
 
     //Attempt to read the configuration file
     needConfig = readConfig() ? MODIFY_CONFIGURATION : CREATE_CONFIGURATION;
