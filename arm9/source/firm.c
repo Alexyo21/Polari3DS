@@ -128,7 +128,7 @@ static inline u32 loadFirmFromStorage(FirmwareType firmType)
 
     if(!firmSize) return 0;
 
-    static const char *extFirmError = "The external FIRM is not valid.";
+    static const char *extFirmError = "Il FIRM esterno non e' valido.";
 
     if(firmSize <= sizeof(Cxi) + 0x200) error(extFirmError);
 
@@ -139,14 +139,14 @@ static inline u32 loadFirmFromStorage(FirmwareType firmType)
         u8 cetk[0xA50];
 
         if(fileRead(cetk, cetkFiles[(u32)firmType], sizeof(cetk)) != sizeof(cetk))
-            error("The cetk is missing or corrupted.");
+            error("Il cetk è mancante o corrotto.");
 
         firmSize = decryptNusFirm((Ticket *)(cetk + 0x140), (Cxi *)firm, firmSize);
 
-        if(!firmSize) error("Unable to decrypt the external FIRM.");
+        if(!firmSize) error("Impossibile scriptare il FIRM esterno.");
     }
 
-    if(!checkFirm(firmSize)) error("The external FIRM is invalid or corrupted.");
+    if(!checkFirm(firmSize)) error("Il FIRM esterno non e' valido o e' corrotto.");
 
     return firmSize;
 }
@@ -198,7 +198,7 @@ u32 loadNintendoFirm(FirmwareType *firmType, FirmwareSource nandType, bool loadF
         else storageLoadError = true;
     }
     // If all attempts failed, panic.
-    if(ctrNandError && storageLoadError) error("Unable to mount CTRNAND or load the CTRNAND FIRM.\nPlease use an external one.");
+    if(ctrNandError && storageLoadError) error("Impossibile montare la CTRNAND o caricare il CTRNAND FIRM.\nPer favore usarne uno esterno.");
 
     //Check that the FIRM is right for the console from the Arm9 section address
     bool isO3dsFirm = firm->section[3].offset == 0 && firm->section[2].address == (u8 *)0x8006800;
@@ -285,7 +285,7 @@ void loadHomebrewFirm(u32 pressed)
     u32 maxPayloadSize = (u32)((u8 *)0x27FFE000 - (u8 *)firm),
         payloadSize = fileRead(firm, path, maxPayloadSize);
 
-    if(payloadSize <= 0x200 || !checkFirm(payloadSize)) error("The payload is invalid or corrupted.");
+    if(payloadSize <= 0x200 || !checkFirm(payloadSize)) error("Il payload e' invalido o corrotto.");
 
     char absPath[24 + 255];
 
@@ -376,7 +376,7 @@ typedef struct CopyKipResult {
 // Copy a KIP, decompressing it in place if necessary (TwlBg)
 static CopyKipResult copyKip(u8 *dst, const u8 *src, u32 maxSize, bool decompress)
 {
-    const char *extModuleSizeError = "The external FIRM modules are too large.";
+    const char *extModuleSizeError = "I moduli dei FIRM esterni sono troppo grandi.";
     CopyKipResult res = { 0 };
     Cxi *dstCxi = (Cxi *)dst;
     const Cxi *srcCxi = (const Cxi *)src;
@@ -397,7 +397,7 @@ static CopyKipResult copyKip(u8 *dst, const u8 *src, u32 maxSize, bool decompres
     u8 *codeAddr = (u8 *)exefs + sizeof(ExeFsHeader) + fh->offset;
 
     if (memcmp(fh->name, ".code\0\0\0", 8) != 0 || fh->offset != 0 || exefs->fileHeaders[1].size != 0)
-        error("One of the external FIRM modules have invalid layout.");
+        error("Uno dei moduli dei FIRM esterni ha un layout invalido.");
 
     // If it's already decompressed or we don't need to, there is not much left to do
     if (!decompress || !isCompressed)
@@ -483,7 +483,7 @@ static void mergeSection0(FirmwareType firmType, u32 firmVersion, bool loadFromS
 
     //3) Read or copy the modules
     u8 *dst = firm->section[0].address;
-    const char *extModuleSizeError = "The external FIRM modules are too large.";
+    const char *extModuleSizeError = "I moduli dei FIRM esterni sono troppo grandi.";
     // SAFE_FIRM only for N3DS and only if ENABLESAFEFIRMROSALINA is on
     u32 maxModuleSize = !isLgyFirm ? 0x80000 : 0x600000;
     u32 dstModuleSize = 0;
@@ -506,7 +506,7 @@ static void mergeSection0(FirmwareType firmType, u32 firmVersion, bool loadFromS
                    fileRead(dst, fileName, dstModuleSize) != dstModuleSize ||
                    memcmp(((Cxi *)dst)->ncch.magic, "NCCH", 4) != 0 ||
                    memcmp(moduleList[i].name, ((Cxi *)dst)->exHeader.systemControlInfo.appTitle, sizeof(((Cxi *)dst)->exHeader.systemControlInfo.appTitle)) != 0)
-                    error("An external FIRM module is invalid or corrupted.");
+                    error("Un modulo di FIRM esterno e' invalido o corrotto");
                     
                 dst += dstModuleSize;
                 maxModuleSize -= dstModuleSize;
@@ -536,12 +536,12 @@ static void mergeSection0(FirmwareType firmType, u32 firmVersion, bool loadFromS
     if (isLgyFirm)
     {
         if (patchK11ModuleLoadingLgy(newKipSectionSize, kernel11Addr, kernel11Size) != 0)
-            error("Failed to load sysmodules");
+            error("Caricamento dei moduli di sistema fallito");
     }
     else
     {
         if (patchK11ModuleLoading(oldKipSectionSize, newKipSectionSize, nbModules, kernel11Addr, kernel11Size) != 0)
-            error("Failed to load sysmodules");
+            error("Caricamento dei moduli di sistema fallito");
     }
 }
 

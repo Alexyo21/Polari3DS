@@ -64,7 +64,7 @@ GDB_DECLARE_REMOTE_COMMAND_HANDLER(ConvertVAToPA)
         Result r = svcOpenProcess(&process, ctx->pid);
         if(R_FAILED(r))
         {
-            n = sprintf(outbuf, "Invalid process (wtf?)\n");
+            n = sprintf(outbuf, "Processo non valido (ma che ca?)\n");
             goto end;
         }
         r = svcControlProcess(process, PROCESSOP_GET_PA_FROM_VA, (u32)&pa, val);
@@ -72,7 +72,7 @@ GDB_DECLARE_REMOTE_COMMAND_HANDLER(ConvertVAToPA)
 
         if (R_FAILED(r))
         {
-            n = sprintf(outbuf, "An error occured: %08lX\n", r);
+            n = sprintf(outbuf, "Si e' verificato un errore: %08lX\n", r);
             goto end;
         }
     }
@@ -97,7 +97,7 @@ GDB_DECLARE_REMOTE_COMMAND_HANDLER(SyncRequestInfo)
 
     if(ctx->selectedThreadId == 0)
     {
-        n = sprintf(outbuf, "Cannot run this command without a selected thread.\n");
+        n = sprintf(outbuf, "Impossibile eseguire questo comando senza un thread selezionato.\n");
         goto end;
     }
 
@@ -109,7 +109,7 @@ GDB_DECLARE_REMOTE_COMMAND_HANDLER(SyncRequestInfo)
     r = svcOpenProcess(&process, ctx->pid);
     if(R_FAILED(r))
     {
-        n = sprintf(outbuf, "Invalid process (wtf?)\n");
+        n = sprintf(outbuf, "Processo non valido (ma che ca?)\n");
         goto end;
     }
 
@@ -119,14 +119,14 @@ GDB_DECLARE_REMOTE_COMMAND_HANDLER(SyncRequestInfo)
 
     if(R_FAILED(r) || id == MAX_DEBUG_THREAD)
     {
-        n = sprintf(outbuf, "Invalid or running thread.\n");
+        n = sprintf(outbuf, "Thread non valido o in esecuzione.\n");
         goto end;
     }
 
     r = svcReadProcessMemory(&cmdId, ctx->debug, ctx->threadInfos[id].tls + 0x80, 4);
     if(R_FAILED(r))
     {
-        n = sprintf(outbuf, "Invalid or running thread.\n");
+        n = sprintf(outbuf, "Thread non valido o in esecuzione.\n");
         goto end;
     }
 
@@ -142,7 +142,7 @@ GDB_DECLARE_REMOTE_COMMAND_HANDLER(SyncRequestInfo)
     if(R_FAILED(r) || ((regs.cpu_registers.cpsr & 0x20) && !(instr == 0xDF32 || (instr == 0xDFFE && regs.cpu_registers.r[12] == 0x32)))
                    || (!(regs.cpu_registers.cpsr & 0x20) && !(instr == 0xEF000032 || (instr == 0xEF0000FE && regs.cpu_registers.r[12] == 0x32))))
     {
-        n = sprintf(outbuf, "The selected thread is not currently performing a sync request (svc 0x32).\n");
+        n = sprintf(outbuf, "Il thread selezionato non sta attualmente perf. una richiesta di sincr. (svc 0x32).\n");
         goto end;
     }
 
@@ -151,7 +151,7 @@ GDB_DECLARE_REMOTE_COMMAND_HANDLER(SyncRequestInfo)
     r = svcCopyHandle(&handle, CUR_PROCESS_HANDLE, (Handle)regs.cpu_registers.r[0], process);
     if(R_FAILED(r))
     {
-        n = sprintf(outbuf, "Invalid handle.\n");
+        n = sprintf(outbuf, "Handle non valido.\n");
         goto end;
     }
 
@@ -221,14 +221,14 @@ GDB_DECLARE_REMOTE_COMMAND_HANDLER(TranslateHandle)
     r = svcOpenProcess(&process, ctx->pid);
     if(R_FAILED(r))
     {
-        n = sprintf(outbuf, "Invalid process (wtf?)\n");
+        n = sprintf(outbuf, "Processo non valido (ma che ca?)\n");
         goto end;
     }
 
     r = svcCopyHandle(&handle, CUR_PROCESS_HANDLE, (Handle)val, process);
     if(R_FAILED(r))
     {
-        n = sprintf(outbuf, "Invalid handle.\n");
+        n = sprintf(outbuf, "Handle non valido.\n");
         goto end;
     }
 
@@ -293,17 +293,17 @@ GDB_DECLARE_REMOTE_COMMAND_HANDLER(ListAllHandles)
     r = svcOpenProcess(&process, ctx->pid);
     if(R_FAILED(r))
     {
-        n = sprintf(outbuf, "Invalid process (wtf?)\n");
+        n = sprintf(outbuf, "Processo non valido (ma che ca?).\n");
         goto end;
     }
 
     if (R_FAILED(count = svcControlProcess(process, PROCESSOP_GET_ALL_HANDLES, (u32)procHandles, val)))
-        n = sprintf(outbuf, "An error occured: %08lX\n", count);
+        n = sprintf(outbuf, "Si e' verificato un errore: %08lX\n", count);
     else if (count == 0)
-        n = sprintf(outbuf, "Process has no handles ?\n");
+        n = sprintf(outbuf, "Il processo non ha handles?\n");
     else
     {
-        n = sprintf(outbuf, "Found %ld handles.\n", count);
+        n = sprintf(outbuf, "Trovati %ld handles.\n", count);
 
         const char *comma = "";
         for (s32 i = 0; i < count && n < (GDB_BUF_LEN >> 1) - 20; ++i)
@@ -339,7 +339,7 @@ GDB_DECLARE_REMOTE_COMMAND_HANDLER(GetMmuConfig)
 
     r = svcOpenProcess(&process, ctx->pid);
     if(R_FAILED(r))
-        n = sprintf(outbuf, "Invalid process (wtf?)\n");
+        n = sprintf(outbuf, "Processo non valido (ma che ca?)\n");
     else
     {
         s64 TTBCR, TTBR0;
@@ -370,7 +370,7 @@ GDB_DECLARE_REMOTE_COMMAND_HANDLER(GetMemRegions)
 
     if(R_FAILED(svcOpenProcess(&handle, ctx->pid)))
     {
-        posInBuffer = sprintf(outbuf, "Invalid process (wtf?)\n");
+        posInBuffer = sprintf(outbuf, "Processo non valido (ma che ca?)\n");
         return GDB_SendHexPacket(ctx, outbuf, posInBuffer);
     }
 
@@ -396,7 +396,7 @@ GDB_DECLARE_REMOTE_COMMAND_HANDLER(ToggleExternalMemoryAccess)
 
     ctx->enableExternalMemoryAccess = !ctx->enableExternalMemoryAccess;
 
-    n = sprintf(outbuf, "External memory access %s successfully.\n", ctx->enableExternalMemoryAccess ? "enabled" : "disabled");
+    n = sprintf(outbuf, "Accesso alla memoria esterna %s con successo.\n", ctx->enableExternalMemoryAccess ? "abilitato" : "disabilitato");
 
     return GDB_SendHexPacket(ctx, outbuf, n);
 }
@@ -442,7 +442,7 @@ GDB_DECLARE_REMOTE_COMMAND_HANDLER(GetThreadPriority)
     int n;
     char outbuf[GDB_BUF_LEN / 2 + 1];
 
-    n = sprintf(outbuf, "Thread (%ld) priority: 0x%02lX\n", ctx->selectedThreadId,
+    n = sprintf(outbuf, "Thread (%ld) priorita': 0x%02lX\n", ctx->selectedThreadId,
                 GDB_GetDynamicThreadPriority(ctx, ctx->selectedThreadId));
 
     return GDB_SendHexPacket(ctx, outbuf, n);
@@ -452,7 +452,7 @@ GDB_DECLARE_QUERY_HANDLER(Rcmd)
 {
     char commandData[GDB_BUF_LEN / 2 + 1];
     char *endpos;
-    const char *errstr = "Unrecognized command.\n";
+    const char *errstr = "Comando non riconosciuto.\n";
     u32 len = strlen(ctx->commandData);
 
     if(len == 0 || (len % 2) == 1 || GDB_DecodeHex(commandData, ctx->commandData, len / 2) != len / 2)

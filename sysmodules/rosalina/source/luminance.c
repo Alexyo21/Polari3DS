@@ -206,36 +206,36 @@ void Luminance_RecalibrateBrightnessDefaults(void)
 
         Draw_Lock();
         Draw_ClearFramebuffer();
-        Draw_DrawString(10, 10, COLOR_TITLE, "Permanent brightness recalibration - by Nutez");
+        Draw_DrawString(10, 10, COLOR_TITLE, "Ricalibrazione permanente luminosita' - di Nutez");
         u32 posY = 30;
         
-        posY = Draw_DrawString(10, posY, COLOR_RED, "WARNING: ") + SPACING_Y;
-        posY = Draw_DrawString(10, posY, COLOR_WHITE, "  * brightness preview not possible here\n    due to glitch risk.") + SPACING_Y;
-        posY = Draw_DrawString(10, posY, COLOR_WHITE, "  * test values via 'Change screen brightness'.") + SPACING_Y;
-        posY = Draw_DrawString(10, posY, COLOR_WHITE, "  * avoid frequent use to minimise NAND(!) wear.") + SPACING_Y;
-        posY = Draw_DrawString(10, posY, COLOR_WHITE, "  * 172 is only presumed(!) safe for prolonged use.") + (SPACING_Y*2);
+        posY = Draw_DrawString(10, posY, COLOR_RED, "ATTENZIONE: ") + SPACING_Y;
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, "  * L'anteprima della lum. non e' possibile qui\n per rischio glitch.") + SPACING_Y;
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, "  * testa i valori via 'Cambia luminosita' schermi'.") + SPACING_Y;
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, "  * e' frequente per minimizzare il consumo della NAND(!).") + SPACING_Y;//note that (?) mean that is a possible uncorrect translation
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, "  * 172 e' solamente presunto(!) sicuro per uso prolungato.") + (SPACING_Y*2);
 
-        sprintf(fmtbuf, "%c Level 1 value: %i", (sel == 0 ? '>' : ' '), s_blPwmData.luminanceLevels[0]);
+        sprintf(fmtbuf, "%c Liv.1 valore: %i", (sel == 0 ? '>' : ' '), s_blPwmData.luminanceLevels[0]);
         posY = Draw_DrawString(10, posY, COLOR_WHITE, fmtbuf) + SPACING_Y;
 
-        sprintf(fmtbuf, "%c Level 2 value: %i", (sel == 1 ? '>' : ' '), s_blPwmData.luminanceLevels[1]);
+        sprintf(fmtbuf, "%c Liv.2 valore: %i", (sel == 1 ? '>' : ' '), s_blPwmData.luminanceLevels[1]);
         posY = Draw_DrawString(10, posY, COLOR_WHITE, fmtbuf) + SPACING_Y;
 
-        sprintf(fmtbuf, "%c Level 3 value: %i", (sel == 2 ? '>' : ' '), s_blPwmData.luminanceLevels[2]);
+        sprintf(fmtbuf, "%c Liv.3 valore: %i", (sel == 2 ? '>' : ' '), s_blPwmData.luminanceLevels[2]);
         posY = Draw_DrawString(10, posY, COLOR_WHITE, fmtbuf) + SPACING_Y;
 
-        sprintf(fmtbuf, "%c Level 4 value: %i", (sel == 3 ? '>' : ' '), s_blPwmData.luminanceLevels[3]);
+        sprintf(fmtbuf, "%c Liv.4 valore: %i", (sel == 3 ? '>' : ' '), s_blPwmData.luminanceLevels[3]);
         posY = Draw_DrawString(10, posY, COLOR_WHITE, fmtbuf) + SPACING_Y;
 
-        sprintf(fmtbuf, "%c Level 5 value: %i", (sel == 4 ? '>' : ' '), s_blPwmData.luminanceLevels[4]);
+        sprintf(fmtbuf, "%c Liv.5 valore: %i", (sel == 4 ? '>' : ' '), s_blPwmData.luminanceLevels[4]);
         posY = Draw_DrawString(10, posY, COLOR_WHITE, fmtbuf) + (SPACING_Y*2);
 
-        posY = Draw_DrawString(10, posY, COLOR_GREEN, "Controls:") + SPACING_Y;
-        posY = Draw_DrawString(10, posY, COLOR_WHITE, " UP/DOWN to choose level to edit.") + SPACING_Y;
-        posY = Draw_DrawString(10, posY, COLOR_WHITE, " RIGHT/LEFT for +/-1, +hold L1 or R1 for +/-10.") + SPACING_Y;
-        posY = Draw_DrawString(10, posY, COLOR_WHITE, " Press START to save all value changes.") + SPACING_Y;
-        posY = Draw_DrawString(10, posY, COLOR_WHITE, " Reboot may be required to see applied changes.") + SPACING_Y;
-        posY = Draw_DrawString(10, posY, COLOR_WHITE, " Press B to exit.");
+        posY = Draw_DrawString(10, posY, COLOR_GREEN, "Controlli:") + SPACING_Y;
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, " SU/GIU' per selezionare il livello da modificare.") + SPACING_Y;
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, " SINISTRA/DESTRA per +/-1, + mantieni L o R per +/-10.") + SPACING_Y;
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, " Premi START per salvare tutti i cambiamenti ai val. .") + SPACING_Y;
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, " Il riavvio e' necessario per vedere i camb. applicati.") + SPACING_Y;
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, " Premi B per uscire.");
 
         Draw_FlushFramebuffer();
         Draw_Unlock();

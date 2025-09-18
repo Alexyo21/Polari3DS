@@ -134,8 +134,8 @@ static Result   CheckPluginCompatibility(_3gx_Header *header, u32 processTitle)
             return 0;
     }
 
-    sprintf(errorBuf, "The plugin - %s -\nis not compatible with this game.\n" \
-                      "Contact \"%s\" for more infos.", header->infos.titleMsg, header->infos.authorMsg);
+    sprintf(errorBuf, "Il plugin - %s -\nnon e' compatibile con questo gioco.\n" \
+                      "Contatta \"%s\" per piu' info.", header->infos.titleMsg, header->infos.authorMsg);
     
     PluginLoaderCtx.error.message = errorBuf;
 
@@ -186,16 +186,16 @@ bool     TryToLoadPlugin(Handle process, bool isHomebrew)
     }
 
     if (R_FAILED((res = IFile_GetSize(&plugin, &fileSize))))
-        ctx->error.message = "Couldn't get file size";
+        ctx->error.message = "Impos. ottere le dim. del file";
 
     if (!res && R_FAILED(res = Check_3gx_Magic(&plugin)))
     {
         const char * errors[] = 
         {
-            "Couldn't read file.",
-            "Invalid plugin file\nNot a valid 3GX plugin format!",
-            "Outdated plugin file\nCheck for an updated plugin.",
-            "Outdated plugin loader\nCheck for Luma3DS updates."   
+            "Impos. leggere il file",
+            "Plugin file non valido\nIl plugin non e' in un formato 3gx valido!",
+            "Plugin file obsoleto\nControlla per una ver. aggiornata del plugin.",
+            "Caricatore plugin obsoleto\nControlla aggiornamenti di Luma3DS"   
         };
 
         ctx->error.message = errors[R_MODULE(res) == RM_LDR ? R_DESCRIPTION(res) : 0];
@@ -203,7 +203,7 @@ bool     TryToLoadPlugin(Handle process, bool isHomebrew)
 
     // Read header
     if (!res && R_FAILED((res = Read_3gx_Header(&plugin, &fileHeader))))
-        ctx->error.message = "Couldn't read file";
+        ctx->error.message = "Impossibile leggere il file";
 
     // Check compatibility
     if (!res && fileHeader.infos.compatibility == PLG_COMPAT_EMULATOR) {
@@ -228,12 +228,12 @@ bool     TryToLoadPlugin(Handle process, bool isHomebrew)
 
     // Set memory region size according to header
     if (!res && R_FAILED((res = MemoryBlock__SetSize(memRegionSizes[fileHeader.infos.memoryRegionSize])))) {
-        ctx->error.message = "Couldn't set memblock size.";
+        ctx->error.message = "Impossibile impostare la dimensione blocco mem";
     }
     
     // Ensure memory block is mounted
     if (!res && R_FAILED((res = MemoryBlock__IsReady())))
-        ctx->error.message = "Failed to allocate memory.";
+        ctx->error.message = "Allocamento a memoria fallito";
 
     // Plugins will not exceed 5MB so this is fine
     if (!res) {
@@ -243,11 +243,11 @@ bool     TryToLoadPlugin(Handle process, bool isHomebrew)
 
     // Parse rest of header
     if (!res && R_FAILED((res = Read_3gx_ParseHeader(&plugin, header))))
-        ctx->error.message = "Couldn't read file";
+        ctx->error.message = "Impossibile leggere il file";
 
     // Read embedded save/load functions
     if (!res && R_FAILED((res = Read_3gx_EmbeddedPayloads(&plugin, header))))
-        ctx->error.message = "Invalid save/load payloads.";
+        ctx->error.message = "Payload di salva./carica. invalida";
     
     // Save exe checksum
     if (!res)
@@ -258,9 +258,9 @@ bool     TryToLoadPlugin(Handle process, bool isHomebrew)
 
     // Read code
     if (!res && R_FAILED(res = Read_3gx_LoadSegments(&plugin, header, ctx->memblock.memblock + sizeof(PluginHeader)))) {
-        if (res == MAKERESULT(RL_PERMANENT, RS_INVALIDARG, RM_LDR, RD_NO_DATA)) ctx->error.message = "This plugin requires a loading function.";
-        else if (res == MAKERESULT(RL_PERMANENT, RS_INVALIDARG, RM_LDR, RD_INVALID_ADDRESS)) ctx->error.message = "This plugin file is corrupted.";
-        else ctx->error.message = "Couldn't read plugin's code";
+        if (res == MAKERESULT(RL_PERMANENT, RS_INVALIDARG, RM_LDR, RD_NO_DATA)) ctx->error.message = "Questo plugin richiede una funzione di caricamento.";
+        else if (res == MAKERESULT(RL_PERMANENT, RS_INVALIDARG, RM_LDR, RD_INVALID_ADDRESS)) ctx->error.message = "Questo plugin e' corrotto.";
+        else ctx->error.message = "Impossibile leggere il codice del plugin.";
     }
 
     if (R_FAILED(res))
@@ -302,7 +302,7 @@ bool     TryToLoadPlugin(Handle process, bool isHomebrew)
 
         if (R_FAILED((res = svcMapProcessMemoryEx(CUR_PROCESS_HANDLE, procStart, process, procStart, 0x1000, 0))))
         {
-            ctx->error.message = "Couldn't map process";
+            ctx->error.message = "Impossibile mappare il processo";
             ctx->error.code = res;
             goto exitFail;
         }

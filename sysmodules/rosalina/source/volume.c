@@ -132,12 +132,13 @@ void AdjustVolume(void)
     do
     {
         Draw_Lock();
-        Draw_DrawString(10, 10, COLOR_TITLE, "System configuration menu");
-        u32 posY = Draw_DrawString(10, 30, COLOR_WHITE, "Y: Toggle volume slider override.\nDPAD/CPAD: Adjust the volume level.\nA: Apply\nB: Go back\n\n");
-        Draw_DrawString(10, posY, COLOR_WHITE, "Current status:");
-        posY = Draw_DrawString(100, posY, (tempVolumeOverride == -1) ? COLOR_RED : COLOR_GREEN, (tempVolumeOverride == -1) ? " DISABLED" : " ENABLED ");
+        Draw_DrawString(10, 10, COLOR_TITLE, "Menu configurazione di sistema");
+        u32 posY = Draw_DrawString(10, 30, COLOR_WHITE, "Y: Attiva/Disattiva l'override del cursore del volume.\nDPAD: Aggiusta il livello del volume.\nA: Applica\nB: Torna indietro\n\n");
+        Draw_DrawString(10, posY, COLOR_WHITE, "Stato attuale:");
+        posY = Draw_DrawString(100, posY, (tempVolumeOverride == -1) ? COLOR_RED : COLOR_GREEN, (tempVolumeOverride == -1) ? " DISABILITATO " : " ABILITATO ");
+
         if (tempVolumeOverride != -1) {
-            posY = Draw_DrawFormattedString(30, posY, COLOR_WHITE, "\nValue: [%d%%]    ", tempVolumeOverride);
+            posY = Draw_DrawFormattedString(30, posY, COLOR_WHITE, "\nValore: [%d%%]", tempVolumeOverride);
         } else {
             posY = Draw_DrawString(30, posY, COLOR_WHITE, "\n                 ");
         }
@@ -155,9 +156,9 @@ void AdjustVolume(void)
             Result res = ApplyVolumeOverride();
             LumaConfig_SaveSettings();
             if (R_SUCCEEDED(res))
-                Draw_DrawString(10, posY, COLOR_GREEN, "\nSuccess!");
+                Draw_DrawString(10, posY, COLOR_GREEN, "\nSuccesso!");
             else
-                Draw_DrawFormattedString(10, posY, COLOR_RED, "\nFailed: 0x%08lX", res);
+                Draw_DrawFormattedString(10, posY, COLOR_RED, "\nFallito: 0x%08lX", res);
         }
         else if(pressed & KEY_B)
             return;

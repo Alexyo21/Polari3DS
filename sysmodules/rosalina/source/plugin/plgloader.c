@@ -20,7 +20,7 @@
 
 #define PERS_USER_FILE_MAGIC 0x53524550 // PERS
 
-static const char *g_title = "Plugin loader";
+static const char *g_title = "Caricatore plugin";
 static char menuBuf[64], fileNameBuf[64];
 
 static u64 programId = 0;
@@ -105,22 +105,22 @@ void        PluginLoader__MenuOption(void)
             do
             {
                 Draw_Lock();
-                Draw_DrawString(10, 10, COLOR_TITLE, "Per game plugin config");
-                Draw_DrawString(10, 30, COLOR_WHITE, "Press Y to manually toggle plugin loader.");
+                Draw_DrawString(10, 10, COLOR_TITLE, "Config. plugin per gioco");
+                Draw_DrawString(10, 30, COLOR_WHITE, "Premi Y per sel. il caricatore plugin manualmente");
 
                 if(currentTitleUsesPlugin)
                 {
-                    Draw_DrawString(10, 50, COLOR_GREEN, "Plugin loader auotmatically enabled for this title.");
-                    Draw_DrawString(10, 60, COLOR_WHITE, "Press X to disable auto plugin loader for this title.");
+                    Draw_DrawString(10, 50, COLOR_GREEN, "Caricatore plugin auto. abilitato per questo titolo.");
+                    Draw_DrawString(10, 60, COLOR_WHITE, "Premi X per disabilitare il \ncaricatore plugin auto. \nper questo titolo.");
                 }
                 else
                 {
-                    Draw_DrawString(10, 50, COLOR_RED, "Automatic plugin loader disabled for this title.");
-                    Draw_DrawString(10, 60, COLOR_WHITE, "Press X to enable auto plugin loader for this title.");
+                    Draw_DrawString(10, 50, COLOR_RED, "Caricatore plugin auto. disabilitato per questo titolo.");
+                    Draw_DrawString(10, 60, COLOR_WHITE, "Premi X per abilitare il \ncaricatore plugin auto. \nper questo titolo.");
                 }
 
-                Draw_DrawString(10, 80, COLOR_WHITE, "Relaunch current title to apply changes.");
-                Draw_DrawString(10, 100, COLOR_WHITE, "Press B to go back.");
+                Draw_DrawString(10, 80, COLOR_WHITE, "Rilancia il titolo corrente per \nsalvare i cambiamenti.");
+                Draw_DrawString(10, 100, COLOR_WHITE, "Premi B per tornare indietro.");
                 Draw_FlushFramebuffer();
                 Draw_Unlock();
 
@@ -165,11 +165,11 @@ void        PluginLoader__UpdateMenu(void)
 {
     static const char *status[2] =
     {
-        "Plugin Loader: [Disabled]%s",
-        "Plugin Loader: [Enabled]%s"
+        "Caricatore Plugin: [Disabilitato]%s",
+        "Caricatore Plugin: [Abilitato]%s"
     };
 
-    sprintf(menuBuf, status[PluginLoaderCtx.isEnabled], " [Per Game]");
+    sprintf(menuBuf, status[PluginLoaderCtx.isEnabled], " [Per Gioco]");
 
     rosalinaMenu.items[3].title = configExtra.perGamePlugin ? menuBuf : status[PluginLoaderCtx.isEnabled];
 }

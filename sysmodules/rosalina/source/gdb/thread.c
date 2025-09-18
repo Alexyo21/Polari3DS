@@ -359,31 +359,31 @@ GDB_DECLARE_QUERY_HANDLER(ThreadExtraInfo)
     }
 
     r = svcGetDebugThreadParam(&dummy, &val, ctx->debug, id, DBGTHREAD_PARAMETER_SCHEDULING_MASK_LOW);
-    sStatus = R_SUCCEEDED(r) ? (val == 1 ? ", running, " : ", idle, ") : "";
+    sStatus = R_SUCCEEDED(r) ? (val == 1 ? ", in esecuzione, " : ", idle, ") : "";
 
     val = (u32)GDB_GetDynamicThreadPriority(ctx, id);
     if(val == 65)
         sThreadDynamicPriority[0] = 0;
     else
-        sprintf(sThreadDynamicPriority, "dynamic prio.: %ld, ", (s32)val);
+        sprintf(sThreadDynamicPriority, "prio. dinamica: %ld, ", (s32)val); //prio. sta per priorita'
 
     r = svcGetDebugThreadParam(&dummy, &val, ctx->debug, id, DBGTHREAD_PARAMETER_PRIORITY);
     if(R_FAILED(r))
         sThreadStaticPriority[0] = 0;
     else
-        sprintf(sThreadStaticPriority, "static prio.: %ld, ", (s32)val);
+        sprintf(sThreadStaticPriority, "prio. statica: %ld, ", (s32)val);
 
     r = svcGetDebugThreadParam(&dummy, &val, ctx->debug, id, DBGTHREAD_PARAMETER_CPU_IDEAL);
     if(R_FAILED(r))
         sCoreIdeal[0] = 0;
     else
-        sprintf(sCoreIdeal, "ideal core: %lu, ", val);
+        sprintf(sCoreIdeal, "core ideale: %lu, ", val);
 
     r = svcGetDebugThreadParam(&dummy, &val, ctx->debug, id, DBGTHREAD_PARAMETER_CPU_CREATOR); // Creator = "first ran, and running the thread"
     if(R_FAILED(r))
         sCoreCreator[0] = 0;
     else
-        sprintf(sCoreCreator, "running on core %lu", val);
+        sprintf(sCoreCreator, "in esecuzione sul core %lu", val);
 
     n = sprintf(buf, "TLS: 0x%08lx%s%s%s%s%s", tls, sStatus, sThreadDynamicPriority, sThreadStaticPriority,
                 sCoreIdeal, sCoreCreator);

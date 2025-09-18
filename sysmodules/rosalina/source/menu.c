@@ -314,7 +314,7 @@ static const char *menuGetScreenTypeStr(u8 vendorId)
     {
         case 1:  return "IPS"; // SHARP
         case 12: return "TN";  // JDN
-        default: return "unknown";
+        default: return "sconosciuto";
     }
 }
 
@@ -618,9 +618,9 @@ static void menuDraw(Menu *menu, u32 selected)
         Draw_DrawFormattedString(SCREEN_BOT_WIDTH - 10 - SPACING_X * 19, SCREEN_BOT_HEIGHT - 20, COLOR_WHITE, "%19s", "");
 
     if(isRelease)
-        Draw_DrawFormattedString(10, SCREEN_BOT_HEIGHT - 20, COLOR_TITLE, "Polari3DS %s", versionString);
+        Draw_DrawFormattedString(10, SCREEN_BOT_HEIGHT - 20, COLOR_TITLE, "Polari3DS-ITA %s", versionString);
     else
-        Draw_DrawFormattedString(10, SCREEN_BOT_HEIGHT - 20, COLOR_TITLE, "Polari3DS %s-%08lx", versionString, commitHash);
+        Draw_DrawFormattedString(10, SCREEN_BOT_HEIGHT - 20, COLOR_TITLE, "Polari3DS-ITA %s-%08lx", versionString, commitHash);
 
     Draw_FlushFramebuffer();
 }

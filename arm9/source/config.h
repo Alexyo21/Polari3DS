@@ -48,7 +48,7 @@
 
 #define FVERSION_MAJOR 13 // fake version spoofing
 #define FVERSION_MINOR 3
-#define FVERSION_BUILD 2
+#define FVERSION_BUILD 3
 
 enum multiOptions
 {

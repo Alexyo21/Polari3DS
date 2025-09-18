@@ -36,7 +36,7 @@
 static _3DSX_Reloc s_relocBuf[MAXRELOCS];
 u32 ldrArgvBuf[ARGVBUF_SIZE/4];
 
-#define SEC_ASSERT(x) do { if (!(x)) { Log_PrintP("Assertion failed: %s", #x); return false; } } while (0)
+#define SEC_ASSERT(x) do { if (!(x)) { Log_PrintP("Asserzione fallita: %s", #x); return false; } } while (0)
 
 typedef struct
 {
@@ -60,13 +60,13 @@ bool Ldr_Get3dsxSize(u32* pSize, IFile *file)
 
     if (IFile_Read2(file, &hdr, sizeof(hdr), 0) != sizeof(hdr))
     {
-        Log_PrintP("Cannot read 3DSX header");
+        Log_PrintP("Impossibile leggere la testata file 3DSX");
         return false;
     }
 
     if (hdr.magic != _3DSX_MAGIC)
     {
-        Log_PrintP("Not a valid 3DSX file");
+        Log_PrintP("File 3DSX non valido");
         return false;
     }
 
@@ -122,7 +122,7 @@ Handle Ldr_CodesetFrom3dsx(const char* name, u32* codePages, u32 baseAddr, IFile
     {
         if (IFile_Read2(file, &extraPage[i*nRelocTables], hdr.relocHdrSize, readOffset) != hdr.relocHdrSize)
         {
-            Log_PrintP("Cannot read relheader %d", i);
+            Log_PrintP("impossibile leggere la testata del file correlata %d", i);
             return 0;
         }
         readOffset += hdr.relocHdrSize;
@@ -131,7 +131,7 @@ Handle Ldr_CodesetFrom3dsx(const char* name, u32* codePages, u32 baseAddr, IFile
     // Read the code segment
     if (IFile_Read2(file, d.segPtrs[0], hdr.codeSegSize, readOffset) != hdr.codeSegSize)
     {
-        Log_PrintP("Cannot read code segment");
+        Log_PrintP("Impossibile leggere il segmento di codice");
         return 0;
     }
     readOffset += hdr.codeSegSize;
@@ -139,7 +139,7 @@ Handle Ldr_CodesetFrom3dsx(const char* name, u32* codePages, u32 baseAddr, IFile
     // Read the rodata segment
     if (IFile_Read2(file, d.segPtrs[1], hdr.rodataSegSize, readOffset) != hdr.rodataSegSize)
     {
-        Log_PrintP("Cannot read rodata segment");
+        Log_PrintP("Impossibile leggere i segmenti rodata");
         return 0;
     }
     readOffset += hdr.rodataSegSize;
@@ -148,7 +148,7 @@ Handle Ldr_CodesetFrom3dsx(const char* name, u32* codePages, u32 baseAddr, IFile
     u32 dataLoadSegSize = hdr.dataSegSize - hdr.bssSize;
     if (IFile_Read2(file, d.segPtrs[2], dataLoadSegSize, readOffset) != dataLoadSegSize)
     {
-        Log_PrintP("Cannot read data segment");
+        Log_PrintP("Impossibile leggere il segmento di dati");
         return 0;
     }
     readOffset += dataLoadSegSize;
@@ -178,7 +178,7 @@ Handle Ldr_CodesetFrom3dsx(const char* name, u32* codePages, u32 baseAddr, IFile
                 u32 readSize = toDo*sizeof(_3DSX_Reloc);
                 if (IFile_Read2(file, s_relocBuf, readSize, readOffset) != readSize)
                 {
-                    Log_PrintP("Cannot read reloc table (%d,%d)", i, j);
+                    Log_PrintP("Impossibile leggere la tavola riallocata (%d,%d)", i, j);
                     return 0;
                 }
                 readOffset += readSize;
@@ -200,7 +200,7 @@ Handle Ldr_CodesetFrom3dsx(const char* name, u32* codePages, u32 baseAddr, IFile
                             {
                                 if (subType != 0)
                                 {
-                                    Log_PrintP("Unsupported absolute reloc subtype (%lu)", subType);
+                                    Log_PrintP("Sottotipo di reloc assoluto non supportato (%lu)", subType);
                                     return 0;
                                 }
                                 *pos = addr;
@@ -214,7 +214,7 @@ Handle Ldr_CodesetFrom3dsx(const char* name, u32* codePages, u32 baseAddr, IFile
                                     case 0: *pos = data;            break; // 32-bit signed offset
                                     case 1: *pos = data &~ BIT(31); break; // 31-bit signed offset
                                     default:
-                                        Log_PrintP("Unsupported relative reloc subtype (%lu)", subType);
+                                        Log_PrintP("Sottotipo di reloc relativo non supportato (%lu)", subType);
                                         return 0;
                                 }
                                 break;

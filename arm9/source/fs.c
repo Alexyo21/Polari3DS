@@ -55,7 +55,7 @@ static bool switchToMainDir(bool isSd)
         {
             if (f_mkdir(mainDir) != FR_OK)
             {
-                error("Failed to create luma directory.");
+                error("Creazione del percorso luma fallito.");
                 return false;
             }
             return switchToMainDir(isSd);
@@ -309,8 +309,8 @@ bool payloadMenu(char *path, bool *hasDisplayedMenu)
         initScreens();
         *hasDisplayedMenu = true;
 
-        drawString(true, 10, 10, COLOR_TITLE, "Polari3DS chainloader");
-        drawString(true, 10, 10 + SPACING_Y, COLOR_TITLE, "Press A to select, START to quit");
+        drawString(true, 10, 10, COLOR_TITLE, "Polari3DS-ITA chainloader");
+        drawString(true, 10, 10 + SPACING_Y, COLOR_TITLE, "Premi A per scegliere, START per uscire");
 
         for(u32 i = 0, posY = 10 + 3 * SPACING_Y, color = COLOR_GREEN; i < payloadNum; i++, posY += SPACING_Y)
         {
